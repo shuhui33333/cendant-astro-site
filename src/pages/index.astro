@@ -1,28 +1,184 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import BlueChip from "../components/BlueChip.astro";
-
-const items = [
-  { href: "/company-profile", zh: "公司概况", en: "COMPANY PROFILE" },
-  { href: "/services", zh: "服务项目", en: "SERVICE AVAILABLE" },
-  { href: "/real-estate", zh: "地产资讯", en: "REAL ESTATE INFORMATION" },
-  { href: "/immigration", zh: "移民服务", en: "IMMIGRATION SERVICE" },
-  { href: "/contact", zh: "联系我们", en: "CONTACT US" },
-];
+import TopBanner from "../components/TopBanner.astro";
 ---
 
-<BaseLayout title="MENU">
-  <div style="display:grid; gap:16px; max-width:560px;">
-    {items.map((i) => (
-      <a
-        href={i.href}
-        style="display:flex; justify-content:space-between; padding:16px 18px; border:1px solid #e5e5e5; border-radius:12px; text-decoration:none;"
-      >
-        <span>{i.zh}</span>
-        <span style="opacity:.6;">{i.en}</span>
-      </a>
-    ))}
-  </div>
-  <BlueChip text="服务项目" />
-</BaseLayout>
+<BaseLayout title="首页">
+  <!-- 1) 首页头图 / 第一屏（对应 PDF 第 1 页感觉） -->
+  <section class="hero">
+    <div class="heroInner">
+      <div class="heroText">
+        <h1>墨尔本 · 胜腾国际</h1>
+        <p class="sub">MELBOURNE · CENDANT</p>
+        <p class="desc">
+          专注澳洲房产投资、项目开发管理、物业租赁与移民留学咨询等一站式服务。
+        </p>
 
+        <div class="actions">
+          <a class="btnPrimary" href="/contact">立即咨询</a>
+          <a class="btnGhost" href="/#services">查看服务项目</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2) 服务项目（把原 services 页面内容搬到这里） -->
+  <section id="services" class="section">
+    <TopBanner zh="服务项目" en="SERVICE AVAILABLE" />
+
+    <div class="cards">
+      <a class="card" href="/real-estate">
+        <h3>房地产买卖</h3>
+        <p>项目推荐、选房策略、谈判签约、交割协助。</p>
+      </a>
+
+      <a class="card" href="/real-estate">
+        <h3>房地产开发</h3>
+        <p>项目评估、开发管理、资源对接、风控与交付。</p>
+      </a>
+
+      <a class="card" href="/real-estate">
+        <h3>物业租赁</h3>
+        <p>招租、租客筛选、租约管理、长期维护服务。</p>
+      </a>
+
+      <a class="card" href="/immigration">
+        <h3>移民服务</h3>
+        <p>雇主担保、商业投资类移民路径评估与材料支持。</p>
+      </a>
+
+      <a class="card" href="/contact">
+        <h3>联系我们</h3>
+        <p>预约咨询、合作洽谈、项目对接与资料获取。</p>
+      </a>
+    </div>
+  </section>
+
+  
+
+  <style>
+    /* 统一色系（你前面想换深蓝：#0B1F4D） */
+    :global(:root){
+      --brand-primary:#0B1F4D;
+      --brand-bg-soft:#F3F6FB;
+      --brand-border:#E2E6F0;
+      --text:#0E1A2B;
+    }
+
+    .hero{
+      background: linear-gradient(180deg, var(--brand-bg-soft) 0%, #fff 360px);
+      padding: 70px 0 40px;
+    }
+    .heroInner{
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+    .heroText h1{
+      margin:0;
+      font-size: 44px;
+      letter-spacing: .5px;
+      color: var(--brand-primary);
+    }
+    .sub{
+      margin: 8px 0 18px;
+      letter-spacing: 2px;
+      color: var(--brand-primary);
+      opacity: .75;
+      font-weight: 700;
+    }
+    .desc{
+      max-width: 680px;
+      line-height: 1.9;
+      color: var(--text);
+      opacity: .9;
+      margin: 0 0 22px;
+      font-size: 16px;
+    }
+    .actions{
+      display:flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .btnPrimary{
+      display:inline-block;
+      padding: 12px 16px;
+      border-radius: 12px;
+      background: var(--brand-primary);
+      color:#fff;
+      text-decoration:none;
+      font-weight:800;
+    }
+    .btnGhost{
+      display:inline-block;
+      padding: 12px 16px;
+      border-radius: 12px;
+      border: 1px solid var(--brand-border);
+      color: var(--brand-primary);
+      text-decoration:none;
+      font-weight:800;
+      background:#fff;
+    }
+
+    .section{
+      max-width: 1100px;
+      margin: 36px auto 70px;
+      padding: 0 20px;
+    }
+
+    .cards{
+      margin-top: 18px;
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+    @media (max-width: 900px){
+      .cards{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .heroText h1{ font-size: 34px; }
+    }
+    @media (max-width: 520px){
+      .cards{ grid-template-columns: 1fr; }
+    }
+
+    .card{
+      border: 1px solid var(--brand-border);
+      border-radius: 16px;
+      padding: 16px;
+      background:#fff;
+      text-decoration:none;
+    }
+    .card h3{
+      margin: 0 0 10px;
+      color: var(--brand-primary);
+      font-size: 18px;
+      font-weight: 900;
+    }
+    .card p{
+      margin: 0;
+      color: var(--text);
+      opacity: .85;
+      line-height: 1.8;
+      font-size: 14px;
+    }
+
+    .twoCol{
+      margin-top: 18px;
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 16px;
+      align-items:start;
+    }
+    @media (max-width: 900px){
+      .twoCol{ grid-template-columns: 1fr; }
+    }
+    .box{
+      border: 1px solid var(--brand-border);
+      border-radius: 16px;
+      background: #fff;
+      padding: 16px;
+    }
+    .h3{ margin:0 0 10px; color:var(--brand-primary); font-weight: 900; }
+    .p{ margin:0 0 12px; line-height:1.9; color:var(--text); opacity:.9; }
+    .list{ margin:0; padding-left: 18px; line-height: 1.9; color:var(--text); opacity:.9; }
+  </style>
+</BaseLayout>

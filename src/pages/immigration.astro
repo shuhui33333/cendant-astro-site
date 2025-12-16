@@ -1,89 +1,117 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import TopBanner from "../components/TopBanner.astro";
+import Accordion from "../components/Accordion.astro";
 ---
 
-<BaseLayout title="联系我们" subtitle="CONTACT US">
-  <TopBanner zh="联系我们" en="CONTACT US" />
+<BaseLayout title="移民服务" subtitle="IMMIGRATION SERVICE">
+  <!-- 顶部深蓝 Banner -->
+  <TopBanner zh="移民服务" en="IMMIGRATION SERVICE" />
 
-  <section class="info">
-    <h2>公司地址</h2>
-    <p>2 Aquitania Way, Docklands VIC 3008</p>
+  <!-- 内容区域 -->
+  <section class="container">
+    <Accordion
+      items={[
+        {
+          title: "澳洲 186 雇主担保永居签证（ENS）",
+          body: (
+            <>
+              <p>
+                <strong>签证说明：</strong>
+                186雇主担保移民签证是澳洲技术移民中的重要永久居民签证，
+                申请人通过获得澳洲合格雇主的提名，可直接申请澳洲永久居留权。
+              </p>
+              <ul>
+                <li>临时居留转永居通道（TRT）</li>
+                <li>直接申请通道（Direct Entry）</li>
+                <li>劳工协议通道（Labour Agreement）</li>
+              </ul>
+              <p>
+                胜腾国际为客户提供雇主担保评估、职位匹配分析、
+                材料准备及全流程移民申请服务。
+              </p>
+            </>
+          ),
+        },
 
-    <h2>电话 & 邮箱</h2>
-    <ul>
-      <li>Tel: +61 420 616 883</li>
-      <li>Email: <a href="mailto:info@cendantpgau.com">info@cendantpgau.com</a></li>
-    </ul>
+        {
+          title: "澳洲 187 偏远地区雇主提名移民签证（RSMS）",
+          body: (
+            <>
+              <p>
+                <strong>签证说明：</strong>
+                187签证适用于在澳洲政府指定偏远地区工作的海外技术人员，
+                通过获得当地雇主提名，可一步申请永久居民身份。
+              </p>
+              <ul>
+                <li>偏远地区职业选择更灵活</li>
+                <li>对英语与工作经验要求相对宽松</li>
+                <li>一步到位获得永居身份</li>
+              </ul>
+            </>
+          ),
+        },
+
+        {
+          title: "澳洲 888 商业创新和投资永居签证",
+          body: (
+            <>
+              <p>
+                <strong>签证说明：</strong>
+                888签证是商业创新和投资移民体系中的永久居留阶段签证，
+                适用于已持有188签证并满足经营或投资要求的申请人。
+              </p>
+              <ul>
+                <li>888A 商业创新类</li>
+                <li>888B 投资者类</li>
+                <li>888C 重大投资者类</li>
+              </ul>
+            </>
+          ),
+        },
+
+        {
+          title: "澳洲 188 商业创新和投资临时居留签证",
+          body: (
+            <>
+              <p>
+                <strong>签证说明：</strong>
+                188签证是为企业主、高净值人士及投资者设立的临时居留签证，
+                为后续申请888永居签证提供过渡路径。
+              </p>
+              <ul>
+                <li>188A 商业创新类</li>
+                <li>188B 投资者类</li>
+                <li>188C 重大投资者类</li>
+              </ul>
+            </>
+          ),
+        },
+
+        {
+          title: "其他签证类别（持续更新中）",
+          body: (
+            <>
+              <p>
+                除上述主流签证外，澳洲还设有多种技术移民、家庭团聚、
+                留学及过渡类签证。
+              </p>
+              <p>
+                胜腾国际将根据移民政策变化，持续为客户提供
+                个性化签证路径评估与专业咨询服务。
+              </p>
+            </>
+          ),
+        },
+      ]}
+    />
   </section>
 
-  <form id="contact-form" class="contact">
-    <input name="name" placeholder="姓名" required />
-    <input name="email" type="email" placeholder="邮箱" required />
-    <input name="phone" placeholder="电话" />
-    <select name="topic">
-      <option value="服务项目">服务项目</option>
-      <option value="移民服务">移民服务</option>
-      <option value="地产咨询">地产咨询</option>
-    </select>
-    <textarea name="message" placeholder="留言内容" required></textarea>
-
-    <button type="submit">提交咨询</button>
-  </form>
-
-  <p id="result" class="result"></p>
-
-  <script is:inline>
-    const form = document.getElementById("contact-form");
-    const result = document.getElementById("result");
-
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      result.textContent = "提交中…";
-
-      const data = Object.fromEntries(new FormData(form));
-
-      const res = await fetch("/api/leads", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-
-      if (res.ok) {
-        result.textContent = "我们已收到您的信息，会尽快联系您。";
-        form.reset();
-      } else {
-        result.textContent = "提交失败，请稍后再试。";
-      }
-    });
-  </script>
-
   <style>
-    .info { margin: 16px 0 24px; }
-    .info h2 { margin: 16px 0 8px; }
-    .info ul { margin: 0; padding-left: 18px; }
-
-    .contact {
-      max-width: 420px;
-      display: grid;
-      gap: 12px;
+    .container {
+      max-width: 960px;
+      margin: 40px auto 80px;
+      padding: 0 20px;
     }
-    input, textarea, select {
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 14px;
-    }
-    textarea { min-height: 120px; resize: vertical; }
-    button {
-      background: #0B1F6B;
-      color: #fff;
-      padding: 12px;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      font-weight: 700;
-    }
-    .result { margin-top: 12px; }
   </style>
 </BaseLayout>
