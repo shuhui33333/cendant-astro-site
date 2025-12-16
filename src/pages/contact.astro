@@ -1,0 +1,89 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import TopBanner from "../components/TopBanner.astro";
+---
+
+<BaseLayout title="联系我们" subtitle="CONTACT US">
+  <TopBanner zh="联系我们" en="CONTACT US" />
+
+  <section class="info">
+    <h2>公司地址</h2>
+    <p>2 Aquitania Way, Docklands VIC 3008</p>
+
+    <h2>电话 & 邮箱</h2>
+    <ul>
+      <li>Tel: +61 420 616 883</li>
+      <li>Email: <a href="mailto:info@cendantpgau.com">info@cendantpgau.com</a></li>
+    </ul>
+  </section>
+
+  <form id="contact-form" class="contact">
+    <input name="name" placeholder="姓名" required />
+    <input name="email" type="email" placeholder="邮箱" required />
+    <input name="phone" placeholder="电话" />
+    <select name="topic">
+      <option value="服务项目">服务项目</option>
+      <option value="移民服务">移民服务</option>
+      <option value="地产咨询">地产咨询</option>
+    </select>
+    <textarea name="message" placeholder="留言内容" required></textarea>
+
+    <button type="submit">提交咨询</button>
+  </form>
+
+  <p id="result" class="result"></p>
+
+  <script is:inline>
+    const form = document.getElementById("contact-form");
+    const result = document.getElementById("result");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      result.textContent = "提交中…";
+
+      const data = Object.fromEntries(new FormData(form));
+
+      const res = await fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      if (res.ok) {
+        result.textContent = "我们已收到您的信息，会尽快联系您。";
+        form.reset();
+      } else {
+        result.textContent = "提交失败，请稍后再试。";
+      }
+    });
+  </script>
+
+  <style>
+    .info { margin: 16px 0 24px; }
+    .info h2 { margin: 16px 0 8px; }
+    .info ul { margin: 0; padding-left: 18px; }
+
+    .contact {
+      max-width: 420px;
+      display: grid;
+      gap: 12px;
+    }
+    input, textarea, select {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    textarea { min-height: 120px; resize: vertical; }
+    button {
+      background: #0B1F6B;
+      color: #fff;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+    .result { margin-top: 12px; }
+  </style>
+</BaseLayout>
