@@ -27,8 +27,8 @@ export const onRequestPost: PagesFunction = async ({ request, env }) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        // 
-        from: "cendantproperty.com.au <info@cendantpgau.com>",
+        // ⚠️ 这里后面可以换成你的域名邮箱（需要在 Resend 验证域名）
+        from: "Cendant Website <onboarding@resend.dev>",
         to: [mailTo],
         subject: `网站新咨询：${data.topic || "咨询"}`,
         html: `
