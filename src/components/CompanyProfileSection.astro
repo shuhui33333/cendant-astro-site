@@ -1,0 +1,23 @@
+---
+import { siteText } from "../content/siteText";
+const data = siteText.companyProfile;
+---
+
+<section class="cp">
+  <h2 class="title">{data.titleZh}</h2>
+  <div class="sub">{data.titleEn}</div>
+
+  <div class="body">
+    {data.bodyZh.map((p) => <p>{p}</p>)}
+  </div>
+
+  <div class="note">{data.noteZh}</div>
+</section>
+
+<style>
+  .cp { margin: 28px 0; }
+  .title { margin: 0 0 8px; font-size: 34px; font-weight: 900; color: #0B1F4D; letter-spacing: .2px; }
+  .sub { margin: 0 0 18px; color: #0B1F4D; opacity: .72; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; }
+  .body p { margin: 0 0 12px; line-height: 1.95; color: #0E1A2B; opacity: .92; font-size: 16px; }
+  .note { margin-top: 18px; padding: 14px 16px; border-left: 4px solid #0B1F4D; background: #F3F6FB; border-radius: 12px; color:#0E1A2B; opacity:.9; line-height:1.9; }
+</style>
