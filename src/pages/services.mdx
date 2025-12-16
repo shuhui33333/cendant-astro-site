@@ -1,11 +1,136 @@
 ---
 layout: ../layouts/BaseLayout.astro
-title: 服务项目
+title: 移民服务
+subtitle: IMMIGRATION SERVICE
 ---
 
 import TopBanner from "../components/TopBanner.astro";
-import InlineTag from "../components/InlineTag.astro";
+import Accordion from "../components/Accordion.astro";
 
-<TopBanner zh="服务项目" en="SERVICE AVAILABLE" />
+<TopBanner zh="移民服务" en="IMMIGRATION SERVICE" />
 
-内容……
+
+<Accordion
+  items={[
+    {
+      title: "澳洲 186 雇主担保永居签证（ENS）",
+      body: (
+        <>
+          <p>
+            <strong>签证说明：</strong>
+            186雇主担保移民签证是澳洲技术移民中的重要永居签证类别，
+            申请人通过获得澳洲合格雇主的提名，可一步到位获得澳洲永久居民身份。
+          </p>
+          <p>
+            <strong>主要通道：</strong>
+          </p>
+          <ul>
+            <li>临时居留转永居通道（TRT）</li>
+            <li>直接申请通道（Direct Entry）</li>
+            <li>劳工协议通道（Labour Agreement）</li>
+          </ul>
+          <p>
+            <strong>服务内容：</strong>
+            包括雇主担保资格评估、职位真实性审核、
+            技术与工作经验匹配分析、签证材料准备及全流程递交。
+          </p>
+        </>
+      ),
+    },
+
+    {
+      title: "澳洲 187 偏远地区雇主提名移民签证（RSMS）",
+      body: (
+        <>
+          <p>
+            <strong>签证说明：</strong>
+            187签证是为澳洲偏远地区雇主引进海外技术人才而设立的永居签证，
+            申请人需在澳洲政府认定的偏远地区获得雇主提名。
+          </p>
+          <p>
+            <strong>签证优势：</strong>
+          </p>
+          <ul>
+            <li>职业限制相对宽松</li>
+            <li>对英语及工作经验要求相对灵活</li>
+            <li>可一步获得永久居民身份</li>
+          </ul>
+          <p>
+            <strong>服务内容：</strong>
+            胜腾国际提供偏远地区雇主资源对接、提名资格审核、
+            签证策略制定及完整移民申请支持。
+          </p>
+        </>
+      ),
+    },
+
+    {
+      title: "澳洲 888 商业创新和投资永居签证",
+      body: (
+        <>
+          <p>
+            <strong>签证说明：</strong>
+            888签证是商业创新和投资签证体系中的永居阶段签证，
+            适用于已持有188签证并满足经营或投资要求的申请人。
+          </p>
+          <p>
+            <strong>主要类别：</strong>
+          </p>
+          <ul>
+            <li>888A 商业创新类</li>
+            <li>888B 投资者类</li>
+            <li>888C 重大投资者类</li>
+          </ul>
+          <p>
+            <strong>服务内容：</strong>
+            包括商业合规审查、经营成果评估、
+            投资结构规划及永居签证材料整合与递交。
+          </p>
+        </>
+      ),
+    },
+
+    {
+      title: "澳洲 188 商业创新和投资临时居留签证",
+      body: (
+        <>
+          <p>
+            <strong>签证说明：</strong>
+            188签证是澳洲为高净值人士、企业主及投资者设立的临时居留签证，
+            为后续申请888永居签证提供过渡路径。
+          </p>
+          <p>
+            <strong>主要类别：</strong>
+          </p>
+          <ul>
+            <li>188A 商业创新类</li>
+            <li>188B 投资者类</li>
+            <li>188C 重大投资者类</li>
+          </ul>
+          <p>
+            <strong>服务内容：</strong>
+            包括商业模式规划、投资结构设计、
+            州政府提名申请、签证递交及后续合规辅导。
+          </p>
+        </>
+      ),
+    },
+
+    {
+      title: "其他签证类别（持续更新中）",
+      body: (
+        <>
+          <p>
+            除上述主流移民签证外，澳洲还提供多种临时及永久签证类别，
+            包括技术移民、家庭团聚、留学及过渡签证等。
+          </p>
+          <p>
+            <strong>服务说明：</strong>
+            胜腾国际将根据澳洲移民政策变化，
+            持续更新可行签证类别，并为客户提供一对一签证路径评估。
+          </p>
+        </>
+      ),
+    },
+  ]}
+/>    
