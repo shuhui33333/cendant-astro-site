@@ -1,7 +1,7 @@
 ---
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import TopBanner from "../../components/TopBanner.astro";
-import { getRealEstatePosts } from "../../lib/contentful";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import TopBanner from "../components/TopBanner.astro";
+import { getRealEstatePosts } from "../lib/contentful";
 
 const posts = await getRealEstatePosts(30);
 ---

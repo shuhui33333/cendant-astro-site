@@ -1,16 +1,13 @@
-
-
 ---
 import "../styles/global.css";
-
 
 const title =
   Astro.props.title ??
   Astro.props.frontmatter?.title ??
   "页面";
 
-
 const nav = [
+  { href: "/", label: "首页" },
   { href: "/real-estate", label: "地产资讯" },
   { href: "/immigration", label: "移民服务" },
   { href: "/company-profile", label: "公司概况" },
@@ -34,28 +31,137 @@ const nav = [
         </div>
 
         <nav style="display:flex; gap:14px; flex-wrap:wrap;">
-          {nav.map((i) => <a href={i.href} style="text-decoration:none;">{i.label}</a>)}
+          {nav.map((i) => (
+            <a href={i.href} style="text-decoration:none;">{i.label}</a>
+          ))}
         </nav>
       </div>
     </header>
 
+    <!-- 侧边栏 -->
+    <aside id="side-menu" class="side-menu" aria-label="Site menu">
+      <nav>
+        {nav.map((i) => (
+          <a href={i.href} class="side-link">{i.label}</a>
+        ))}
+      </nav>
+    </aside>
+
+    <!-- 遮罩 -->
+    <div id="menu-overlay" class="menu-overlay" aria-hidden="true"></div>
+
     <main style="max-width:1000px; margin:0 auto; padding:32px;">
       <div style="display:flex; align-items:center; gap:14px; margin-bottom:24px;">
-        <div style="font-size:28px; line-height:1;">≡</div>
+        <button id="menu-btn" class="menu-btn" type="button" aria-label="Open menu">
+          ☰
+        </button>
+
         <h1
-  style="
-    margin:0;
-    font-size:20px;
-    font-weight:800;
-    color:#091a5d;
-    letter-spacing:1px;
-  "
->
-  {title}
-</h1>
+          style="
+            margin:0;
+            font-size:20px;
+            font-weight:800;
+            color:#091a5d;
+            letter-spacing:1px;
+          "
+        >
+          {title}
+        </h1>
       </div>
 
       <slot />
     </main>
+
+    <script>
+      const btn = document.getElementById("menu-btn");
+      const overlay = document.getElementById("menu-overlay");
+      const menu = document.getElementById("side-menu");
+
+      function openMenu() {
+        document.body.classList.add("menu-open");
+      }
+
+      function closeMenu() {
+        document.body.classList.remove("menu-open");
+      }
+
+      btn?.addEventListener("click", () => {
+        if (document.body.classList.contains("menu-open")) closeMenu();
+        else openMenu();
+      });
+
+      overlay?.addEventListener("click", closeMenu);
+
+      // 点侧边栏链接后自动关闭菜单（更顺手）
+      menu?.querySelectorAll("a").forEach((a) => a.addEventListener("click", closeMenu));
+
+      // ESC 关闭（更专业）
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeMenu();
+      });
+    </script>
+
+    <style>
+      .menu-btn {
+        background: none;
+        border: none;
+        font-size: 26px;
+        cursor: pointer;
+        color: #091a5d;
+      }
+
+      /* 遮罩 */
+      .menu-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.35);
+        opacity: 0;
+        pointer-events: none;
+        transition: 0.3s;
+        z-index: 998;
+      }
+
+      /* 侧边栏 */
+      .side-menu {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 260px;
+        height: 100vh;
+        background: #0b1f6b; /* 深蓝 */
+        color: #fff;
+        padding: 32px 24px;
+        transform: translateX(-100%);
+        transition: 0.3s ease;
+        z-index: 999;
+      }
+
+      .side-menu nav {
+        display: grid;
+        gap: 18px;
+      }
+
+      .side-link {
+        color: #fff;
+        text-decoration: none;
+        font-size: 16px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+      }
+
+      .side-link:hover {
+        opacity: 0.85;
+      }
+
+      /* 打开状态 */
+      body.menu-open .side-menu {
+        transform: translateX(0);
+      }
+
+      body.menu-open .menu-overlay {
+        opacity: 1;
+        pointer-events: auto;
+      }
+    </style>
   </body>
 </html>
