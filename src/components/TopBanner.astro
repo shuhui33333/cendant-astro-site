@@ -1,0 +1,65 @@
+---
+const {
+  zh = "",              // 中文标题，例如：服务项目
+  en = "",              // 英文副标题，例如：SERVICE AVAILABLE
+  height = 140,         // 横条高度
+  full = true,          // true: 更长
+  radius = 0,          // 直角0
+} = Astro.props;
+---
+
+<section class={`banner ${full ? "full" : ""}`} style={`--h:${height}px; --r:${radius}px;`}>
+  <div class="inner">
+    <div class="stack">
+      <div class="zh">{zh}</div>
+      {en ? <div class="en">{en}</div> : null}
+    </div>
+  </div>
+</section>
+
+<style>
+  .banner{
+    height: var(--h);
+    border-radius: var(--r);
+    background: #091a5d;             
+    display:flex;
+    align-items:center;
+  }
+
+
+  .banner.full{
+    width: 100%;
+  }
+
+  .inner{
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display:flex;
+    justify-content:center;
+    text-align:center;
+  }
+
+  .stack{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap: 8px;
+  }
+
+  .zh{
+    color:#fcfcfc;
+    font-weight: 700;
+    font-size: 28px;
+    line-height: 2.2;
+    letter-spacing: .5px;
+  }
+
+  .en{
+    color:#fcfcfc;
+    font-weight: 400;
+    font-size: 12px;
+    letter-spacing: 1.8px;
+  }
+</style>

@@ -1,0 +1,63 @@
+---
+const {
+  title = "",
+  paragraphs = [],
+  bullets = [],         
+} = Astro.props;
+---
+
+<section class="intro">
+  {title && <h2 class="introTitle">{title}</h2>}
+
+  {paragraphs.map(t => (
+    <p class="introText">{t}</p>
+  ))}
+
+  {bullets.length > 0 && (
+    <ul class="introList">
+      {bullets.map(b => <li>{b}</li>)}
+    </ul>
+  )}
+</section>
+
+<style>
+  .intro { margin-top: 8px; }
+
+  .introTitle{
+    margin: 0 0 14px 0;
+    font-size: 24px;
+    font-weight: 800;
+    color: #091a5d;
+  }
+
+  .introText{
+    margin: 0 0 12px 0;
+    font-size: 15px;
+    line-height: 1.9;
+    color: #091a5d;
+    opacity: .92;
+  }
+
+  .introList{
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .introList li{
+    position: relative;
+    padding-left: 18px;
+    margin-bottom: 12px;
+    font-size: 15px;
+    line-height: 1.9;
+    color: #091a5d;
+  }
+  .introList li::before{
+    content: "●";
+    position: absolute;
+    left: 0;
+    top: .15em;
+    font-size: 10px;
+    color: #091a5d;
+  }
+</style>

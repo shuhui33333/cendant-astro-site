@@ -1,0 +1,34 @@
+---
+const {
+  text = "",
+  as = "span",        // 可选：span / div
+  size = "md",        // sm / md / lg
+} = Astro.props;
+
+const Tag = as;
+---
+
+<Tag class={`chip chip--${size}`}>{text}</Tag>
+
+<style>
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    background: #2F6BFF;
+    color: #fff;
+
+    border-radius: 999px;
+    font-weight: 600;
+    letter-spacing: .2px;
+
+    /* “标签条”的质感 */
+    box-shadow: 0 6px 18px rgba(47, 107, 255, .22);
+  }
+
+  .chip--sm { padding: 6px 10px; font-size: 12px; }
+  .chip--md { padding: 10px 14px; font-size: 14px; }
+  .chip--lg { padding: 12px 18px; font-size: 16px; }
+</style>

@@ -1,0 +1,19 @@
+---
+layout: ../layouts/BaseLayout.astro
+title: 公司概况
+---
+import TopBanner from "../components/TopBanner.astro";
+
+<TopBanner zh="公司概况" en="COMPANY PROFLIE" />
+
+
+import CompanyIntro from "../components/MainBody.astro";
+
+<CompanyIntro
+  title="墨尔本胜腾国际"
+  bullets={[
+    "胜腾国际是澳大利亚房地产市场的专业引领者，公司设立于墨尔本 Docklands，在房地产行业拥有超 15 年经验，管理资产逾一亿澳元。",
+    "胜腾国际致力于澳洲房地产投资产买卖、房地产项目开发管理、物业租赁、留学移民咨询及投资基金管理等服务。",
+    "是全方位市场研究及多元化的投资管理公司，随着世界各地对澳洲房地产需求的提升，整合优质资源，为投资者提供一站式解决方案。"
+  ]}
+/>

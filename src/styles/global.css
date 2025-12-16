@@ -1,0 +1,30 @@
+:root{
+  --brand-blue:#2F6BFF;
+  --brand-blue-100:#E9F2FF;
+  --text:#111;
+  --muted:#666;
+  --card:#fff;
+  --border:#eaeaea;
+}
+
+body{
+  margin:0;
+  color:var(--text);
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+.bg-slab{
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(180deg, var(--brand-blue-100) 0%, #fff 60%);
+  z-index: -1;
+}
+
+.blue-chip{
+  display:inline-block;
+  padding:10px 14px;
+  border-radius:12px;
+  background:var(--brand-blue);
+  color:white;
+  font-weight:600;
+}

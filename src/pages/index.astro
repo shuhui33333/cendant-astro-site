@@ -1,11 +1,28 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
+import BaseLayout from "../layouts/BaseLayout.astro";
+import BlueChip from "../components/BlueChip.astro";
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+const items = [
+  { href: "/company-profile", zh: "公司概况", en: "COMPANY PROFILE" },
+  { href: "/services", zh: "服务项目", en: "SERVICE AVAILABLE" },
+  { href: "/real-estate", zh: "地产资讯", en: "REAL ESTATE INFORMATION" },
+  { href: "/immigration", zh: "移民服务", en: "IMMIGRATION SERVICE" },
+  { href: "/contact", zh: "联系我们", en: "CONTACT US" },
+];
 ---
 
-<Layout>
-	<Welcome />
-</Layout>
+<BaseLayout title="MENU">
+  <div style="display:grid; gap:16px; max-width:560px;">
+    {items.map((i) => (
+      <a
+        href={i.href}
+        style="display:flex; justify-content:space-between; padding:16px 18px; border:1px solid #e5e5e5; border-radius:12px; text-decoration:none;"
+      >
+        <span>{i.zh}</span>
+        <span style="opacity:.6;">{i.en}</span>
+      </a>
+    ))}
+  </div>
+  <BlueChip text="服务项目" />
+</BaseLayout>
+

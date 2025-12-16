@@ -1,0 +1,21 @@
+---
+layout: ../layouts/BaseLayout.astro
+title: 移民服务
+---
+import TopBanner from "../components/TopBanner.astro";
+
+<TopBanner zh="移民服务" en="IMMIGRARION SERVICE" />
+
+import CompanyIntro from "../components/MainBody.astro";
+
+<CompanyIntro
+  title="墨尔本胜腾国际"
+  bullets={[
+    "澳洲 457 雇主担保移民签证",
+    "澳洲 186 雇主担保移民签证",
+    "澳洲 187 偏远地区雇主提名移民签证",
+    "澳洲 888 商业创新和投资永居签证",
+    "188 类商业创新和投资临居住签证",
+    "其他签证类别（待补充）"
+  ]}
+/>

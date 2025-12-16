@@ -1,0 +1,20 @@
+---
+const { text } = Astro.props;
+---
+
+<div class="blue-block">
+  {text}
+</div>
+
+<style>
+  .blue-block {
+    display: inline-block;
+    padding: 10px 16px;
+    background: #2F6BFF;
+    color: white;
+    border-radius: 14px;
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: .5px;
+  }
+</style>
