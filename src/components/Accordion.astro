@@ -1,0 +1,76 @@
+---
+const { items = [] } = Astro.props;
+// items: [{ title: string, body: string | any }]
+---
+
+<div class="acc">
+  {items.map((it) => (
+    <details class="item">
+      <summary class="head">
+        <span class="icon" aria-hidden="true"></span>
+        <span class="title">{it.title}</span>
+      </summary>
+
+      <div class="body">
+        {typeof it.body === "string" ? <p>{it.body}</p> : it.body}
+      </div>
+    </details>
+  ))}
+</div>
+
+<style>
+  .acc { display: grid; gap: 12px; }
+
+  .item{
+    border: 1px solid #e6e6e6;
+    border-radius: 12px;
+    background: #fff;
+    overflow: hidden;
+  }
+
+  .head{
+    list-style: none;
+    cursor: pointer;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    user-select: none;
+  }
+  .head::-webkit-details-marker{ display: none; }
+
+  /* 左侧 + / - */
+  .icon{
+    width: 22px;
+    height: 22px;
+    border-radius: 999px;
+    border: 1px solid #cfd8ff;
+    position: relative;
+    flex: 0 0 22px;
+  }
+  .icon::before,
+  .icon::after{
+    content:"";
+    position:absolute;
+    left:50%;
+    top:50%;
+    width:12px;
+    height:2px;
+    background:#2F6BFF;
+    transform:translate(-50%,-50%);
+  }
+  .icon::after{ transform:translate(-50%,-50%) rotate(90deg); }
+  details[open] .icon::after{ opacity: 0; }
+
+  .title{
+    font-weight: 800;
+    color: #0B1F6B;
+  }
+
+  .body{
+    padding: 0 16px 16px 50px; /* 给左边icon留空 */
+    line-height: 1.9;
+    color: #111;
+  }
+  .body p{ margin: 0; }
+</style>
