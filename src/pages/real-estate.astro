@@ -1,10 +1,13 @@
 ---
-layout: ../layouts/BaseLayout.astro
-title: 地产资讯
+import BaseLayout from "../layouts/BaseLayout.astro";
+import TopBanner from "../components/TopBanner.astro";
 ---
 
-import TopBanner from "../components/TopBanner.astro";
+<BaseLayout title="地产资讯" subtitle="REAL ESTATE INFORMATION">
+  <TopBanner zh="地产资讯" en="REAL ESTATE INFORMATION" />
 
-<TopBanner zh="地产资讯" en="REAL ESTATE INFORMATION" />
-
-内容……
+  <section style="max-width:960px;margin:40px auto 80px;padding:0 20px;line-height:1.9;">
+    <h2 style="color:#0B1F4D;margin:0 0 12px;">投资信息与市场观察</h2>
+    <p>（这里放地产资讯内容：项目动态、市场分析、购房流程、常见问题等。）</p>
+  </section>
+</BaseLayout>
