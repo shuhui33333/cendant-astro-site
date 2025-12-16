@@ -1,0 +1,29 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getAllRealEstateSlugs, getRealEstatePostBySlug } from "../../lib/contentful";
+
+export async function getStaticPaths() {
+  const slugs = await getAllRealEstateSlugs();
+  return slugs.map((slug) => ({ params: { slug } }));
+}
+
+const { slug } = Astro.params;
+const post = await getRealEstatePostBySlug(slug);
+
+if (!post) {
+  throw new Error("Post not found");
+}
+
+// 简化：先把 Rich Text 当 JSON；下一步我可以帮你把它渲染成真正 HTML
+---
+
+<BaseLayout title={post.title} subtitle="REAL ESTATE">
+  <section style="max-width:1000px;margin:40px auto 80px;padding:0 20px;">
+    <h1 style="margin:0 0 10px;color:#0B1F4D;">{post.title}</h1>
+    <div style="opacity:.7;font-size:12px;margin-bottom:24px;">{new Date(post.publishDate).toLocaleDateString("zh-CN")}</div>
+
+    <pre style="white-space:pre-wrap;line-height:1.8;background:#fff;border:1px solid #E2E6F0;padding:14px;border-radius:12px;">
+{JSON.stringify(post.body, null, 2)}
+    </pre>
+  </section>
+</BaseLayout>
