@@ -12,5 +12,68 @@ import TopBanner from "../components/TopBanner.astro";
 - Tel: +61 420 616 883  
 - Email: info@cendantpgau.com 
 
-## 加入我们
-（此处可放）
+---
+import TopBanner from "../components/TopBanner.astro";
+---
+
+<TopBanner zh="联系我们" en="CONTACT US" />
+
+<form id="contact-form" class="contact">
+  <input name="name" placeholder="姓名" required />
+  <input name="email" type="email" placeholder="邮箱" required />
+  <input name="phone" placeholder="电话" />
+  <select name="topic">
+    <option value="服务项目">服务项目</option>
+    <option value="移民服务">移民服务</option>
+    <option value="地产咨询">地产咨询</option>
+  </select>
+  <textarea name="message" placeholder="留言内容" required></textarea>
+
+  <button type="submit">提交咨询</button>
+</form>
+
+<p id="result"></p>
+
+<script>
+  const form = document.getElementById("contact-form");
+  const result = document.getElementById("result");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    result.textContent = "提交中…";
+
+    const data = Object.fromEntries(new FormData(form));
+
+    const res = await fetch("/api/leads", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+
+    if (res.ok) {
+      result.textContent = "我们已收到您的信息，会尽快联系您。";
+      form.reset();
+    } else {
+      result.textContent = "提交失败，请稍后再试。";
+    }
+  });
+</script>
+
+<style>
+  .contact {
+    max-width: 420px;
+    display: grid;
+    gap: 12px;
+  }
+  input, textarea, select {
+    padding: 10px;
+    border: 1px solid #ccc;
+  }
+  button {
+    background: #0B1F6B;
+    color: #fff;
+    padding: 12px;
+    border: none;
+    cursor: pointer;
+  }
+</style>
