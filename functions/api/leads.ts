@@ -1,5 +1,12 @@
 export const onRequestPost: PagesFunction = async ({ request, env }) => {
   try {
+    return new Response("HIT_FUNCTION", {
+      status: 200,
+      headers: {
+        "Content-Type": "text/plain",
+        "X-Hit": "pages-function",
+      },
+    });
     const data = await request.json();
 
     // 基本校验
