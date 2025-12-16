@@ -29,32 +29,4 @@ body{
   font-weight:600;
 }
 
-html,
-body {
-  margin: 0;
-  padding: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont;
-}
 
-/* ===== 网站整体背景 ===== */
-body {
-  background:
-    radial-gradient(
-      circle at 20% 10%,
-      rgba(255,255,255,0.06),
-      transparent 40%
-    ),
-    radial-gradient(
-      circle at 80% 30%,
-      rgba(255,255,255,0.04),
-      transparent 45%
-    ),
-    linear-gradient(
-      180deg,
-      #0B1F4D 0%,
-      #122A66 45%,
-      #0B1F4D 100%
-    );
-
-  min-height: 100vh;
-}
