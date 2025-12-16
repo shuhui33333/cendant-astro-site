@@ -10,9 +10,7 @@ const { items = [] } = Astro.props;
         <span class="chevron" aria-hidden="true"></span>
       </summary>
 
-      <div class="content">
-        {it.body}
-      </div>
+      <div class="content" set:html={it.body}></div>
     </details>
   ))}
 </div>
