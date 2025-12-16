@@ -1,27 +1,73 @@
-export const onRequestPost = async ({ request, env }) => {
-  const data = await request.json();
+export const onRequestPost: PagesFunction = async ({ request, env }) => {
+  try {
+    const data = await request.json();
 
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${env.RESEND_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: "网站表单 <no-reply@cendantproperty.com.au>",
-      to: [env.MAIL_TO],
-      subject: "网站新咨询",
-      html: `
-        <p>姓名：${data.name}</p>
-        <p>邮箱：${data.email}</p>
-        <p>电话：${data.phone}</p>
-        <p>内容：${data.message}</p>
-      `,
-    }),
-  });
+    // 基本校验
+    if (!data?.name || !data?.email || !data?.message) {
+      return new Response(JSON.stringify({ ok: false, error: "Missing fields" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
 
-  return new Response(
-    JSON.stringify({ ok: res.ok }),
-    { status: res.ok ? 200 : 500 }
-  );
+    const mailTo = env.MAIL_TO;
+    const apiKey = env.RESEND_API_KEY;
+
+    if (!mailTo || !apiKey) {
+      return new Response(JSON.stringify({ ok: false, error: "Missing env vars" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const r = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        // 
+        from: "cendantproperty.com.au <info@cendantpgau.com>",
+        to: [mailTo],
+        subject: `网站新咨询：${data.topic || "咨询"}`,
+        html: `
+          <h2>网站新表单提交</h2>
+          <p><b>姓名：</b>${escapeHtml(data.name)}</p>
+          <p><b>邮箱：</b>${escapeHtml(data.email)}</p>
+          <p><b>电话：</b>${escapeHtml(data.phone || "-")}</p>
+          <p><b>主题：</b>${escapeHtml(data.topic || "-")}</p>
+          <p><b>留言：</b>${escapeHtml(data.message)}</p>
+        `,
+      }),
+    });
+
+    const text = await r.text();
+    if (!r.ok) {
+      return new Response(JSON.stringify({ ok: false, error: text }), {
+        status: 502,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    return new Response(JSON.stringify({ ok: true }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (e: any) {
+    return new Response(JSON.stringify({ ok: false, error: e?.message || "Unknown error" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 };
+
+// 防注入/防破坏 html
+function escapeHtml(input: string) {
+  return String(input)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
