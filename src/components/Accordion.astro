@@ -1,16 +1,21 @@
 ---
-const { items = [] } = Astro.props;
+interface Item {
+  title: string;
+  body: string; // HTML 字符串
+}
+
+const { items } = Astro.props as { items: Item[] };
 ---
 
 <div class="accordion">
-  {items.map((it) => (
-    <details class="item">
-      <summary class="header">
-        <span class="title">{it.title}</span>
-        <span class="chevron" aria-hidden="true"></span>
+  {items.map((item, index) => (
+    <details class="accordion-item">
+      <summary>
+        <span class="arrow">➜</span>
+        <span class="title">{item.title}</span>
       </summary>
 
-      <div class="content" set:html={it.body}></div>
+      <div class="content" set:html={item.body} />
     </details>
   ))}
 </div>
@@ -18,63 +23,48 @@ const { items = [] } = Astro.props;
 <style>
   .accordion {
     display: grid;
-    gap: 14px;
+    gap: 16px;
   }
 
-  .item {
-    border: 1px solid #e6e9f2;
-    border-radius: 16px;
+  .accordion-item {
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 18px 20px;
     background: #fff;
-    overflow: hidden;
   }
 
-  .header {
-    list-style: none;
-    cursor: pointer;
-    padding: 18px 22px;
+  summary {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    user-select: none;
+    gap: 14px;
+    cursor: pointer;
+    list-style: none;
+    font-size: 16px;
+    font-weight: 600;
   }
 
-  .header::-webkit-details-marker {
+  summary::-webkit-details-marker {
     display: none;
   }
 
-  .title {
-    font-size: 17px;
-    font-weight: 800;
-    color: #0B1F6B;
-  }
-
-  /* 右侧箭头（更商务） */
-  .chevron {
-    width: 10px;
-    height: 10px;
-    border-right: 2px solid #0B1F6B;
-    border-bottom: 2px solid #0B1F6B;
-    transform: rotate(45deg);
+  .arrow {
+    color: #f4a33b; /* 模板橙色箭头 */
     transition: transform 0.25s ease;
-    margin-left: 12px;
   }
 
-  details[open] .chevron {
-    transform: rotate(-135deg);
+  details[open] .arrow {
+    transform: rotate(90deg);
   }
 
   .content {
-    padding: 0 22px 22px 22px;
+    margin-top: 14px;
+    padding-left: 26px;
     line-height: 1.9;
-    color: #1a1a1a;
-  }
-
-  .content p {
-    margin: 0 0 10px;
+    color: #444;
   }
 
   .content ul {
-    margin: 8px 0 0 18px;
+    margin: 10px 0 10px 18px;
   }
 
   .content li {
