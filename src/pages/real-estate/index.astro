@@ -1,5 +1,5 @@
 ---
-import TemplateLayout from "../../layouts/TemplateLayout.astro";
+import Template20Layout from "../../layouts/Template20Layout.astro";
 import { getRealEstatePosts } from "../../lib/contentful";
 import type { RealEstatePost } from "../../lib/contentful";
 
@@ -26,7 +26,7 @@ const rentCats = [
 ];
 ---
 
-<TemplateLayout title="房产资讯">
+<Template20Layout title="房产资讯">
   <section class="page-hero">
     <div class="page-hero__inner">
       <h1 class="page-hero__title">房产资讯</h1>
@@ -223,4 +223,4 @@ const rentCats = [
       line-height:1.8;
     }
   </style>
-</TemplateLayout>
+</Template20Layout>

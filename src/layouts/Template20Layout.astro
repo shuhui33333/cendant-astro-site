@@ -1,0 +1,169 @@
+---
+import "../styles/global.css";
+
+/**
+ * Template20Layout
+ * - 使用 public/template20 下的 CSS/JS（模板资源）
+ * - 所有子页面统一外壳：Header / Footer / Slot
+ * - 你只需要在各个 page 里写 <Template20Layout> ...页面主体... </Template20Layout>
+ */
+
+const title =
+  Astro.props.title ??
+  Astro.props.frontmatter?.title ??
+  "Cendant";
+
+const showFooter = Astro.props.showFooter ?? true;
+
+// 顶部导航（你只要改这里就行）
+const nav = [
+  { href: "/", label: "首页" },
+  { href: "/real-estate", label: "房产资讯" },
+  { href: "/property-service", label: "房产服务" },
+  { href: "/loan", label: "贷款服务" },
+  { href: "/immigration", label: "移民服务" },
+  { href: "/company-profile", label: "公司概况" },
+  { href: "/contact", label: "联系我们" },
+];
+
+const pathname = Astro.url?.pathname ?? "/";
+const isActive = (href) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title} | Melbourne Cendant</title>
+
+    <!-- ===== Template20 CSS (public/template20) ===== -->
+    <link rel="stylesheet" href="/template20/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/template20/css/font-awesome.min.css" />
+    <link rel="stylesheet" href="/template20/css/owl.carousel.css" />
+    <link rel="stylesheet" href="/template20/css/owl.theme.default.css" />
+    <link rel="stylesheet" href="/template20/css/jquery.nouislider.min.css" />
+    <link rel="stylesheet" href="/template20/css/animate.min.css" />
+    <link rel="stylesheet" href="/template20/css/header-menu-responsive.css" />
+    <link rel="stylesheet" href="/template20/css/responsive.css" />
+    <link rel="stylesheet" href="/template20/css/style.css" />
+
+    <!-- 可选：你站点自己的全局样式 -->
+    <style>
+      /* 让模板的 logo/导航更贴合你现在的文字 */
+      .cendant-brand {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.1;
+        text-decoration: none;
+      }
+      .cendant-brand .zh {
+        font-size: 28px;
+        font-weight: 900;
+        letter-spacing: 1px;
+      }
+      .cendant-brand .en {
+        font-size: 12px;
+        font-weight: 800;
+        opacity: .9;
+        letter-spacing: 2px;
+      }
+
+      /* 导航 active 状态（不依赖模板 JS） */
+      .tpl-nav a.active {
+        font-weight: 900;
+      }
+
+      /* 子页面容器（让内容宽度舒服一点） */
+      .tpl-page {
+        padding: 40px 0 80px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- ===== Header（按模板风格做一个可用版本）===== -->
+    <header class="header header-3">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-12">
+
+            <nav class="navbar navbar-default">
+              <div class="navbar-header">
+                <button
+                  type="button"
+                  class="navbar-toggle collapsed"
+                  data-toggle="collapse"
+                  data-target="#cendant-navbar"
+                  aria-expanded="false"
+                >
+                  <span class="sr-only">Toggle navigation</span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+                </button>
+
+                <a class="navbar-brand cendant-brand" href="/">
+                  <span class="zh">墨尔本·胜腾国际</span>
+                  <span class="en">MELBOURNE · CENDANT</span>
+                </a>
+              </div>
+
+              <div class="collapse navbar-collapse navbar-right" id="cendant-navbar">
+                <ul class="nav navbar-nav tpl-nav">
+                  {nav.map((i) => (
+                    <li class={isActive(i.href) ? "active" : ""}>
+                      <a class={isActive(i.href) ? "active" : ""} href={i.href}>{i.label}</a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </nav>
+
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ===== 页面主体（每个子页面写在这里）===== -->
+    <main class="tpl-page">
+      <slot />
+    </main>
+
+    <!-- ===== Footer（保留模板结构，你可后续替换成模板原 footer）===== -->
+    {showFooter && (
+      <footer class="footer">
+        <div class="container">
+          <div class="row">
+            <div class="col-md-6 subscribe">
+              <h3>联系我们</h3>
+              <form action="#" method="post" onsubmit="return false;">
+                <input type="text" placeholder="输入邮箱（可选）" name="Subscribe" />
+                <a class="btn1" href="/contact">去填写表单</a>
+              </form>
+            </div>
+
+            <div class="col-md-6 copyright">
+              <ul>
+                {nav.slice(0, 6).map((i) => (
+                  <li><a href={i.href}>{i.label}</a></li>
+                ))}
+              </ul>
+              <p>© {new Date().getFullYear()} Melbourne Cendant. All rights reserved.</p>
+            </div>
+
+            <div class="clearfix"></div>
+          </div>
+        </div>
+      </footer>
+    )}
+
+    <!-- ===== Template20 JS（public 资源：必须 is:inline，避免 Astro 打包报错）===== -->
+    <script is:inline src="/template20/js/jquery-2.2.3.min.js"></script>
+    <script is:inline src="/template20/js/bootstrap.min.js"></script>
+    <script is:inline src="/template20/js/owl.carousel.min.js"></script>
+    <script is:inline src="/template20/js/jquery.nouislider.min.js"></script>
+    <script is:inline src="/template20/js/wow.min.js"></script>
+    <script is:inline src="/template20/js/custom.js"></script>
+  </body>
+</html>
