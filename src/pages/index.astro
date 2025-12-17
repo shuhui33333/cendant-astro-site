@@ -4,25 +4,42 @@ import TopBanner from "../components/TopBanner.astro";
 ---
 
 <BaseLayout title="首页">
-  <!-- 1) 首页头图 / 第一屏（对应 PDF 第 1 页感觉） -->
+  <!-- HERO：模板感大图首屏（不依赖 Bootstrap/jQuery） -->
   <section class="hero">
+    <div class="heroBg" aria-hidden="true"></div>
+
     <div class="heroInner">
-      <div class="heroText">
-        <h1>墨尔本 · 胜腾国际</h1>
-        <p class="sub">MELBOURNE · CENDANT</p>
-        <p class="desc">
+      <div class="heroCard">
+        <p class="kicker">MELBOURNE · CENDANT</p>
+        <h1 class="heroTitle">墨尔本 · 胜腾国际</h1>
+        <p class="heroDesc">
           专注澳洲房产投资、项目开发管理、物业租赁与移民留学咨询等一站式服务。
         </p>
 
         <div class="actions">
           <a class="btnPrimary" href="/contact">立即咨询</a>
-          <a class="btnGhost" href="/#services">查看服务项目</a>
+          <a class="btnGhost" href="#services">查看服务项目</a>
+        </div>
+
+        <div class="heroMeta">
+          <div class="metaItem">
+            <div class="metaNum">15+</div>
+            <div class="metaLabel">行业经验</div>
+          </div>
+          <div class="metaItem">
+            <div class="metaNum">1+</div>
+            <div class="metaLabel">亿澳元管理规模</div>
+          </div>
+          <div class="metaItem">
+            <div class="metaNum">Docklands</div>
+            <div class="metaLabel">总部区域</div>
+          </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- 2) 服务项目（把原 services 页面内容搬到这里） -->
+  <!-- 服务项目：把 services 子页内容并入首页 -->
   <section id="services" class="section">
     <TopBanner zh="服务项目" en="SERVICE AVAILABLE" />
 
@@ -30,76 +47,160 @@ import TopBanner from "../components/TopBanner.astro";
       <a class="card" href="/real-estate">
         <h3>房地产买卖</h3>
         <p>项目推荐、选房策略、谈判签约、交割协助。</p>
+        <span class="cardLink">查看详情 →</span>
       </a>
 
       <a class="card" href="/real-estate">
         <h3>房地产开发</h3>
         <p>项目评估、开发管理、资源对接、风控与交付。</p>
+        <span class="cardLink">查看详情 →</span>
       </a>
 
       <a class="card" href="/real-estate">
         <h3>物业租赁</h3>
         <p>招租、租客筛选、租约管理、长期维护服务。</p>
+        <span class="cardLink">查看详情 →</span>
       </a>
 
       <a class="card" href="/immigration">
         <h3>移民服务</h3>
-        <p>雇主担保、商业投资类移民路径评估与材料支持。</p>
+        <p>雇主担保、商业投资类路径评估与材料支持。</p>
+        <span class="cardLink">查看详情 →</span>
       </a>
 
       <a class="card" href="/contact">
         <h3>联系我们</h3>
         <p>预约咨询、合作洽谈、项目对接与资料获取。</p>
+        <span class="cardLink">立即联系 →</span>
       </a>
     </div>
   </section>
 
-  
+  <!-- 公司简介（更商业化排版） -->
+  <section class="section">
+    <div class="twoCol">
+      <div class="box">
+        <h2 class="h2">高端投资服务与本地资源整合</h2>
+        <p class="p">
+          我们以“稳健、合规、可落地”的投资逻辑为核心，面向澳洲本地与海外客户，提供从
+          项目评估、交易执行到资产管理的一体化服务，并为家庭与企业客户提供配套的移民与留学咨询支持。
+        </p>
+        <ul class="list">
+          <li>本地项目资源：开发商 / 代理 / 律师 / 会计 / 贷款经纪协作</li>
+          <li>交易闭环：尽调、谈判、合同、交割、税务与持有策略</li>
+          <li>资产管理：租赁管理、维护协调、收益优化与长期规划</li>
+        </ul>
+      </div>
+
+      <div class="box soft">
+        <h3 class="h3">快速入口</h3>
+        <div class="quick">
+          <a class="quickItem" href="/real-estate">地产资讯</a>
+          <a class="quickItem" href="/company-profile">公司概况</a>
+          <a class="quickItem" href="/immigration">移民服务</a>
+          <a class="quickItem" href="/contact">在线咨询</a>
+        </div>
+
+        <div class="contactMini">
+          <div class="miniTitle">联系方式</div>
+          <div class="miniLine">Tel: +61 420 616 883</div>
+          <div class="miniLine">Email: info@cendantpgau.com</div>
+          <div class="miniLine">Docklands VIC 3008</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 页脚 CTA -->
+  <section class="cta">
+    <div class="ctaInner">
+      <div>
+        <div class="ctaTitle">准备开始您的项目咨询？</div>
+        <div class="ctaDesc">我们会在工作时间内尽快回复，提供清晰的下一步建议。</div>
+      </div>
+      <a class="ctaBtn" href="/contact">去填写表单</a>
+    </div>
+  </section>
 
   <style>
-    /* 统一色系（你前面想换深蓝：#0B1F4D） */
+    /* ===== 颜色体系（深蓝更接近你PDF基调） ===== */
     :global(:root){
-      --brand-primary:#0B1F4D;
-      --brand-bg-soft:#F3F6FB;
-      --brand-border:#E2E6F0;
-      --text:#0E1A2B;
+      --brand-primary:#091a5d;       /* 主深蓝 */
+      --brand-primary-2:#0b1f6b;     /* 辅深蓝 */
+      --bg:#ffffff;
+      --bg-soft:#f3f6fb;
+      --border:#e2e6f0;
+      --text:#0e1a2b;
     }
 
+    /* ===== HERO ===== */
     .hero{
-      background: linear-gradient(180deg, var(--brand-bg-soft) 0%, #fff 360px);
-      padding: 70px 0 40px;
+      position: relative;
+      padding: 56px 0 34px;
+      overflow: hidden;
+      background: linear-gradient(180deg, var(--bg-soft) 0%, #fff 420px);
     }
+
+    /* 背景：你后续可以换成你喜欢的背景图/背景svg */
+    .heroBg{
+      position:absolute;
+      inset:0;
+      background:
+        radial-gradient(1200px 420px at 10% 0%, rgba(9,26,93,.08), transparent 60%),
+        radial-gradient(900px 380px at 85% 10%, rgba(11,31,107,.10), transparent 55%),
+        radial-gradient(700px 320px at 50% 90%, rgba(9,26,93,.06), transparent 60%);
+      pointer-events:none;
+    }
+
     .heroInner{
       max-width: 1100px;
       margin: 0 auto;
       padding: 0 20px;
+      position: relative;
     }
-    .heroText h1{
-      margin:0;
+
+    .heroCard{
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      background: rgba(255,255,255,.85);
+      backdrop-filter: blur(6px);
+      padding: 26px 26px 18px;
+      box-shadow: 0 18px 50px rgba(10,20,60,.08);
+    }
+
+    .kicker{
+      margin: 0 0 8px;
+      letter-spacing: 2px;
+      color: var(--brand-primary);
+      opacity: .7;
+      font-weight: 800;
+      font-size: 12px;
+    }
+
+    .heroTitle{
+      margin: 0 0 10px;
       font-size: 44px;
       letter-spacing: .5px;
       color: var(--brand-primary);
+      font-weight: 900;
     }
-    .sub{
-      margin: 8px 0 18px;
-      letter-spacing: 2px;
-      color: var(--brand-primary);
-      opacity: .75;
-      font-weight: 700;
-    }
-    .desc{
-      max-width: 680px;
+
+    .heroDesc{
+      max-width: 780px;
       line-height: 1.9;
       color: var(--text);
       opacity: .9;
-      margin: 0 0 22px;
+      margin: 0 0 18px;
       font-size: 16px;
     }
+
     .actions{
       display:flex;
       gap: 12px;
       flex-wrap: wrap;
+      margin-bottom: 18px;
     }
+
     .btnPrimary{
       display:inline-block;
       padding: 12px 16px;
@@ -107,45 +208,70 @@ import TopBanner from "../components/TopBanner.astro";
       background: var(--brand-primary);
       color:#fff;
       text-decoration:none;
-      font-weight:800;
+      font-weight:900;
     }
     .btnGhost{
       display:inline-block;
       padding: 12px 16px;
       border-radius: 12px;
-      border: 1px solid var(--brand-border);
+      border: 1px solid var(--border);
       color: var(--brand-primary);
       text-decoration:none;
-      font-weight:800;
+      font-weight:900;
       background:#fff;
     }
 
+    .heroMeta{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap: 12px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+    .metaItem{
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: #fff;
+      border: 1px solid var(--border);
+    }
+    .metaNum{
+      font-weight: 900;
+      color: var(--brand-primary);
+      font-size: 18px;
+      margin-bottom: 4px;
+    }
+    .metaLabel{
+      font-size: 12px;
+      color: var(--text);
+      opacity: .75;
+      letter-spacing: .2px;
+    }
+
+    /* ===== 通用 section ===== */
     .section{
       max-width: 1100px;
-      margin: 36px auto 70px;
+      margin: 34px auto 70px;
       padding: 0 20px;
     }
 
+    /* ===== 服务卡片 ===== */
     .cards{
       margin-top: 18px;
       display:grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 14px;
     }
-    @media (max-width: 900px){
-      .cards{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .heroText h1{ font-size: 34px; }
-    }
-    @media (max-width: 520px){
-      .cards{ grid-template-columns: 1fr; }
-    }
-
     .card{
-      border: 1px solid var(--brand-border);
-      border-radius: 16px;
-      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 18px;
       background:#fff;
       text-decoration:none;
+      transition: transform .15s ease, box-shadow .15s ease;
+    }
+    .card:hover{
+      transform: translateY(-2px);
+      box-shadow: 0 16px 40px rgba(10,20,60,.08);
     }
     .card h3{
       margin: 0 0 10px;
@@ -154,13 +280,20 @@ import TopBanner from "../components/TopBanner.astro";
       font-weight: 900;
     }
     .card p{
-      margin: 0;
+      margin: 0 0 10px;
       color: var(--text);
       opacity: .85;
       line-height: 1.8;
       font-size: 14px;
     }
+    .cardLink{
+      color: var(--brand-primary);
+      font-weight: 900;
+      font-size: 13px;
+      opacity: .9;
+    }
 
+    /* ===== 两列内容 ===== */
     .twoCol{
       margin-top: 18px;
       display:grid;
@@ -168,17 +301,129 @@ import TopBanner from "../components/TopBanner.astro";
       gap: 16px;
       align-items:start;
     }
-    @media (max-width: 900px){
-      .twoCol{ grid-template-columns: 1fr; }
-    }
     .box{
-      border: 1px solid var(--brand-border);
-      border-radius: 16px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
       background: #fff;
-      padding: 16px;
+      padding: 18px;
     }
-    .h3{ margin:0 0 10px; color:var(--brand-primary); font-weight: 900; }
-    .p{ margin:0 0 12px; line-height:1.9; color:var(--text); opacity:.9; }
-    .list{ margin:0; padding-left: 18px; line-height: 1.9; color:var(--text); opacity:.9; }
+    .box.soft{
+      background: linear-gradient(180deg, #fff 0%, rgba(243,246,251,.9) 100%);
+    }
+    .h2{
+      margin: 0 0 10px;
+      color: var(--brand-primary);
+      font-weight: 900;
+      letter-spacing: .3px;
+      font-size: 20px;
+    }
+    .h3{
+      margin: 0 0 10px;
+      color: var(--brand-primary);
+      font-weight: 900;
+      letter-spacing: .3px;
+      font-size: 16px;
+    }
+    .p{
+      margin: 0 0 12px;
+      line-height: 1.9;
+      color: var(--text);
+      opacity: .9;
+    }
+    .list{
+      margin:0;
+      padding-left: 18px;
+      line-height: 1.9;
+      color: var(--text);
+      opacity:.9;
+    }
+
+    .quick{
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 10px;
+      margin: 12px 0 16px;
+    }
+    .quickItem{
+      display:block;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #fff;
+      text-decoration:none;
+      color: var(--brand-primary);
+      font-weight: 900;
+      font-size: 13px;
+    }
+
+    .contactMini{
+      border-top: 1px solid var(--border);
+      padding-top: 14px;
+      margin-top: 6px;
+    }
+    .miniTitle{
+      font-weight: 900;
+      color: var(--brand-primary);
+      margin-bottom: 8px;
+    }
+    .miniLine{
+      font-size: 13px;
+      color: var(--text);
+      opacity: .85;
+      line-height: 1.8;
+    }
+
+    /* ===== CTA ===== */
+    .cta{
+      padding: 34px 0 70px;
+      background: linear-gradient(180deg, #fff 0%, var(--bg-soft) 100%);
+    }
+    .ctaInner{
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 20px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: #fff;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 14px;
+      padding: 18px 18px;
+    }
+    .ctaTitle{
+      font-weight: 900;
+      color: var(--brand-primary);
+      font-size: 16px;
+      margin-bottom: 6px;
+    }
+    .ctaDesc{
+      font-size: 13px;
+      color: var(--text);
+      opacity: .8;
+      line-height: 1.8;
+    }
+    .ctaBtn{
+      display:inline-block;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: var(--brand-primary);
+      color:#fff;
+      text-decoration:none;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    /* ===== 响应式 ===== */
+    @media (max-width: 900px){
+      .cards{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .twoCol{ grid-template-columns: 1fr; }
+      .heroTitle{ font-size: 34px; }
+      .heroMeta{ grid-template-columns: 1fr; }
+      .ctaInner{ flex-direction: column; align-items: flex-start; }
+    }
+    @media (max-width: 520px){
+      .cards{ grid-template-columns: 1fr; }
+    }
   </style>
 </BaseLayout>
