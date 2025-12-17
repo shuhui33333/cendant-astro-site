@@ -1,42 +1,71 @@
-// src/lib/contentful.ts
-export type RealEstatePost = {
-  title: string;
-  slug: string;
-  publishDate?: string;
-  summary?: string;
-  category?: string;
-};
-
 const SPACE = import.meta.env.CONTENTFUL_SPACE_ID;
 const TOKEN = import.meta.env.CONTENTFUL_DELIVERY_TOKEN;
 
-// Contentful Delivery API base
 const BASE = `https://cdn.contentful.com/spaces/${SPACE}`;
 
 async function cfFetch(path: string) {
   const res = await fetch(`${BASE}${path}`, {
-    headers: { Authorization: `Bearer ${TOKEN}` },
+    headers: {
+      Authorization: `Bearer ${TOKEN}`,
+    },
   });
 
   if (!res.ok) {
-    throw new Error(`Contentful error ${res.status}: ${await res.text()}`);
+    const text = await res.text();
+    throw new Error(`Contentful ${res.status}: ${text}`);
   }
+
   return res.json();
 }
 
-/** 获取地产资讯列表 */
-export async function getRealEstatePosts(limit: number = 20): Promise<RealEstatePost[]> {
+/**
+ * 获取地产资讯列表
+ */
+export async function getRealEstatePosts(limit = 20) {
   const data = await cfFetch(
     `/entries?content_type=realEstatePost&order=-fields.publishDate&limit=${limit}`
   );
 
-  const items: any[] = Array.isArray(data?.items) ? data.items : [];
+  return data.items.map((it: any) => ({
+    title: it.fields.title,
+    slug: it.fields.slug,
+    publishDate: it.fields.publishDate,
+    summary: it.fields.summary ?? "",
+    category: it.fields.category ?? "",
+  }));
+}
 
-  return items.map((it) => ({
-    title: it?.fields?.title ?? "",
-    slug: it?.fields?.slug ?? "",
-    publishDate: it?.fields?.publishDate,
-    summary: it?.fields?.summary,
-    category: it?.fields?.category,
-  })).filter((x) => x.slug && x.title);
+/**
+ * 根据 slug 获取单篇地产资讯
+ */
+export async function getRealEstatePostBySlug(slug: string) {
+  const data = await cfFetch(
+    `/entries?content_type=realEstatePost&fields.slug=${encodeURIComponent(
+      slug
+    )}&limit=1`
+  );
+
+  const it = data.items?.[0];
+  if (!it) return null;
+
+  return {
+    title: it.fields.title,
+    slug: it.fields.slug,
+    publishDate: it.fields.publishDate,
+    category: it.fields.category ?? "",
+    body: it.fields.body ?? "", // ⚠️ 注意这里
+  };
+}
+
+/**
+ * 给 [slug].astro 用的
+ */
+export async function getAllRealEstateSlugs() {
+  const data = await cfFetch(
+    `/entries?content_type=realEstatePost&select=fields.slug&limit=1000`
+  );
+
+  return data.items
+    .map((it: any) => it.fields.slug)
+    .filter(Boolean);
 }
