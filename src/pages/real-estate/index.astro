@@ -4,7 +4,7 @@ import { getRealEstatePosts } from "../../lib/contentful";
 
 const posts = await getRealEstatePosts(30);
 
-// 售卖分类（你已经创建了这些文件）
+// 售卖分类（确保这些文件在 src/pages/real-estate/sale/ 下存在）
 const saleCats = [
   { href: "/real-estate/sale/apartment", label: "公寓" },
   { href: "/real-estate/sale/second-hand", label: "二手房" },
@@ -16,7 +16,7 @@ const saleCats = [
   { href: "/real-estate/sale/hotel", label: "酒店" },
 ];
 
-// 出租分类（你已经创建了这些文件）
+// 出租分类（确保这些文件在 src/pages/real-estate/rent/ 下存在）
 const rentCats = [
   { href: "/real-estate/rent/apartment", label: "公寓" },
   { href: "/real-estate/rent/townhouse", label: "联排别墅" },
@@ -25,104 +25,201 @@ const rentCats = [
 ];
 ---
 
-<TemplateLayout title="地产资讯" subtitle="REAL ESTATE">
-  <section class="re-block">
-    <h3 class="re-h3">房产售卖资讯</h3>
-    <div class="re-choice-list">
+<TemplateLayout title="房产资讯">
+  <section class="page-hero">
+    <div class="page-hero__inner">
+      <h1 class="page-hero__title">房产资讯</h1>
+      <p class="page-hero__sub">REAL ESTATE</p>
+    </div>
+  </section>
+
+  <!-- 分类入口 -->
+  <section class="block">
+    <h2 class="block-title">房产售卖资讯</h2>
+    <div class="choice-list">
       {saleCats.map((c) => (
-        <a class="re-choice" href={c.href}>{c.label}</a>
+        <a class="choice" href={c.href}>
+          <span class="choice__dot" aria-hidden="true"></span>
+          <span class="choice__label">{c.label}</span>
+        </a>
       ))}
     </div>
   </section>
 
-  <section class="re-block">
-    <h3 class="re-h3">房产出租资讯</h3>
-    <div class="re-choice-list">
+  <section class="block">
+    <h2 class="block-title">房产出租资讯</h2>
+    <div class="choice-list">
       {rentCats.map((c) => (
-        <a class="re-choice" href={c.href}>{c.label}</a>
+        <a class="choice" href={c.href}>
+          <span class="choice__dot" aria-hidden="true"></span>
+          <span class="choice__label">{c.label}</span>
+        </a>
       ))}
     </div>
   </section>
 
-  <section class="re-block">
-    <div class="re-head-row">
-      <h3 class="re-h3" style="margin:0;">最新发布</h3>
-      <a class="re-more" href="/real-estate">刷新列表</a>
+  <!-- Contentful 最新文章 -->
+  <section class="block">
+    <div class="head-row">
+      <h2 class="block-title" style="margin:0;">最新发布</h2>
+      <span class="hint">后台更新后会自动同步</span>
     </div>
 
-    {posts && posts.length ? (
-      <div class="re-post-list">
+    {posts?.length ? (
+      <div class="post-list">
         {posts.map((p) => (
-          <a class="re-post-card" href={`/real-estate/${p.slug}`}>
-            <div class="re-post-top">
-              <div class="re-tag">{p.category ?? "资讯"}</div>
-              <div class="re-date">
+          <a class="post-card" href={`/real-estate/${p.slug}`}>
+            <div class="post-top">
+              <div class="tag">{p.category ?? "资讯"}</div>
+              <div class="date">
                 {p.publishDate ? new Date(p.publishDate).toLocaleDateString("zh-CN") : ""}
               </div>
             </div>
-            <div class="re-title">{p.title}</div>
-            {p.summary ? <div class="re-summary">{p.summary}</div> : null}
+
+            <div class="title">{p.title}</div>
+            {p.summary ? <div class="summary">{p.summary}</div> : null}
           </a>
         ))}
       </div>
     ) : (
-      <div class="re-empty">
-        暂无内容（请先在 Contentful 创建内容并发布，或检查 content_type / 字段名是否一致）。
+      <div class="empty">
+        <b>目前还没有文章。</b>
+        <div>请在 Contentful 里新建 realEstatePost，并填写 slug，然后发布（Published）。</div>
       </div>
     )}
   </section>
 
   <style>
-    .re-block{ margin: 22px 0 34px; }
-    .re-h3{ font-weight: 800; margin: 0 0 14px; }
-    .re-head-row{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px; }
+    .page-hero{
+      background: #0B1F4D;
+      padding: 64px 0;
+      margin-bottom: 24px;
+    }
+    .page-hero__inner{
+      max-width: 1100px;
+      padding: 0 20px;
+      margin: 0 auto;
+      text-align:center;
+      color:#fff;
+    }
+    .page-hero__title{
+      margin:0;
+      font-size: 44px;
+      font-weight: 900;
+      letter-spacing: 1px;
+    }
+    .page-hero__sub{
+      margin: 14px 0 0;
+      letter-spacing: 4px;
+      opacity: .85;
+      font-weight: 700;
+    }
 
-    .re-more{ text-decoration:none; font-weight:700; opacity:.75; }
-    .re-more:hover{ opacity:1; }
+    .block{
+      max-width: 1100px;
+      padding: 0 20px;
+      margin: 26px auto;
+    }
+    .block-title{
+      margin:0 0 14px;
+      font-size: 20px;
+      font-weight: 900;
+      color:#0B1F4D;
+    }
 
-    .re-choice-list{
+    .choice-list{
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+    @media (max-width: 900px){ .choice-list{ grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 520px){ .choice-list{ grid-template-columns: 1fr; } }
+
+    .choice{
       display:flex;
-      flex-wrap:wrap;
-      gap:12px;
-    }
-    .re-choice{
-      display:inline-block;
-      padding:10px 14px;
-      border:1px solid rgba(0,0,0,.12);
-      border-radius:999px;
-      text-decoration:none;
-      font-weight:700;
+      gap:10px;
+      align-items:center;
+      padding: 14px 16px;
+      border: 1px solid #E2E6F0;
+      border-radius: 16px;
       background:#fff;
+      text-decoration:none;
+      color:#0E1A2B;
+      transition: .15s ease;
+    }
+    .choice:hover{ transform: translateY(-1px); border-color: #cfd6ea; }
+    .choice__dot{
+      width:10px;height:10px;border-radius:999px;
+      background:#0B1F4D;
+      opacity:.8;
+      flex: 0 0 auto;
+    }
+    .choice__label{
+      font-weight:800;
+      letter-spacing:.3px;
     }
 
-    .re-post-list{
+    .head-row{
+      display:flex;
+      align-items:baseline;
+      justify-content:space-between;
+      gap:14px;
+      margin-bottom: 12px;
+    }
+    .hint{ font-size:12px; opacity:.7; }
+
+    .post-list{
       display:grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 14px;
     }
-    @media (max-width: 860px){
-      .re-post-list{ grid-template-columns: 1fr; }
-    }
-    .re-post-card{
+    .post-card{
       display:block;
-      padding:16px;
-      border:1px solid rgba(0,0,0,.12);
-      border-radius:16px;
-      text-decoration:none;
+      padding: 16px;
+      border: 1px solid #E2E6F0;
+      border-radius: 16px;
       background:#fff;
+      text-decoration:none;
     }
-    .re-post-top{ display:flex; justify-content:space-between; gap:10px; margin-bottom:10px; }
-    .re-tag{
-      display:inline-flex;
+    .post-top{
+      display:flex;
       align-items:center;
-      padding:6px 10px;
-      border-radius:999px;
-      background: rgba(11,31,107,.08);
-      font-weight:800;
+      justify-content:space-between;
+      gap: 10px;
+      margin-bottom: 10px;
     }
-    .re-date{ opacity:.7; font-size:12px; margin-top:4px; }
-    .re-title{ font-weight:900; font-size:16px; margin-bottom:8px; }
-    .re-summary{ opacity:.85; line-height:1.8; }
-    .re-empty{ padding:14px; border:1px dashed rgba(0,0,0,.18); border-radius:16px; opacity:.8; background:#fff; }
+    .tag{
+      font-size:12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background:#F3F6FB;
+      color:#0B1F4D;
+      font-weight: 800;
+    }
+    .date{
+      font-size:12px;
+      opacity:.7;
+    }
+    .title{
+      font-size:18px;
+      font-weight: 900;
+      color:#0B1F4D;
+      margin-bottom: 8px;
+      line-height: 1.4;
+    }
+    .summary{
+      color:#0E1A2B;
+      opacity:.88;
+      line-height: 1.8;
+      font-size: 14px;
+    }
+
+    .empty{
+      border: 1px dashed #cfd6ea;
+      border-radius: 16px;
+      padding: 16px;
+      background: #fff;
+      color:#0E1A2B;
+      line-height:1.8;
+    }
   </style>
 </TemplateLayout>
