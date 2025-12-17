@@ -1,226 +1,185 @@
 ---
 import Template20Layout from "../../layouts/Template20Layout.astro";
 import { getRealEstatePosts } from "../../lib/contentful";
-import type { RealEstatePost } from "../../lib/contentful";
 
-const posts = await getRealEstatePosts(30);
+/**
+ * 这里是房产资讯首页
+ * 只展示分类入口 + 最新发布
+ */
+const posts = await getRealEstatePosts(6);
 
-// 售卖分类（确保这些文件在 src/pages/real-estate/sale/ 下存在）
+/**
+ * 出售分类
+ */
 const saleCats = [
-  { href: "/real-estate/sale/apartment", label: "公寓" },
-  { href: "/real-estate/sale/second-hand", label: "二手房" },
-  { href: "/real-estate/sale/townhouse", label: "联排别墅" },
-  { href: "/real-estate/sale/land-villa", label: "土地别墅" },
-  { href: "/real-estate/sale/commercial", label: "商业办公楼" },
-  { href: "/real-estate/sale/land", label: "土地开发" },
-  { href: "/real-estate/sale/farm", label: "农场" },
-  { href: "/real-estate/sale/hotel", label: "酒店" },
+  { label: "公寓", href: "/real-estate/sale/apartment" },
+  { label: "二手房", href: "/real-estate/sale/second-hand" },
+  { label: "联排别墅", href: "/real-estate/sale/townhouse" },
+  { label: "土地别墅", href: "/real-estate/sale/land-villa" },
+  { label: "商业办公楼", href: "/real-estate/sale/commercial" },
+  { label: "土地开发", href: "/real-estate/sale/land" },
+  { label: "农场", href: "/real-estate/sale/farm" },
+  { label: "酒店", href: "/real-estate/sale/hotel" },
 ];
 
-// 出租分类（确保这些文件在 src/pages/real-estate/rent/ 下存在）
+/**
+ * 出租分类
+ */
 const rentCats = [
-  { href: "/real-estate/rent/apartment", label: "公寓" },
-  { href: "/real-estate/rent/townhouse", label: "联排别墅" },
-  { href: "/real-estate/rent/land-villa", label: "土地别墅" },
-  { href: "/real-estate/rent/commercial", label: "商业办公" },
+  { label: "公寓", href: "/real-estate/rent/apartment" },
+  { label: "联排别墅", href: "/real-estate/rent/townhouse" },
+  { label: "土地别墅", href: "/real-estate/rent/land-villa" },
+  { label: "商业办公", href: "/real-estate/rent/commercial" },
 ];
 ---
 
-<Template20Layout title="房产资讯">
-  <section class="page-hero">
-    <div class="page-hero__inner">
-      <h1 class="page-hero__title">房产资讯</h1>
-      <p class="page-hero__sub">REAL ESTATE</p>
-    </div>
-  </section>
+<Template20Layout title="房产资讯" subtitle="REAL ESTATE">
 
-  <!-- 分类入口 -->
-  <section class="block">
-    <h2 class="block-title">房产售卖资讯</h2>
-    <div class="choice-list">
-      {saleCats.map((c) => (
-        <a class="choice" href={c.href}>
-          <span class="choice__dot" aria-hidden="true"></span>
-          <span class="choice__label">{c.label}</span>
-        </a>
-      ))}
-    </div>
-  </section>
+  <!-- ===============================
+       分类入口（Template20 Service 风格）
+  ================================ -->
+  <section class="service-area section-padding">
+    <div class="container">
 
-  <section class="block">
-    <h2 class="block-title">房产出租资讯</h2>
-    <div class="choice-list">
-      {rentCats.map((c) => (
-        <a class="choice" href={c.href}>
-          <span class="choice__dot" aria-hidden="true"></span>
-          <span class="choice__label">{c.label}</span>
-        </a>
-      ))}
-    </div>
-  </section>
+      <!-- 出售 -->
+      <div class="section-title">
+        <h2>房产售卖资讯</h2>
+      </div>
 
-  <!-- Contentful 最新文章 -->
-  <section class="block">
-    <div class="head-row">
-      <h2 class="block-title" style="margin:0;">最新发布</h2>
-      <span class="hint">后台更新后会自动同步</span>
-    </div>
-
-    {posts?.length ? (
-      <div class="post-list">
-        {posts.map((p) => (
-          <a class="post-card" href={`/real-estate/${p.slug}`}>
-            <div class="post-top">
-              <div class="tag">{p.category ?? "资讯"}</div>
-              <div class="date">
-                {p.publishDate ? new Date(p.publishDate).toLocaleDateString("zh-CN") : ""}
-              </div>
-            </div>
-
-            <div class="title">{p.title}</div>
-            {p.summary ? <div class="summary">{p.summary}</div> : null}
+      <div class="service-grid">
+        {saleCats.map((c) => (
+          <a class="service-card" href={c.href}>
+            <span class="service-dot"></span>
+            <h4>{c.label}</h4>
           </a>
         ))}
       </div>
-    ) : (
-      <div class="empty">
-        <b>目前还没有文章。</b>
-        <div>请在 Contentful 里新建 realEstatePost，并填写 slug，然后发布（Published）。</div>
+
+      <!-- 出租 -->
+      <div class="section-title mt-40">
+        <h2>房产出租资讯</h2>
       </div>
-    )}
+
+      <div class="service-grid">
+        {rentCats.map((c) => (
+          <a class="service-card" href={c.href}>
+            <span class="service-dot"></span>
+            <h4>{c.label}</h4>
+          </a>
+        ))}
+      </div>
+
+    </div>
   </section>
 
-  <style>
-    .page-hero{
-      background: #0B1F4D;
-      padding: 64px 0;
-      margin-bottom: 24px;
-    }
-    .page-hero__inner{
-      max-width: 1100px;
-      padding: 0 20px;
-      margin: 0 auto;
-      text-align:center;
-      color:#fff;
-    }
-    .page-hero__title{
-      margin:0;
-      font-size: 44px;
-      font-weight: 900;
-      letter-spacing: 1px;
-    }
-    .page-hero__sub{
-      margin: 14px 0 0;
-      letter-spacing: 4px;
-      opacity: .85;
-      font-weight: 700;
-    }
+  <!-- ===============================
+       最新发布（来自 Contentful）
+  ================================ -->
+  <section class="blog-area section-padding gray-bg">
+    <div class="container">
 
-    .block{
-      max-width: 1100px;
-      padding: 0 20px;
-      margin: 26px auto;
-    }
-    .block-title{
-      margin:0 0 14px;
-      font-size: 20px;
-      font-weight: 900;
-      color:#0B1F4D;
-    }
+      <div class="section-title">
+        <h2>最新发布</h2>
+        <p>后台更新后会自动同步</p>
+      </div>
 
-    .choice-list{
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 12px;
-    }
-    @media (max-width: 900px){ .choice-list{ grid-template-columns: repeat(2, 1fr); } }
-    @media (max-width: 520px){ .choice-list{ grid-template-columns: 1fr; } }
+      {posts && posts.length > 0 ? (
+        <div class="blog-grid">
+          {posts.map((p) => (
+            <a class="blog-card" href={`/real-estate/${p.slug}`}>
+              <div class="blog-content">
+                <span class="blog-tag">{p.category ?? "资讯"}</span>
+                <h4>{p.title}</h4>
+                {p.publishDate && (
+                  <p class="blog-date">
+                    {new Date(p.publishDate).toLocaleDateString("zh-CN")}
+                  </p>
+                )}
+              </div>
+            </a>
+          ))}
+        </div>
+      ) : (
+        <div class="empty">
+          <p><strong>目前还没有文章。</strong></p>
+          <p>请在 Contentful 中新建 <code>realEstatePost</code> 并发布。</p>
+        </div>
+      )}
 
-    .choice{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      padding: 14px 16px;
-      border: 1px solid #E2E6F0;
-      border-radius: 16px;
-      background:#fff;
-      text-decoration:none;
-      color:#0E1A2B;
-      transition: .15s ease;
-    }
-    .choice:hover{ transform: translateY(-1px); border-color: #cfd6ea; }
-    .choice__dot{
-      width:10px;height:10px;border-radius:999px;
-      background:#0B1F4D;
-      opacity:.8;
-      flex: 0 0 auto;
-    }
-    .choice__label{
-      font-weight:800;
-      letter-spacing:.3px;
-    }
+    </div>
+  </section>
 
-    .head-row{
-      display:flex;
-      align-items:baseline;
-      justify-content:space-between;
-      gap:14px;
-      margin-bottom: 12px;
-    }
-    .hint{ font-size:12px; opacity:.7; }
-
-    .post-list{
-      display:grid;
-      gap: 14px;
-    }
-    .post-card{
-      display:block;
-      padding: 16px;
-      border: 1px solid #E2E6F0;
-      border-radius: 16px;
-      background:#fff;
-      text-decoration:none;
-    }
-    .post-top{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-    .tag{
-      font-size:12px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      background:#F3F6FB;
-      color:#0B1F4D;
-      font-weight: 800;
-    }
-    .date{
-      font-size:12px;
-      opacity:.7;
-    }
-    .title{
-      font-size:18px;
-      font-weight: 900;
-      color:#0B1F4D;
-      margin-bottom: 8px;
-      line-height: 1.4;
-    }
-    .summary{
-      color:#0E1A2B;
-      opacity:.88;
-      line-height: 1.8;
-      font-size: 14px;
-    }
-
-    .empty{
-      border: 1px dashed #cfd6ea;
-      border-radius: 16px;
-      padding: 16px;
-      background: #fff;
-      color:#0E1A2B;
-      line-height:1.8;
-    }
-  </style>
 </Template20Layout>
+
+<style>
+/* ===== Service 子页面风格补充（轻量，不冲突模板） ===== */
+
+.service-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.service-card {
+  display: block;
+  padding: 22px;
+  border: 1px solid #e5e5e5;
+  border-radius: 10px;
+  background: #fff;
+  transition: all .25s ease;
+}
+
+.service-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 30px rgba(0,0,0,.08);
+}
+
+.service-card h4 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.service-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: #1e3a8a;
+  border-radius: 50%;
+  margin-bottom: 12px;
+}
+
+/* Blog */
+.blog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.blog-card {
+  display: block;
+  padding: 24px;
+  background: #fff;
+  border-radius: 10px;
+  border: 1px solid #eee;
+}
+
+.blog-tag {
+  font-size: 12px;
+  color: #666;
+}
+
+.blog-date {
+  font-size: 12px;
+  color: #999;
+  margin-top: 6px;
+}
+
+.empty {
+  padding: 40px;
+  text-align: center;
+  background: #fff;
+  border-radius: 10px;
+  border: 1px dashed #ccc;
+}
+</style>
