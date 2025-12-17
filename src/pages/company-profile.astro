@@ -1,12 +1,12 @@
 ---
-import BaseLayout from "../layouts/BaseLayout.astro";
+import TemplateLayout from "../layouts/TemplateLayout.astro";
 import TopBanner from "../components/TopBanner.astro";
 import CompanyProfileSection from "../components/CompanyProfileSection.astro";
 ---
 
-<BaseLayout title="公司概况" subtitle="COMPANY PROFILE">
+<TemplateLayout title="公司概况" subtitle="COMPANY PROFILE">
   <TopBanner zh="公司概况" en="COMPANY PROFILE" />
   <div style="max-width:1100px;margin:40px auto 80px;padding:0 20px;">
     <CompanyProfileSection />
   </div>
-</BaseLayout>
+</TemplateLayout>
