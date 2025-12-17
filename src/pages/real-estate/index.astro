@@ -1,244 +1,455 @@
 ---
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import TopBanner from "../../components/TopBanner.astro";
-import { getRealEstatePosts } from "../../lib/contentful";
-
-// 拉最新资讯（不分 sale/rent）
-const latest = await getRealEstatePosts({ limit: 12 });
-const formatDate = (d?: string) => {
-  if (!d) return "";
-  try {
-    return new Date(d).toLocaleDateString("zh-CN");
-  } catch {
-    return d;
-  }
-};
-
-const saleCats = [
-  { href: "/real-estate/sale/apartment", zh: "公寓", en: "APARTMENT" },
-  { href: "/real-estate/sale/second-hand", zh: "二手房", en: "SECOND-HAND" },
-  { href: "/real-estate/sale/townhouse", zh: "联排别墅", en: "TOWNHOUSE" },
-  { href: "/real-estate/sale/land-villa", zh: "土地别墅", en: "LAND VILLA" },
-  { href: "/real-estate/sale/commercial", zh: "商业办公楼", en: "COMMERCIAL" },
-  { href: "/real-estate/sale/land", zh: "土地开发", en: "LAND" },
-  { href: "/real-estate/sale/farm", zh: "农场", en: "FARM" },
-  { href: "/real-estate/sale/hotel", zh: "酒店", en: "HOTEL" },
+const nav = [
+  { href: "/", label: "首页", hover: "Home", isScroll: false },
+  { href: "/company-profile", label: "公司概况", hover: "About", isScroll: false },
+  { href: "/property-service", label: "房产服务", hover: "Services", isScroll: false },
+  { href: "/real-estate", label: "房产资讯", hover: "News", isScroll: false },
+  { href: "/immigration", label: "移民服务", hover: "Immigration", isScroll: false },
+  { href: "/contact", label: "联系我们", hover: "Contact", isScroll: false },
 ];
 
-const rentCats = [
-  { href: "/real-estate/rent/apartment", zh: "公寓", en: "APARTMENT" },
-  { href: "/real-estate/rent/townhouse", zh: "联排别墅", en: "TOWNHOUSE" },
-  { href: "/real-estate/rent/land-villa", zh: "土地别墅", en: "LAND VILLA" },
-  { href: "/real-estate/rent/commercial", zh: "商业办公楼", en: "COMMERCIAL" },
-];
+const siteTitle = "墨尔本·胜腾国际";
+const siteSub = "MELBOURNE · CENDANT";
 ---
 
-<BaseLayout title="地产资讯">
-  <TopBanner zh="地产资讯" en="REAL ESTATE" />
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <title>首页 | Cendant</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="utf-8" />
 
-  <section class="wrap">
-    <!-- 分类入口（售卖） -->
-    <div class="block">
-      <div class="blockHead">
-        <h2>房产售卖资讯</h2>
-        <p>SALE INFORMATION</p>
+    <!-- ===== 模板 CSS（注意路径改为 /template15/... ）===== -->
+    <link rel="stylesheet" href="/template15/css/mainStyles.css" />
+    <link rel="stylesheet" href="/template15/css/flexslider.css" />
+    <link rel="stylesheet" href="/template15/css/owl.carousel.css" />
+    <link rel="stylesheet" href="/template15/css/owl.theme.css" />
+    <link rel="stylesheet" href="/template15/css/easy-responsive-tabs.css" />
+    <link rel="stylesheet" href="/template15/css/bootstrap.css" />
+    <link rel="stylesheet" href="/template15/css/style.css" />
+    <link rel="stylesheet" href="/template15/css/font-awesome.min.css" />
+
+    <!-- 字体：把 http 改成 https（更安全，也避免混合内容） -->
+    <link
+      href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i,800,800i&subset=cyrillic,cyrillic-ext,greek,greek-ext,latin-ext,vietnamese"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css?family=Hind:300,400,500,600,700&subset=devanagari,latin-ext"
+      rel="stylesheet"
+    />
+
+    <!-- ===== 模板 JS（放 head 也行；你原模板就是这样）===== -->
+    <script is:inline src="/template15/js/jquery-2.1.4.min.js"></script>
+    <script is:inline src="/template15/js/bootstrap.js"></script>
+
+    <!-- 滚动（来自模板） -->
+    <script is:inline>
+      jQuery(document).ready(function ($) {
+        $(".scroll").click(function (event) {
+          event.preventDefault();
+          $("html,body").animate({ scrollTop: $(this.hash).offset().top }, 1000);
+        });
+      });
+    </script>
+  </head>
+
+  <body>
+    <!-- banner / navbar（来自模板结构） -->
+    <div class="banner" id="home">
+      <nav class="navbar navbar-default">
+        <div class="navbar-header navbar-left">
+          <button
+            type="button"
+            class="navbar-toggle collapsed"
+            data-toggle="collapse"
+            data-target="#bs-example-navbar-collapse-1"
+          >
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+
+          <h1>
+            <a class="navbar-brand" href="/">
+              <span>墨尔本</span> 胜腾国际
+              <span class="brand-sub">{siteSub}</span>
+            </a>
+          </h1>
+          <i class="fa fa-home" aria-hidden="true"></i>
+        </div>
+
+        <div class="collapse navbar-collapse navbar-right" id="bs-example-navbar-collapse-1">
+          <nav class="link-effect-2" id="link-effect-2">
+            <ul class="nav navbar-nav">
+              {nav.map((item) => (
+                <li class={Astro.url.pathname === item.href ? "active" : ""}>
+                  <a href={item.href}>
+                    <span data-hover={item.hover}>{item.label}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
+
+        <!-- 右上角社交：你不需要可以删 -->
+        <div class="agileits-social top_content">
+          <ul>
+            <li><a href="#" aria-label="facebook"><i class="fa fa-facebook"></i></a></li>
+            <li><a href="#" aria-label="twitter"><i class="fa fa-twitter"></i></a></li>
+            <li><a href="#" aria-label="rss"><i class="fa fa-rss"></i></a></li>
+            <li><a href="#" aria-label="vk"><i class="fa fa-vk"></i></a></li>
+          </ul>
+        </div>
+      </nav>
+    </div>
+
+    <!-- slider（保持模板结构，只替换你的文案） -->
+    <div id="exampleSlider">
+      <div>
+        <h2>
+          专注澳洲房产投资 <span>与项目开发管理</span>
+        </h2>
+        <div class="readmore-w3">
+          <a class="readmore" href="/contact">立即咨询</a>
+        </div>
       </div>
 
-      <div class="grid">
-        {saleCats.map((c) => (
-          <a class="cat" href={c.href}>
-            <div class="catZh">{c.zh}</div>
-            <div class="catEn">{c.en}</div>
-          </a>
-        ))}
+      <div>
+        <h3>
+          选房策略与谈判签约 <span>一站式陪跑</span>
+        </h3>
+        <div class="readmore-w3">
+          <a class="readmore" href="/property-service">查看服务</a>
+        </div>
+      </div>
+
+      <div>
+        <h3>
+          物业租赁与长期维护 <span>更安心</span>
+        </h3>
+        <div class="readmore-w3">
+          <a class="readmore" href="/property-service/rent">了解租赁</a>
+        </div>
+      </div>
+
+      <div>
+        <h3>
+          移民留学咨询支持 <span>路径更清晰</span>
+        </h3>
+        <div class="readmore-w3">
+          <a class="readmore" href="/immigration">了解移民服务</a>
+        </div>
+      </div>
+
+      <div>
+        <h3>
+          房产资讯持续更新 <span>把握市场</span>
+        </h3>
+        <div class="readmore-w3">
+          <a class="readmore" href="/real-estate">进入资讯</a>
+        </div>
       </div>
     </div>
 
-    <!-- 分类入口（出租） -->
-    <div class="block">
-      <div class="blockHead">
-        <h2>房产出租资讯</h2>
-        <p>RENTAL INFORMATION</p>
-      </div>
+    <!-- about（保持模板结构，替换文字+保留模板图片） -->
+    <div class="about" id="about">
+      <h3 class="heading"><span>公司概况</span></h3>
+      <div class="container">
+        <div class="services-grids">
+          <div class="col-md-4 services-grids-info sgi">
+            <h3>欢迎来到 {siteTitle}</h3>
+            <p>
+              我们专注澳洲房产投资、项目开发管理、物业租赁与移民留学咨询等一站式服务，帮助客户做出更稳健的决策。
+            </p>
+            <ul>
+              <li><i class="glyphicon glyphicon-arrow-right"></i><a href="/real-estate">市场资讯与趋势</a></li>
+              <li><i class="glyphicon glyphicon-arrow-right"></i><a href="/property-service/buy-sell">买卖服务与交割协助</a></li>
+              <li><i class="glyphicon glyphicon-arrow-right"></i><a href="/property-service/development">项目开发与风控管理</a></li>
+              <li><i class="glyphicon glyphicon-arrow-right"></i><a href="/contact">预约咨询与合作</a></li>
+            </ul>
+          </div>
 
-      <div class="grid">
-        {rentCats.map((c) => (
-          <a class="cat" href={c.href}>
-            <div class="catZh">{c.zh}</div>
-            <div class="catEn">{c.en}</div>
-          </a>
-        ))}
+          <div class="col-md-4 services-grids-info">
+            <!-- 模板原图：images/about.jpg -->
+            <img src="/template15/images/about.jpg" alt="about" />
+          </div>
+
+          <div class="col-md-4 services-grids-info sgi1">
+            <h3>让房产投资更清晰、更可控</h3>
+            <p>
+              从选址、评估、谈判，到签约、交割与后续管理，我们提供结构化流程与专业支持，降低沟通成本与决策风险。
+            </p>
+            <ul>
+              <li><i class="glyphicon glyphicon-arrow-right"></i><a href="/property-service">房产服务模块</a></li>
+              <li><i class="glyphicon glyphicon-arrow-right"></i><a href="/real-estate">房产资讯模块</a></li>
+              <li><i class="glyphicon glyphicon-arrow-right"></i><a href="/immigration">移民服务模块</a></li>
+              <li><i class="glyphicon glyphicon-arrow-right"></i><a href="/company-profile">了解我们</a></li>
+            </ul>
+          </div>
+
+          <div class="clearfix"></div>
+        </div>
       </div>
     </div>
 
-    <!-- 最新资讯 -->
-    <div class="block">
-      <div class="blockHead">
-        <h2>最新资讯</h2>
-        <p>LATEST POSTS</p>
-      </div>
+    <!-- services（保持模板结构，但把标题/含义替换成你的） -->
+    <div class="services" id="services">
+      <h3 class="heading"><span>服务项目</span></h3>
+      <div class="container">
+        <div class="col-md-8 servicesleft">
+          <h4>房产投资 · 开发管理 · 物业租赁</h4>
+          <h4>移民留学 · 合规与流程支持</h4>
 
-      <div class="list">
-        {latest.map((p) => (
-          <a class="post" href={`/real-estate/${p.slug}`}>
-            <div class="postTitle">{p.title}</div>
-            <div class="postMeta">
-              <span>{formatDate(p.publishDate)}</span>
-              {p.dealType ? <span class="pill">{p.dealType === "sale" ? "售卖" : "出租"}</span> : null}
-              {p.category ? <span class="pill ghost">{p.category}</span> : null}
+          <div class="serviceslefttop">
+            <div class="col-md-4">
+              <div class="grid1 clr1">
+                <i class="fa fa-home" aria-hidden="true"></i>
+                <h4>房产买卖</h4>
+                <h4>- Cendant</h4>
+              </div>
             </div>
-            {p.summary ? <div class="postSummary">{p.summary}</div> : null}
-          </a>
-        ))}
+
+            <div class="col-md-4">
+              <div class="grid1 clr2">
+                <i class="fa fa-building" aria-hidden="true"></i>
+                <h4>项目开发</h4>
+                <h4>- Cendant</h4>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="grid1 clr3">
+                <i class="fa fa-key" aria-hidden="true"></i>
+                <h4>物业租赁</h4>
+                <h4>- Cendant</h4>
+              </div>
+            </div>
+
+            <div class="clearfix"></div>
+          </div>
+
+          <div class="servicesleftbottom">
+            <div class="col-md-4">
+              <div class="grid1 clr4">
+                <i class="fa fa-briefcase" aria-hidden="true"></i>
+                <h4>商业办公</h4>
+                <h4>- Cendant</h4>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="grid1 clr5">
+                <i class="fa fa-plane" aria-hidden="true"></i>
+                <h4>移民服务</h4>
+                <h4>- Cendant</h4>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="grid1 clr6">
+                <i class="fa fa-comments" aria-hidden="true"></i>
+                <h4>预约咨询</h4>
+                <h4>- Cendant</h4>
+              </div>
+            </div>
+
+            <div class="clearfix"></div>
+          </div>
+        </div>
+
+        <div class="clearfix"></div>
       </div>
     </div>
-  </section>
 
-  <style>
-    :global(:root) {
-      --brand: #0b1f6b;
-      --text: #0e1a2b;
-      --border: #e2e6f0;
-      --bg: #f6f8fc;
-    }
+    <!-- ✅ 删除 team（Meet our agents）模块：你要求不需要 -->
+    <!-- ✅ 删除 testimonials（What people says）模块：你要求不需要 -->
 
-    .wrap {
-      max-width: 1100px;
-      margin: 36px auto 80px;
-      padding: 0 20px;
-    }
+    <!-- stats（保持模板结构，数字你可以改成真实的） -->
+    <div class="count-agileits" id="stats">
+      <h3 class="heading"><span>数据概览</span></h3>
+      <div class="container">
+        <div class="count-grids">
+          <div class="count-bgcolor-w3ls">
+            <div class="col-md-3 count-grid">
+              <div class="count hvr-bounce-to-bottom">
+                <div class="numscroller numscroller-big-bottom" data-slno="1" data-min="0" data-max="210" data-delay=".5" data-increment="1">210</div>
+                <span></span>
+                <h5>合作资源</h5>
+              </div>
+            </div>
 
-    .block {
-      margin-top: 26px;
-    }
+            <div class="col-md-3 count-grid">
+              <div class="count hvr-bounce-to-bottom">
+                <div class="numscroller numscroller-big-bottom" data-slno="1" data-min="0" data-max="700" data-delay=".5" data-increment="1">700</div>
+                <span></span>
+                <h5>资讯更新</h5>
+              </div>
+            </div>
 
-    .blockHead {
-      margin-bottom: 14px;
-    }
+            <div class="col-md-3 count-grid">
+              <div class="count hvr-bounce-to-bottom">
+                <div class="numscroller numscroller-big-bottom" data-slno="1" data-min="0" data-max="40" data-delay=".5" data-increment="1">40</div>
+                <span></span>
+                <h5>覆盖区域</h5>
+              </div>
+            </div>
 
-    .blockHead h2 {
-      margin: 0;
-      font-size: 20px;
-      font-weight: 900;
-      color: var(--brand);
-      letter-spacing: 0.5px;
-    }
+            <div class="col-md-3 count-grid">
+              <div class="count hvr-bounce-to-bottom">
+                <div class="numscroller numscroller-big-bottom" data-slno="1" data-min="0" data-max="490" data-delay=".5" data-increment="1">490</div>
+                <h5>客户咨询</h5>
+              </div>
+            </div>
 
-    .blockHead p {
-      margin: 6px 0 0;
-      font-size: 12px;
-      letter-spacing: 3px;
-      color: var(--brand);
-      opacity: 0.65;
-      font-weight: 800;
-    }
+            <div class="clearfix"></div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 14px;
-    }
+    <!-- offers（保留模板轮播结构；你以后可以用真实房源替换） -->
+    <div class="special" id="offers">
+      <h3 class="heading"><span>房源展示</span></h3>
+      <div class="container">
+        <div class="agileits-special-grids">
+          <div id="owl-demo" class="owl-carousel owl-theme">
+            <div class="item">
+              <div class="special-info">
+                <div class="special-info-top">
+                  <div class="special-star">
+                    <i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i>
+                  </div>
+                  <h4>独立别墅</h4>
+                </div>
+                <div class="special-info-bottom">
+                  <ul>
+                    <li>480 <span>Sqft</span></li>
+                    <li>5 <span>Rooms</span></li>
+                    <li>1 <span>Pool</span></li>
+                  </ul>
+                  <p>示例展示位：后续可从后台/Contentful 自动拉取真实房源。</p>
+                </div>
+              </div>
+            </div>
 
-    @media (max-width: 1000px) {
-      .grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-      }
-    }
-    @media (max-width: 720px) {
-      .grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-    }
-    @media (max-width: 420px) {
-      .grid {
-        grid-template-columns: 1fr;
-      }
-    }
+            <div class="item">
+              <div class="special-info special-info1">
+                <div class="special-info-top">
+                  <div class="special-star">
+                    <i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star-half-o"></i>
+                  </div>
+                  <h4>公寓</h4>
+                </div>
+                <div class="special-info-bottom">
+                  <ul>
+                    <li>570 <span>Sqft</span></li>
+                    <li>6 <span>Rooms</span></li>
+                    <li>3 <span>Pools</span></li>
+                  </ul>
+                  <p>示例展示位：后续可从后台/Contentful 自动拉取真实房源。</p>
+                </div>
+              </div>
+            </div>
 
-    .cat {
-      display: block;
-      text-decoration: none;
-      border: 1px solid var(--border);
-      background: #fff;
-      border-radius: 16px;
-      padding: 16px 14px;
-      transition: transform 0.12s ease, box-shadow 0.12s ease;
-    }
+            <div class="item">
+              <div class="special-info special-info2">
+                <div class="special-info-top">
+                  <div class="special-star">
+                    <i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star-o"></i>
+                  </div>
+                  <h4>商业办公</h4>
+                </div>
+                <div class="special-info-bottom">
+                  <ul>
+                    <li>620 <span>Sqft</span></li>
+                    <li>8 <span>Rooms</span></li>
+                    <li>0 <span>Pool</span></li>
+                  </ul>
+                  <p>示例展示位：后续可从后台/Contentful 自动拉取真实房源。</p>
+                </div>
+              </div>
+            </div>
+          </div>
 
-    .cat:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 24px rgba(11, 31, 107, 0.12);
-    }
+          <div class="clearfix"></div>
+        </div>
+      </div>
+    </div>
 
-    .catZh {
-      font-size: 18px;
-      font-weight: 900;
-      color: var(--brand);
-    }
+    <!-- contact（你后续可以把表单改成你 /api/leads 的提交） -->
+    <div class="contact" id="contact">
+      <h3 class="heading"><span>联系我们</span></h3>
+      <div class="container">
+        <div class="contact-grids">
+          <div class="col-md-6 contact-left">
+            <h4>{siteTitle}</h4>
+            <p style="margin:0 0 10px;">地址：2 Aquitania Way, Docklands VIC 3008</p>
+            <p style="margin:0 0 10px;">电话：+61 420 616 883</p>
+            <p style="margin:0 0 10px;">邮箱：info@cendantpgau.com</p>
+            <p style="margin:0;">如需项目对接/咨询，请前往联系页面提交表单。</p>
+            <div style="margin-top:14px;">
+              <a class="readmore" href="/contact">去填写表单</a>
+            </div>
+          </div>
 
-    .catEn {
-      margin-top: 8px;
-      font-size: 12px;
-      letter-spacing: 2.2px;
-      color: var(--brand);
-      opacity: 0.65;
-      font-weight: 800;
-    }
+          <div class="col-md-6 contact-right">
+            <!-- 留空也可以；你可以放地图/图片 -->
+            <img src="/template15/images/b.jpg" alt="contact" class="img-responsive" />
+          </div>
 
-    .list {
-      display: grid;
-      gap: 12px;
-      margin-top: 12px;
-    }
+          <div class="clearfix"></div>
+        </div>
+      </div>
+    </div>
 
-    .post {
-      display: block;
-      text-decoration: none;
-      border: 1px solid var(--border);
-      background: #fff;
-      border-radius: 16px;
-      padding: 16px;
-    }
+    <!-- footer（简化版：保持模板风格即可） -->
+    <div class="footer">
+      <div class="container">
+        <div class="col-md-6 subscribe">
+          <form action="#" method="post" onsubmit="return false;">
+            <h3>联系我们</h3>
+            <input type="text" placeholder="输入邮箱（可选）" name="Subscribe" />
+            <a class="btn1" href="/contact">去填写表单</a>
+          </form>
+        </div>
 
-    .postTitle {
-      font-size: 16px;
-      font-weight: 900;
-      color: var(--brand);
-      margin-bottom: 6px;
-      line-height: 1.4;
-    }
+        <div class="col-md-6 copyright">
+          <ul>
+            {nav.slice(0, 6).map((item) => (
+              <li><a href={item.href}>{item.label}</a></li>
+            ))}
+          </ul>
+          <p>© {new Date().getFullYear()} Melbourne Cendant. All rights reserved.</p>
+        </div>
 
-    .postMeta {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      font-size: 12px;
-      color: var(--text);
-      opacity: 0.75;
-      margin-bottom: 10px;
-    }
+        <div class="clearfix"></div>
+      </div>
+    </div>
 
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      padding: 2px 8px;
-      border-radius: 999px;
-      background: rgba(11, 31, 107, 0.08);
-      color: var(--brand);
-      font-weight: 800;
-    }
+    <!-- ===== 模板 JS（必须 is:inline，避免 Astro 把 public 资源当成要打包而报错）===== -->
+    <script is:inline src="/template15/js/numscroller-1.0.js"></script>
+    <script is:inline src="/template15/js/owl.carousel.js"></script>
+    <script is:inline>
+      $(document).ready(function () {
+        $("#owl-demo").owlCarousel({
+          autoPlay: 3000,
+          autoPlay: true,
+          items: 3,
+          itemsDesktop: [640, 5],
+          itemsDesktopSmall: [414, 4],
+        });
+      });
+    </script>
 
-    .pill.ghost {
-      background: rgba(14, 26, 43, 0.06);
-      color: #0e1a2b;
-      opacity: 0.9;
-    }
+    <script is:inline src="/template15/js/SmoothScroll.min.js"></script>
+    <script is:inline src="/template15/js/move-top.js"></script>
+    <script is:inline src="/template15/js/easing.js"></script>
+    <script is:inline src="/template15/js/mainScript.js"></script>
 
-    .postSummary {
-      color: var(--text);
-      opacity: 0.9;
-      line-height: 1.85;
-      font-size: 14px;
-    }
-  </style>
-</BaseLayout>
+    <!-- 兼容：有些模板会引用这个 -->
+    <script is:inline src="/template15/js/jquery.flexslider.js"></script>
+  </body>
+</html>
