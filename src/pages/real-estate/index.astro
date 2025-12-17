@@ -1,5 +1,5 @@
 ---
-import Template20Layout from "../../layouts/Template20Layout.astro";
+import TemplateLayout from "../../layouts/TemplateLayout.astro";
 import { getRealEstatePosts } from "../../lib/contentful";
 
 /**
@@ -33,7 +33,7 @@ const rentCats = [
 ];
 ---
 
-<Template20Layout title="房产资讯" subtitle="REAL ESTATE">
+<TemplateLayout title="房产资讯" subtitle="REAL ESTATE">
 
   <!-- ===============================
        分类入口（Template20 Service 风格）
@@ -109,7 +109,7 @@ const rentCats = [
     </div>
   </section>
 
-</Template20Layout>
+</TemplateLayout>
 
 <style>
 /* ===== Service 子页面风格补充（轻量，不冲突模板） ===== */
