@@ -85,18 +85,29 @@ function toPost(item: any, includes: any): RealEstatePost {
   };
 }
 
+
 export async function getRealEstatePosts(limit = 20) {
-  // include=2 用于拿到 Asset 详情（图片 URL）
-  const data = await cfFetch(
-    `/entries?content_type=${CONTENT_TYPE}&order=-fields.publishDate&limit=${limit}&include=2`
-  );
+  try {
+    const data = await cfFetch(
+      `/entries?content_type=realEstatePost&order=-fields.publishDate&limit=${limit}&include=2`
+    );
 
-  const items = Array.isArray(data?.items) ? data.items : [];
-  return items
-    .map((it: any) => toPost(it, data?.includes))
-    .filter((p: RealEstatePost) => !!p.slug); // slug 为空的不生成列表
+    return (data.items ?? []).map((it: any) => ({
+      title: it.fields?.title ?? "",
+      slug: it.fields?.slug ?? "",
+      publishDate: it.fields?.publishDate ?? "",
+      category: it.fields?.category ?? "",
+      dealType: it.fields?.dealType ?? "",
+      summary: it.fields?.summary ?? "",
+      image: it.fields?.image?.[0]?.fields?.file?.url
+        ? `https:${it.fields.image[0].fields.file.url}`
+        : null,
+    }));
+  } catch (err) {
+    console.error("[Contentful] getRealEstatePosts failed:", err);
+    return []; // ✅ 兜底：不让构建失败
+  }
 }
-
 export async function getRealEstatePostBySlug(slug: string) {
   const data = await cfFetch(
     `/entries?content_type=${CONTENT_TYPE}&fields.slug=${encodeURIComponent(slug)}&limit=1&include=2`
