@@ -1,0 +1,183 @@
+---
+import TemplateLayout from "../../layouts/TemplateLayout.astro";
+import { getAllRealEstateSlugs, getRealEstatePostBySlug, richTextToHtml } from "../../lib/contentful";
+
+export async function getStaticPaths() {
+  const slugs = await getAllRealEstateSlugs();
+  return slugs.map((slug) => ({ params: { slug } }));
+}
+
+const { slug } = Astro.params;
+const post = await getRealEstatePostBySlug(String(slug));
+
+if (!post) {
+  // 静态站点里一般不会触发（因为 getStaticPaths 只会生成存在的 slug）
+  // 但为了稳妥：回列表
+  return Astro.redirect("/real-estate");
+}
+
+const dateText = post.publishDate ? new Date(post.publishDate).toLocaleDateString("zh-CN") : "";
+const bodyHtml = post.body ? richTextToHtml(post.body) : "";
+---
+
+<TemplateLayout title={post.title}>
+  <section class="re-hero">
+    <div class="re-hero-inner">
+      <div class="re-breadcrumb">
+        <a href="/">首页</a> <span>/</span> <a href="/real-estate">房产资讯</a> <span>/</span> <strong>{post.title}</strong>
+      </div>
+
+      <h1 class="re-title">{post.title}</h1>
+
+      <div class="re-meta">
+        {post.dealType && <span class="pill">{post.dealType}</span>}
+        {post.category && <span class="pill">{post.category}</span>}
+        {dateText && <span class="meta">{dateText}</span>}
+      </div>
+    </div>
+  </section>
+
+  <section class="re-wrap">
+    {post.imageUrl && (
+      <div class="re-cover">
+        <img src={post.imageUrl} alt={post.title} loading="lazy" />
+      </div>
+    )}
+
+    {post.summary && <p class="re-summary">{post.summary}</p>}
+
+    {bodyHtml ? (
+      <article class="re-body" set:html={bodyHtml} />
+    ) : (
+      <div class="re-empty">暂无正文内容（请在 Contentful 的 Body 字段填写并发布）。</div>
+    )}
+
+    <div class="re-actions">
+      <a class="btn" href="/real-estate">← 返回房产资讯</a>
+      <a class="btn btn-primary" href="/contact">预约咨询</a>
+    </div>
+  </section>
+
+  <style>
+    .re-hero{
+      padding: 34px 0 10px;
+    }
+    .re-hero-inner{
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+    .re-breadcrumb{
+      font-size: 13px;
+      opacity: .8;
+      margin-bottom: 10px;
+    }
+    .re-breadcrumb a{ text-decoration: none; }
+    .re-breadcrumb span{ margin: 0 8px; opacity: .6; }
+    .re-title{
+      margin: 0 0 10px;
+      font-size: 34px;
+      font-weight: 900;
+      letter-spacing: .2px;
+    }
+    .re-meta{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(11,31,107,.18);
+      background: rgba(11,31,107,.04);
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .meta{
+      font-size: 12px;
+      opacity: .75;
+    }
+
+    .re-wrap{
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 0 20px 60px;
+    }
+
+    .re-cover{
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid rgba(0,0,0,.06);
+      background: #fff;
+      margin: 12px 0 18px;
+    }
+    .re-cover img{
+      width: 100%;
+      height: auto;
+      display:block;
+    }
+
+    .re-summary{
+      margin: 0 0 18px;
+      padding: 14px 16px;
+      border-left: 4px solid rgba(11,31,107,.35);
+      background: rgba(11,31,107,.04);
+      border-radius: 12px;
+      line-height: 1.9;
+      opacity: .95;
+    }
+
+    .re-body{
+      line-height: 2;
+      font-size: 15px;
+    }
+    .re-body h2, .re-body h3{ margin: 22px 0 10px; }
+    .re-body p{ margin: 0 0 14px; }
+    .re-body ul, .re-body ol{ margin: 8px 0 16px 18px; }
+    .re-body a{ text-decoration: underline; }
+    .re-body blockquote{
+      margin: 14px 0;
+      padding: 12px 14px;
+      border-left: 4px solid rgba(11,31,107,.25);
+      background: rgba(11,31,107,.03);
+      border-radius: 12px;
+    }
+
+    .re-empty{
+      padding: 16px;
+      border: 1px dashed rgba(11,31,107,.35);
+      border-radius: 16px;
+      background: rgba(11,31,107,.03);
+      margin: 16px 0;
+    }
+
+    .re-actions{
+      display:flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 24px;
+    }
+    .btn{
+      display:inline-block;
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(11,31,107,.18);
+    
+      text-decoration:none;
+      font-weight: 800;
+      background: #fff;
+    }
+    .btn-primary{
+      background: #0b1f6b;
+      color: #fff;
+      border-color: #0b1f6b;
+    }
+    @media (max-width: 520px){
+      .re-title{ font-size: 26px; }
+    }
+  </style>
+</TemplateLayout>
