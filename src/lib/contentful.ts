@@ -74,6 +74,7 @@ export async function getAllRealEstateSlugs() {
       .filter(Boolean);
   } catch (e) {
     // ✅ 关键：getStaticPaths 用它时，返回空数组就不会 build 失败
+    console.error("[Contentful] getRealEstatePosts failed:", e);
     return [];
   }
 }
