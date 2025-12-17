@@ -1,5 +1,5 @@
 ---
-import BaseLayout from "../layouts/BaseLayout.astro";
+import TemplateLayout from "../../layouts/TemplateLayout.astro";
 import TopBanner from "../components/TopBanner.astro";
 import Accordion from "../components/Accordion.astro";
 
@@ -60,7 +60,7 @@ const items = [
 ];
 ---
 
-<BaseLayout title="移民服务" subtitle="IMMIGRATION SERVICE">
+<TemplateLayout title="移民服务" subtitle="IMMIGRATION SERVICE">
   <TopBanner zh="移民服务" en="IMMIGRATION SERVICE" />
 
   <section class="container">
@@ -74,4 +74,4 @@ const items = [
       padding: 0 20px;
     }
   </style>
-</BaseLayout>
+</TemplateLayout>
