@@ -10,7 +10,7 @@ export type realEstatePost = {
   summary?: string;
   dealType?: string; // sale / rent
   category?: string; // apartment / townhouse ...
-  imageUrls: string[];
+  image?: string | null;
 };
 
 export type RealEstatePostDetail = realEstatePost & {
