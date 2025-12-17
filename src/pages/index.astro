@@ -1,408 +1,394 @@
 ---
 import TemplateLayout from "../layouts/TemplateLayout.astro";
-import TopBanner from "../components/TopBanner.astro";
 ---
 
 <TemplateLayout title="首页">
-  <!-- ===== 模板风格：首屏（放在 banner 之后的内容区）===== -->
-  <section class="home-hero">
-    <div class="row">
-      <div class="col-md-7 col-sm-12">
-        <div class="hero-copy">
-          <div class="hero-kicker">MELBOURNE · CENDANT</div>
-          <h2 class="hero-title">墨尔本 · 胜腾国际</h2>
-          <p class="hero-desc">
-            专注澳洲房产投资、项目开发管理、物业租赁与移民留学咨询等一站式服务。
-          </p>
-
-          <div class="hero-actions">
-            <a class="btn btn-primary hero-btn" href="/contact">立即咨询</a>
-            <a class="btn btn-default hero-btn ghost" href="#services">查看服务项目</a>
-          </div>
-
-          <div class="hero-badges">
-            <span class="badge-pill">本地资源整合</span>
-            <span class="badge-pill">交易闭环服务</span>
-            <span class="badge-pill">合规与风控</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-md-5 col-sm-12">
-        <!-- 模板感“右侧信息卡” -->
-        <div class="hero-panel">
-          <div class="panel-title">快速入口</div>
-          <a class="panel-link" href="/real-estate">地产资讯</a>
-          <a class="panel-link" href="/immigration">移民服务</a>
-          <a class="panel-link" href="/company-profile">公司概况</a>
-          <a class="panel-link" href="/contact">联系我们</a>
-
-          <div class="panel-split"></div>
-
-          <div class="panel-meta">
-            <div><b>电话：</b>+61 420 616 883</div>
-            <div><b>邮箱：</b>info@cendantpgau.com</div>
-            <div><b>地址：</b>Docklands VIC 3008</div>
-          </div>
-        </div>
+  <!-- slider（保留模板结构与 id/class，确保 mainStyles.css/mainScript.js 生效） -->
+  <div id="exampleSlider">
+    <div>
+      <h2>墨尔本 · 胜腾国际 <span>一站式房产与移民服务</span></h2>
+      <div class="readmore-w3">
+        <a class="readmore" href="/contact">立即咨询</a>
       </div>
     </div>
-  </section>
 
-  <!-- ===== 服务项目（你原本首页的内容）===== -->
-  <section id="services" class="home-section">
-    <TopBanner zh="服务项目" en="SERVICE AVAILABLE" />
-
-    <div class="row cards">
-      <div class="col-md-4 col-sm-6 col-xs-12">
-        <a class="service-card" href="/real-estate">
-          <h3>房地产买卖</h3>
-          <p>项目推荐、选房策略、谈判签约、交割协助。</p>
-          <span class="more">查看详情 →</span>
-        </a>
-      </div>
-
-      <div class="col-md-4 col-sm-6 col-xs-12">
-        <a class="service-card" href="/real-estate">
-          <h3>房地产开发</h3>
-          <p>项目评估、开发管理、资源对接、风控与交付。</p>
-          <span class="more">查看详情 →</span>
-        </a>
-      </div>
-
-      <div class="col-md-4 col-sm-6 col-xs-12">
-        <a class="service-card" href="/real-estate">
-          <h3>物业租赁</h3>
-          <p>招租、租客筛选、租约管理、长期维护服务。</p>
-          <span class="more">查看详情 →</span>
-        </a>
-      </div>
-
-      <div class="col-md-4 col-sm-6 col-xs-12">
-        <a class="service-card" href="/immigration">
-          <h3>移民服务</h3>
-          <p>雇主担保、商业投资类路径评估与材料支持。</p>
-          <span class="more">查看详情 →</span>
-        </a>
-      </div>
-
-      <div class="col-md-4 col-sm-6 col-xs-12">
-        <a class="service-card" href="/contact">
-          <h3>联系我们</h3>
-          <p>预约咨询、合作洽谈、项目对接与资料获取。</p>
-          <span class="more">立即联系 →</span>
-        </a>
+    <div>
+      <h3>澳洲房产投资 <span>选房 · 评估 · 交易 · 管理</span></h3>
+      <div class="readmore-w3">
+        <a class="readmore" href="/real-estate">查看地产资讯</a>
       </div>
     </div>
-  </section>
 
-  <!-- ===== 公司简介（更商业化段落）===== -->
-  <section class="home-section">
-    <TopBanner zh="公司概况" en="COMPANY PROFILE" />
+    <div>
+      <h3>移民服务支持 <span>雇主担保 · 商业投资</span></h3>
+      <div class="readmore-w3">
+        <a class="readmore" href="/immigration">查看移民服务</a>
+      </div>
+    </div>
+  </div>
 
-    <div class="row profile">
-      <div class="col-md-7 col-sm-12">
-        <div class="profile-box">
-          <h3 class="profile-title">高端投资服务与本地资源整合</h3>
+  <!-- about（改成你的公司介绍，保留模板布局） -->
+  <div class="about" id="about">
+    <h3 class="heading"><span>公司概况</span></h3>
+    <div class="container">
+      <div class="services-grids">
+        <div class="col-md-4 services-grids-info sgi">
+          <h3>墨尔本·胜腾国际</h3>
           <p>
-            我们以“稳健、合规、可落地”的投资逻辑为核心，面向澳洲本地与海外客户，提供从项目评估、交易执行到资产管理的一体化服务。
-            同时为家庭与企业客户提供配套的移民与留学咨询支持，确保整体方案可执行、可交付。
+            专注澳洲房地产投资与资产配置，提供项目推荐、开发管理、租赁管理及移民咨询等综合服务。
           </p>
           <ul>
-            <li>本地项目资源：开发商 / 代理 / 律师 / 会计 / 贷款经纪协作</li>
-            <li>交易闭环：尽调、谈判、合同、交割、税务与持有策略</li>
-            <li>资产管理：租赁管理、维护协调、收益优化与长期规划</li>
+            <li><i class="glyphicon glyphicon-arrow-right"> </i><a href="/real-estate">房产买卖与项目推荐</a></li>
+            <li><i class="glyphicon glyphicon-arrow-right"> </i><a href="/real-estate">房地产开发与项目管理</a></li>
+            <li><i class="glyphicon glyphicon-arrow-right"> </i><a href="/real-estate">物业租赁与长期维护</a></li>
+            <li><i class="glyphicon glyphicon-arrow-right"> </i><a href="/immigration">移民与留学咨询服务</a></li>
           </ul>
         </div>
+
+        <div class="col-md-4 services-grids-info">
+          <!-- 模板图片：直接沿用模板设计（你 public/template15/images 里要有对应图片） -->
+          <img src="/template15/images/about.jpg" alt="about" />
+        </div>
+
+        <div class="col-md-4 services-grids-info sgi1">
+          <h3>高端投资服务</h3>
+          <p>
+            以专业研究与风控为基础，结合本地资源与项目对接能力，为投资者提供更稳健的资产配置路径。
+          </p>
+          <ul>
+            <li><i class="glyphicon glyphicon-arrow-right"> </i><a href="/company-profile">本地资源与合作网络</a></li>
+            <li><i class="glyphicon glyphicon-arrow-right"> </i><a href="/company-profile">合规流程与风险控制</a></li>
+            <li><i class="glyphicon glyphicon-arrow-right"> </i><a href="/real-estate">市场分析与选房策略</a></li>
+            <li><i class="glyphicon glyphicon-arrow-right"> </i><a href="/contact">预约咨询与项目对接</a></li>
+          </ul>
+        </div>
+
+        <div class="clearfix"> </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- services（保留模板服务卡片视觉，但换成你的服务） -->
+  <div class="services" id="services">
+    <h3 class="heading"><span>服务项目</span></h3>
+    <div class="container">
+      <div class="col-md-8 servicesleft">
+        <h4>为澳洲房产投资与移民规划提供一站式支持</h4>
+        <h4>专业 · 合规 · 高效</h4>
+
+        <div class="serviceslefttop">
+          <div class="col-md-4">
+            <a href="/real-estate" style="text-decoration:none;">
+              <div class="grid1 clr1">
+                <i class="fa fa-home" aria-hidden="true"></i>
+                <h4>房产买卖</h4>
+                <h4>- Cendant</h4>
+              </div>
+            </a>
+          </div>
+
+          <div class="col-md-4">
+            <a href="/real-estate" style="text-decoration:none;">
+              <div class="grid1 clr2">
+                <i class="fa fa-building" aria-hidden="true"></i>
+                <h4>项目开发</h4>
+                <h4>- Cendant</h4>
+              </div>
+            </a>
+          </div>
+
+          <div class="col-md-4">
+            <a href="/real-estate" style="text-decoration:none;">
+              <div class="grid1 clr3">
+                <i class="fa fa-money" aria-hidden="true"></i>
+                <h4>资产配置</h4>
+                <h4>- Cendant</h4>
+              </div>
+            </a>
+          </div>
+
+          <div class="clearfix"></div>
+        </div>
+
+        <div class="servicesleftbottom">
+          <div class="col-md-4">
+            <a href="/real-estate" style="text-decoration:none;">
+              <div class="grid1 clr4">
+                <i class="fa fa-key" aria-hidden="true"></i>
+                <h4>物业租赁</h4>
+                <h4>- Cendant</h4>
+              </div>
+            </a>
+          </div>
+
+          <div class="col-md-4">
+            <a href="/immigration" style="text-decoration:none;">
+              <div class="grid1 clr5">
+                <i class="fa fa-plane" aria-hidden="true"></i>
+                <h4>移民服务</h4>
+                <h4>- Cendant</h4>
+              </div>
+            </a>
+          </div>
+
+          <div class="col-md-4">
+            <a href="/contact" style="text-decoration:none;">
+              <div class="grid1 clr6">
+                <i class="fa fa-phone" aria-hidden="true"></i>
+                <h4>预约咨询</h4>
+                <h4>- Cendant</h4>
+              </div>
+            </a>
+          </div>
+
+          <div class="clearfix"></div>
+        </div>
       </div>
 
-      <div class="col-md-5 col-sm-12">
-        <div class="profile-side">
-          <div class="side-title">为什么选择我们</div>
+      <div class="clearfix"></div>
+    </div>
+  </div>
 
-          <div class="side-item">
-            <div class="dot"></div>
-            <div>
-              <b>本地团队</b>
-              <p>深耕墨尔本市场，信息透明，沟通高效。</p>
+  <!-- fun facts（保留模板“数字滚动”视觉；数字你可后续再调） -->
+  <div class="count-agileits" id="stats">
+    <h3 class="heading"><span>数据概览</span></h3>
+    <div class="container">
+      <div class="count-grids">
+        <div class="count-bgcolor-w3ls">
+          <div class="col-md-3 count-grid">
+            <div class="count hvr-bounce-to-bottom">
+              <div class="numscroller numscroller-big-bottom" data-slno="1" data-min="0" data-max="15" data-delay=".5" data-increment="1">15</div>
+              <span></span>
+              <h5>行业经验（年）</h5>
             </div>
           </div>
 
-          <div class="side-item">
-            <div class="dot"></div>
-            <div>
-              <b>专业合规</b>
-              <p>强调风控与合规流程，减少交易不确定性。</p>
+          <div class="col-md-3 count-grid">
+            <div class="count hvr-bounce-to-bottom">
+              <div class="numscroller numscroller-big-bottom" data-slno="1" data-min="0" data-max="100" data-delay=".5" data-increment="1">100</div>
+              <span></span>
+              <h5>项目对接</h5>
             </div>
           </div>
 
-          <div class="side-item">
-            <div class="dot"></div>
-            <div>
-              <b>长期服务</b>
-              <p>从买入到持有、出租、维护与优化，持续支持。</p>
+          <div class="col-md-3 count-grid">
+            <div class="count hvr-bounce-to-bottom">
+              <div class="numscroller numscroller-big-bottom" data-slno="1" data-min="0" data-max="40" data-delay=".5" data-increment="1">40</div>
+              <span></span>
+              <h5>合作资源</h5>
             </div>
           </div>
 
-          <a class="cta-link" href="/contact">获取专属方案 →</a>
+          <div class="col-md-3 count-grid">
+            <div class="count hvr-bounce-to-bottom">
+              <div class="numscroller numscroller-big-bottom" data-slno="1" data-min="0" data-max="500" data-delay=".5" data-increment="1">500</div>
+              <h5>咨询响应</h5>
+            </div>
+          </div>
+
+          <div class="clearfix"></div>
         </div>
       </div>
     </div>
-  </section>
+  </div>
 
-  <!-- ===== 底部 CTA（模板风格）===== -->
-  <section class="home-cta">
-    <div class="cta-inner">
-      <div>
-        <div class="cta-title">准备开始您的项目咨询？</div>
-        <div class="cta-desc">我们会在工作时间内尽快回复，提供清晰的下一步建议。</div>
+  <!-- properties for sale（保留模板轮播；这里改成“地产资讯分类入口”也可以） -->
+  <div class="special" id="offers">
+    <h3 class="heading"><span>地产资讯</span></h3>
+    <div class="container">
+      <div class="agileits-special-grids">
+        <div id="owl-demo" class="owl-carousel owl-theme">
+          <div class="item">
+            <a href="/real-estate" style="text-decoration:none;">
+              <div class="special-info">
+                <div class="special-info-top">
+                  <div class="special-star">
+                    <i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i>
+                  </div>
+                  <h4>别墅</h4>
+                </div>
+                <div class="special-info-bottom">
+                  <p>别墅选购要点、地段分析、成交趋势与案例。</p>
+                </div>
+              </div>
+            </a>
+          </div>
+
+          <div class="item">
+            <a href="/real-estate" style="text-decoration:none;">
+              <div class="special-info special-info1">
+                <div class="special-info-top">
+                  <div class="special-star">
+                    <i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star-half-o"></i>
+                  </div>
+                  <h4>公寓</h4>
+                </div>
+                <div class="special-info-bottom">
+                  <p>公寓投资逻辑、租金回报、楼盘对比。</p>
+                </div>
+              </div>
+            </a>
+          </div>
+
+          <div class="item">
+            <a href="/real-estate" style="text-decoration:none;">
+              <div class="special-info special-info2">
+                <div class="special-info-top">
+                  <div class="special-star">
+                    <i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i>
+                  </div>
+                  <h4>二手房</h4>
+                </div>
+                <div class="special-info-bottom">
+                  <p>看房清单、议价策略、交易流程与注意事项。</p>
+                </div>
+              </div>
+            </a>
+          </div>
+
+          <div class="item">
+            <a href="/real-estate" style="text-decoration:none;">
+              <div class="special-info">
+                <div class="special-info-top">
+                  <div class="special-star">
+                    <i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star-half-o"></i>
+                  </div>
+                  <h4>商业办公楼</h4>
+                </div>
+                <div class="special-info-bottom">
+                  <p>租约结构、现金流分析、核心地段趋势。</p>
+                </div>
+              </div>
+            </a>
+          </div>
+
+          <div class="item">
+            <a href="/real-estate" style="text-decoration:none;">
+              <div class="special-info special-info1">
+                <div class="special-info-top">
+                  <div class="special-star">
+                    <i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i>
+                  </div>
+                  <h4>土地开发</h4>
+                </div>
+                <div class="special-info-bottom">
+                  <p>规划评估、开发流程、成本测算与风险控制。</p>
+                </div>
+              </div>
+            </a>
+          </div>
+        </div>
       </div>
-      <a class="btn btn-primary cta-btn" href="/contact">去填写表单</a>
     </div>
-  </section>
+  </div>
 
-  <style>
-    /* 深蓝品牌：和你现在网站一致 */
-    :global(:root){
-      --brand:#091a5d;
-      --brand2:#0b1f6b;
-      --border:#e2e6f0;
-      --text:#0e1a2b;
-    }
+  <!-- （已删除：Meet our agents / what people says） -->
 
-    /* 模板通常已有 container/row/col，这里只补“商业感”细节 */
-    .home-hero{
-      padding: 10px 0 30px;
-    }
-    .hero-copy{
-      padding: 10px 6px;
-    }
-    .hero-kicker{
-      letter-spacing: 2px;
-      font-size: 12px;
-      font-weight: 800;
-      color: var(--brand);
-      opacity: .7;
-      margin-bottom: 8px;
-    }
-    .hero-title{
-      margin: 0 0 12px;
-      font-weight: 900;
-      color: var(--brand);
-      letter-spacing: .4px;
-    }
-    .hero-desc{
-      line-height: 1.9;
-      color: var(--text);
-      opacity: .88;
-      margin: 0 0 16px;
-      font-size: 15px;
-    }
-    .hero-actions{
-      display:flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-bottom: 14px;
-    }
-    .hero-btn{
-      border-radius: 10px;
-      font-weight: 800;
-    }
-    .hero-btn.ghost{
-      background: #fff;
-      border: 1px solid var(--border);
-      color: var(--brand);
-    }
-    .hero-badges{
-      display:flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-top: 6px;
-    }
-    .badge-pill{
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      padding: 6px 10px;
-      font-size: 12px;
-      font-weight: 800;
-      color: var(--brand);
-      background: #fff;
-      opacity: .95;
-    }
+  <!-- contact 信息块（模板样式，换你的信息） -->
+  <div class="contact" id="contact">
+    <h3 class="heading"><span>联系我们</span></h3>
 
-    .hero-panel{
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      background: #fff;
-      padding: 16px;
-      box-shadow: 0 18px 60px rgba(10,20,60,.08);
-      margin-top: 10px;
-    }
-    .panel-title{
-      font-weight: 900;
-      color: var(--brand);
-      margin-bottom: 10px;
-      letter-spacing: .3px;
-    }
-    .panel-link{
-      display:block;
-      padding: 10px 12px;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      margin-bottom: 10px;
-      color: var(--brand);
-      font-weight: 900;
-      background: #fff;
-    }
-    .panel-link:hover{
-      opacity:.9;
-    }
-    .panel-split{
-      height: 1px;
-      background: var(--border);
-      margin: 12px 0;
-    }
-    .panel-meta{
-      font-size: 13px;
-      line-height: 1.9;
-      color: var(--text);
-      opacity: .85;
-    }
+    <div class="col-md-3 mail">
+      <h4>联系方式</h4>
+      <p><span class="glyphicon glyphicon-phone"></span> +61 420 616 883</p>
+      <p>
+        <span class="glyphicon glyphicon-envelope"></span>
+        <a href="mailto:info@cendantpgau.com">info@cendantpgau.com</a>
+      </p>
+    </div>
 
-    .home-section{
-      padding: 24px 0 10px;
-    }
+    <div class="col-md-3 address">
+      <h4>地址</h4>
+      <p><span class="glyphicon glyphicon-map-marker"></span> 2 Aquitania Way, Docklands VIC 3008</p>
+    </div>
 
-    .cards{
-      margin-top: 10px;
-    }
-    .service-card{
-      display:block;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 16px;
-      background: #fff;
-      margin-bottom: 14px;
-      transition: transform .15s ease, box-shadow .15s ease;
-    }
-    .service-card:hover{
-      transform: translateY(-2px);
-      box-shadow: 0 18px 60px rgba(10,20,60,.08);
-    }
-    .service-card h3{
-      margin: 0 0 10px;
-      color: var(--brand);
-      font-weight: 900;
-      font-size: 18px;
-    }
-    .service-card p{
-      margin: 0 0 10px;
-      line-height: 1.8;
-      color: var(--text);
-      opacity: .85;
-      font-size: 14px;
-    }
-    .service-card .more{
-      font-weight: 900;
-      color: var(--brand);
-      font-size: 13px;
-    }
+    <div class="col-md-3 social">
+      <h4>快速入口</h4>
+      <ul>
+        <li><a href="/company-profile"><i class="fa fa-info"></i></a></li>
+        <li><a href="/real-estate"><i class="fa fa-building"></i></a></li>
+        <li><a href="/immigration"><i class="fa fa-plane"></i></a></li>
+        <li><a href="/contact"><i class="fa fa-phone"></i></a></li>
+      </ul>
+    </div>
 
-    .profile-box{
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      background: #fff;
-      padding: 16px;
-    }
-    .profile-title{
-      margin: 0 0 10px;
-      color: var(--brand);
-      font-weight: 900;
-      letter-spacing: .3px;
-    }
-    .profile-box p{
-      line-height: 1.9;
-      color: var(--text);
-      opacity: .88;
-    }
-    .profile-box ul{
-      margin: 10px 0 0 18px;
-      line-height: 1.9;
-      color: var(--text);
-      opacity: .88;
-    }
+    <div class="col-md-3 contactimg">
+      <!-- 模板图片：保留 -->
+      <img src="/template15/images/contact.png" alt="contact" />
+    </div>
 
-    .profile-side{
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      background: #fff;
-      padding: 16px;
-    }
-    .side-title{
-      font-weight: 900;
-      color: var(--brand);
-      margin-bottom: 12px;
-    }
-    .side-item{
-      display:flex;
-      gap: 10px;
-      align-items:flex-start;
-      margin-bottom: 12px;
-    }
-    .dot{
-      width: 10px;
-      height: 10px;
-      border-radius: 999px;
-      background: var(--brand2);
-      margin-top: 6px;
-      flex: 0 0 auto;
-    }
-    .side-item p{
-      margin: 4px 0 0;
-      color: var(--text);
-      opacity: .85;
-      line-height: 1.8;
-      font-size: 13px;
-    }
-    .cta-link{
-      display:inline-block;
-      margin-top: 6px;
-      font-weight: 900;
-      color: var(--brand);
-    }
+    <div class="clearfix"></div>
+  </div>
 
-    .home-cta{
-      padding: 26px 0 70px;
-    }
-    .cta-inner{
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      background: #fff;
-      padding: 16px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap: 12px;
-    }
-    .cta-title{
-      font-weight: 900;
-      color: var(--brand);
-      margin-bottom: 6px;
-    }
-    .cta-desc{
-      color: var(--text);
-      opacity: .82;
-      line-height: 1.8;
-      font-size: 13px;
-    }
-    .cta-btn{
-      border-radius: 10px;
-      font-weight: 900;
-      white-space: nowrap;
-    }
+  <!-- contact form（改成真实调用 /api/leads） -->
+  <div class="contact-form">
+    <h3 class="heading"><span>在线留言</span></h3>
+    <div class="container">
+      <form id="lead-form">
+        <input name="name" type="text" placeholder="姓名" required />
+        <input name="email" type="email" placeholder="邮箱" required />
+        <input name="phone" type="text" placeholder="电话" />
+        <textarea name="message" placeholder="留言内容" required></textarea>
+        <button class="btn1" type="submit">提交</button>
+        <p id="lead-result" style="margin-top:10px;"></p>
+      </form>
+    </div>
+  </div>
 
-    @media (max-width: 900px){
-      .cta-inner{ flex-direction: column; align-items: flex-start; }
-    }
-  </style>
+  <script is:inline>
+    (function () {
+      const form = document.getElementById("lead-form");
+      const result = document.getElementById("lead-result");
+      if (!form || !result) return;
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        result.textContent = "提交中…";
+
+        const data = Object.fromEntries(new FormData(form));
+        data.topic = "首页咨询";
+
+        try {
+          const res = await fetch("/api/leads", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+          });
+
+          if (res.ok) {
+            result.textContent = "我们已收到您的信息，会尽快联系您。";
+            form.reset();
+          } else {
+            result.textContent = "提交失败，请稍后再试。";
+          }
+        } catch (err) {
+          result.textContent = "网络异常，请稍后再试。";
+        }
+      });
+    })();
+  </script>
+
+  <!-- footer（保留模板 footer 结构，但换成你的链接） -->
+  <div class="footer">
+    <div class="col-md-6 subscribe">
+      <form action="#" method="post" onsubmit="return false;">
+        <h3>Cendant</h3>
+        <input type="text" placeholder="输入邮箱（可选）" name="Subscribe" />
+        <button class="btn1" type="button" onclick="location.href='/contact'">联系咨询</button>
+      </form>
+    </div>
+
+    <div class="col-md-6 copyright">
+      <ul>
+        <li><a href="/">首页</a></li>
+        <li><a href="/company-profile">公司概况</a></li>
+        <li><a href="/real-estate">地产资讯</a></li>
+        <li><a href="/immigration">移民服务</a></li>
+        <li><a href="/contact">联系我们</a></li>
+      </ul>
+      <p>© {new Date().getFullYear()} Melbourne Cendant. All rights reserved.</p>
+    </div>
+
+    <div class="clearfix"></div>
+  </div>
 </TemplateLayout>

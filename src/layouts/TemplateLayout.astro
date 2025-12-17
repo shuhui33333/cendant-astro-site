@@ -1,12 +1,9 @@
 ---
-import "../styles/global.css";
+const {
+  title = "首页",
+  description = "墨尔本·胜腾国际 - 房产投资 / 项目开发 / 租赁管理 / 移民服务",
+} = Astro.props;
 
-const title =
-  Astro.props.title ??
-  Astro.props.frontmatter?.title ??
-  "页面";
-
-/** 你的站点路由与中文导航（来自 BaseLayout） */
 const nav = [
   { href: "/", label: "首页" },
   { href: "/real-estate", label: "地产资讯" },
@@ -14,32 +11,28 @@ const nav = [
   { href: "/company-profile", label: "公司概况" },
   { href: "/contact", label: "联系我们" },
 ];
-
-// 用于高亮当前导航
-const pathname = Astro.url?.pathname ?? "/";
-const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
 ---
 
 <!DOCTYPE html>
 <html lang="zh-CN">
   <head>
     <meta charset="utf-8" />
-    <title>{title} | Cendant</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title} | Cendant</title>
+    <meta name="description" content={description} />
 
-    <!-- ===== 模板 CSS（来自你上传的 index.html）===== -->
+    <!-- 模板 CSS（来自你上传的 index.html 引用） -->
+    <link rel="stylesheet" href="/template15/css/bootstrap.css" />
+    <link rel="stylesheet" href="/template15/css/font-awesome.min.css" />
+    <link rel="stylesheet" href="/template15/css/style.css" />
     <link rel="stylesheet" href="/template15/css/mainStyles.css" />
-    <link rel="stylesheet" href="/template15/css/flexslider.css" />
+
+    <!-- 轮播（保留 properties for sale 用） -->
     <link rel="stylesheet" href="/template15/css/owl.carousel.css" />
     <link rel="stylesheet" href="/template15/css/owl.theme.css" />
-    <link rel="stylesheet" href="/template15/css/easy-responsive-tabs.css" />
-    <link rel="stylesheet" href="/template15/css/bootstrap.css" />
-    <link rel="stylesheet" href="/template15/css/style.css" />
-    <link rel="stylesheet" href="/template15/css/font-awesome.min.css" />
 
-    <!-- 字体（把模板里的 http 改成 https 更稳） -->
+    <!-- 字体（模板里是 http，这里换成 https 避免混合内容） -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800&display=swap"
       rel="stylesheet"
@@ -48,32 +41,10 @@ const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.s
       href="https://fonts.googleapis.com/css?family=Hind:300,400,500,600,700&display=swap"
       rel="stylesheet"
     />
-
-    <style>
-      /* 让模板的 navbar-brand 显示你的品牌 */
-      .navbar-brand span { letter-spacing: .5px; }
-      .brand-sub { font-size: 12px; opacity: .75; letter-spacing: 2px; margin-top: 2px; }
-
-      /* 非首页也保持“banner 顶部”视觉，但不一定需要 slider */
-      .banner { min-height: 0; }
-
-      /* 给 slot 内容一个模板风格容器（避免内容贴边） */
-      .page-wrap { padding: 40px 0 70px; }
-      .page-card {
-        background: rgba(255,255,255,.92);
-        border: 1px solid rgba(226,230,240,.9);
-        border-radius: 18px;
-        padding: 24px;
-        box-shadow: 0 18px 60px rgba(10,20,60,.08);
-      }
-
-      /* 修一下 a 默认样式（防止变回蓝色下划线） */
-      a { text-decoration: none; }
-    </style>
   </head>
 
   <body>
-    <!-- ===== 模板 Banner + Navbar（结构来自你上传的 index.html）===== -->
+    <!-- banner + navbar（保持模板结构与 class，确保 CSS 生效） -->
     <div class="banner" id="home">
       <nav class="navbar navbar-default">
         <div class="navbar-header navbar-left">
@@ -91,59 +62,81 @@ const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.s
 
           <h1>
             <a class="navbar-brand" href="/">
-              <span>墨尔本</span> 胜腾国际
-              <div class="brand-sub">MELBOURNE · CENDANT</div>
+              <span>Melbourne</span> Cendant
             </a>
           </h1>
           <i class="fa fa-home" aria-hidden="true"></i>
         </div>
 
-        <!-- 右侧导航：用你的 nav 数据替换模板的 Home/About/Services... -->
         <div class="collapse navbar-collapse navbar-right" id="bs-example-navbar-collapse-1">
           <nav class="link-effect-2" id="link-effect-2">
             <ul class="nav navbar-nav">
               {nav.map((i) => (
-                <li class={isActive(i.href) ? "active" : ""}>
-                  <a href={i.href}>
-                    <span data-hover={i.label}>{i.label}</span>
-                  </a>
+                <li class={Astro.url.pathname === i.href ? "active" : ""}>
+                  <a href={i.href}><span data-hover={i.label}>{i.label}</span></a>
                 </li>
               ))}
             </ul>
           </nav>
         </div>
 
-        <!-- 如果你不需要模板的社媒图标，可以删掉这一块 -->
-        <!--
+        <!-- 右上社交图标：保留模板样式，但你也可以之后换成微信/电话 -->
         <div class="agileits-social top_content">
           <ul>
-            <li><a href="#"><i class="fa fa-facebook"></i></a></li>
+            <li>
+              <a href="#" aria-label="facebook"><i class="fa fa-facebook"></i></a>
+            </li>
+            <li>
+              <a href="#" aria-label="twitter"><i class="fa fa-twitter"></i></a>
+            </li>
+            <li>
+              <a href="#" aria-label="rss"><i class="fa fa-rss"></i></a>
+            </li>
+            <li>
+              <a href="#" aria-label="vk"><i class="fa fa-vk"></i></a>
+            </li>
           </ul>
         </div>
-        -->
       </nav>
     </div>
 
-    <!-- ===== 页面内容（各子页写在 slot 里）===== -->
-    <div class="container page-wrap">
-      <div class="page-card">
-        <slot />
-      </div>
-    </div>
+    <!-- 页面内容插槽 -->
+    <slot />
 
-    <!-- ===== 模板 JS（public/template15/js/*）===== -->
-    <script is:inline src="/template15/js/jquery-2.1.4.min.js"></script>
-    <script is:inline src="/template15/js/bootstrap.js"></script>
+    <!-- 模板 JS（注意：从 public 目录引用，统一用 /template15/... 路径） -->
+    <script src="/template15/js/jquery-2.1.4.min.js" is:inline></script>
+    <script src="/template15/js/bootstrap.js" is:inline></script>
 
-    <!-- 可选插件：用到再留，不用可以删 -->
-    <script is:inline src="/template15/js/owl.carousel.js"></script>
-    <script is:inline src="/template15/js/jquery.flexslider.js"></script>
-    <script is:inline src="/template15/js/mainScript.js"></script>
-    <script is:inline src="/template15/js/rgbSlide.min.js"></script>
-    <script is:inline src="/template15/js/easy-responsive-tabs.js"></script>
-    <script is:inline src="/template15/js/numscroller-1.0.js"></script>
-    <script is:inline src="/template15/js/SmoothScroll.min.js"></script>
-    <script is:inline src="/template15/js/move-top.js"></script>
-    <script is:inline src="/template15/js/easing.js"></script>
+    <!-- 首页 slider（模板用） -->
+    <script src="/template15/js/mainScript.js" is:inline></script>
+    <script src="/template15/js/rgbSlide.min.js" is:inline></script>
+
+    <!-- 数字滚动（fun facts 用） -->
+    <script src="/template15/js/numscroller-1.0.js" is:inline></script>
+
+    <!-- 轮播（properties for sale 用） -->
+    <script src="/template15/js/owl.carousel.js" is:inline></script>
+    <script is:inline>
+      (function () {
+        // 防止在没有 #owl-demo 的页面报错
+        if (typeof window.jQuery === "undefined") return;
+        window.jQuery(function ($) {
+          var el = $("#owl-demo");
+          if (!el.length || !el.owlCarousel) return;
+          el.owlCarousel({
+            autoPlay: 3000,
+            autoPlay: true,
+            items: 3,
+            itemsDesktop: [640, 5],
+            itemsDesktopSmall: [414, 4],
+          });
+        });
+      })();
+    </script>
+
+    <!-- 平滑滚动（如果你不用锚点，也不影响） -->
+    <script src="/template15/js/SmoothScroll.min.js" is:inline></script>
+    <script src="/template15/js/move-top.js" is:inline></script>
+    <script src="/template15/js/easing.js" is:inline></script>
   </body>
 </html>
