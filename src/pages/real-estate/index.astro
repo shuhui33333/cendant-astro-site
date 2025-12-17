@@ -1,0 +1,244 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import TopBanner from "../../components/TopBanner.astro";
+import { getRealEstatePosts } from "../../lib/contentful";
+
+// 拉最新资讯（不分 sale/rent）
+const latest = await getRealEstatePosts({ limit: 12 });
+const formatDate = (d?: string) => {
+  if (!d) return "";
+  try {
+    return new Date(d).toLocaleDateString("zh-CN");
+  } catch {
+    return d;
+  }
+};
+
+const saleCats = [
+  { href: "/real-estate/sale/apartment", zh: "公寓", en: "APARTMENT" },
+  { href: "/real-estate/sale/second-hand", zh: "二手房", en: "SECOND-HAND" },
+  { href: "/real-estate/sale/townhouse", zh: "联排别墅", en: "TOWNHOUSE" },
+  { href: "/real-estate/sale/land-villa", zh: "土地别墅", en: "LAND VILLA" },
+  { href: "/real-estate/sale/commercial", zh: "商业办公楼", en: "COMMERCIAL" },
+  { href: "/real-estate/sale/land", zh: "土地开发", en: "LAND" },
+  { href: "/real-estate/sale/farm", zh: "农场", en: "FARM" },
+  { href: "/real-estate/sale/hotel", zh: "酒店", en: "HOTEL" },
+];
+
+const rentCats = [
+  { href: "/real-estate/rent/apartment", zh: "公寓", en: "APARTMENT" },
+  { href: "/real-estate/rent/townhouse", zh: "联排别墅", en: "TOWNHOUSE" },
+  { href: "/real-estate/rent/land-villa", zh: "土地别墅", en: "LAND VILLA" },
+  { href: "/real-estate/rent/commercial", zh: "商业办公楼", en: "COMMERCIAL" },
+];
+---
+
+<BaseLayout title="地产资讯">
+  <TopBanner zh="地产资讯" en="REAL ESTATE" />
+
+  <section class="wrap">
+    <!-- 分类入口（售卖） -->
+    <div class="block">
+      <div class="blockHead">
+        <h2>房产售卖资讯</h2>
+        <p>SALE INFORMATION</p>
+      </div>
+
+      <div class="grid">
+        {saleCats.map((c) => (
+          <a class="cat" href={c.href}>
+            <div class="catZh">{c.zh}</div>
+            <div class="catEn">{c.en}</div>
+          </a>
+        ))}
+      </div>
+    </div>
+
+    <!-- 分类入口（出租） -->
+    <div class="block">
+      <div class="blockHead">
+        <h2>房产出租资讯</h2>
+        <p>RENTAL INFORMATION</p>
+      </div>
+
+      <div class="grid">
+        {rentCats.map((c) => (
+          <a class="cat" href={c.href}>
+            <div class="catZh">{c.zh}</div>
+            <div class="catEn">{c.en}</div>
+          </a>
+        ))}
+      </div>
+    </div>
+
+    <!-- 最新资讯 -->
+    <div class="block">
+      <div class="blockHead">
+        <h2>最新资讯</h2>
+        <p>LATEST POSTS</p>
+      </div>
+
+      <div class="list">
+        {latest.map((p) => (
+          <a class="post" href={`/real-estate/${p.slug}`}>
+            <div class="postTitle">{p.title}</div>
+            <div class="postMeta">
+              <span>{formatDate(p.publishDate)}</span>
+              {p.dealType ? <span class="pill">{p.dealType === "sale" ? "售卖" : "出租"}</span> : null}
+              {p.category ? <span class="pill ghost">{p.category}</span> : null}
+            </div>
+            {p.summary ? <div class="postSummary">{p.summary}</div> : null}
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <style>
+    :global(:root) {
+      --brand: #0b1f6b;
+      --text: #0e1a2b;
+      --border: #e2e6f0;
+      --bg: #f6f8fc;
+    }
+
+    .wrap {
+      max-width: 1100px;
+      margin: 36px auto 80px;
+      padding: 0 20px;
+    }
+
+    .block {
+      margin-top: 26px;
+    }
+
+    .blockHead {
+      margin-bottom: 14px;
+    }
+
+    .blockHead h2 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--brand);
+      letter-spacing: 0.5px;
+    }
+
+    .blockHead p {
+      margin: 6px 0 0;
+      font-size: 12px;
+      letter-spacing: 3px;
+      color: var(--brand);
+      opacity: 0.65;
+      font-weight: 800;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    @media (max-width: 1000px) {
+      .grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+    @media (max-width: 720px) {
+      .grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+    @media (max-width: 420px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .cat {
+      display: block;
+      text-decoration: none;
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 16px;
+      padding: 16px 14px;
+      transition: transform 0.12s ease, box-shadow 0.12s ease;
+    }
+
+    .cat:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 24px rgba(11, 31, 107, 0.12);
+    }
+
+    .catZh {
+      font-size: 18px;
+      font-weight: 900;
+      color: var(--brand);
+    }
+
+    .catEn {
+      margin-top: 8px;
+      font-size: 12px;
+      letter-spacing: 2.2px;
+      color: var(--brand);
+      opacity: 0.65;
+      font-weight: 800;
+    }
+
+    .list {
+      display: grid;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .post {
+      display: block;
+      text-decoration: none;
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 16px;
+      padding: 16px;
+    }
+
+    .postTitle {
+      font-size: 16px;
+      font-weight: 900;
+      color: var(--brand);
+      margin-bottom: 6px;
+      line-height: 1.4;
+    }
+
+    .postMeta {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      font-size: 12px;
+      color: var(--text);
+      opacity: 0.75;
+      margin-bottom: 10px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(11, 31, 107, 0.08);
+      color: var(--brand);
+      font-weight: 800;
+    }
+
+    .pill.ghost {
+      background: rgba(14, 26, 43, 0.06);
+      color: #0e1a2b;
+      opacity: 0.9;
+    }
+
+    .postSummary {
+      color: var(--text);
+      opacity: 0.9;
+      line-height: 1.85;
+      font-size: 14px;
+    }
+  </style>
+</BaseLayout>
