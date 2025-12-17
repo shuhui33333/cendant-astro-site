@@ -2,7 +2,7 @@
 type CfSys = { id: string };
 type CfLink = { sys: { type: "Link"; linkType: string; id: string } };
 
-export type RealEstatePost = {
+export type companyProfile = {
   id: string;
   title: string;
   slug: string;
@@ -13,7 +13,7 @@ export type RealEstatePost = {
   imageUrls: string[];
 };
 
-export type RealEstatePostDetail = RealEstatePost & {
+export type RealEstatePostDetail = companyProfile & {
   body?: any; // Rich text JSON
   bodyZh?: string; // 如果你有 Body (ZH) 字段
 };
