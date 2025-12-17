@@ -1,6 +1,7 @@
 ---
 import TemplateLayout from "../../layouts/TemplateLayout.astro";
 import { getRealEstatePosts } from "../../lib/contentful";
+import type { RealEstatePost } from "../../lib/contentful";
 
 const posts = await getRealEstatePosts(30);
 
@@ -223,3 +224,7 @@ const rentCats = [
     }
   </style>
 </TemplateLayout>
+
+<pre style="white-space:pre-wrap">
+{JSON.stringify(posts, null, 2)}
+</pre>
