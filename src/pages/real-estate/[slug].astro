@@ -5,7 +5,7 @@ import { getAllRealEstateSlugs, getRealEstatePostBySlug } from "../../lib/conten
 export async function getStaticPaths() {
   const slugs = await getAllRealEstateSlugs();
 
-  return slugs.map(() => ({
+  return slugs.map((slug) => ({
     params: { slug },
     props: { slug },
   }));
