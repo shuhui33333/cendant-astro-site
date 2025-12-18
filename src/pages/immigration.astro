@@ -1,7 +1,14 @@
 ---
 import TemplateLayout from "../layouts/TemplateLayout.astro";
-import TopBanner from "../components/TopBanner.astro";
+import SubpageIntroBanner from "../components/SubpageIntroBanner.astro";
 import Accordion from "../components/Accordion.astro";
+
+const introItems = [
+  { title: "签证路径", desc: "雇主担保、商业投资、过渡与长期规划。" },
+  { title: "材料规划", desc: "梳理材料清单、时间线与风险点提示。" },
+  { title: "全流程支持", desc: "评估、方案、递交、补料与跟进协助。" },
+  { title: "持续更新", desc: "政策变化会同步更新页面与咨询建议。" },
+];
 
 const items = [
 
@@ -61,7 +68,11 @@ const items = [
 ---
 
 <TemplateLayout title="移民服务" subtitle="IMMIGRATION SERVICE">
-  <TopBanner zh="移民服务" en="IMMIGRATION SERVICE" />
+  <SubpageIntroBanner
+    titleZh="移民服务"
+    titleEn="IMMIGRATION SERVICE"
+    items={introItems}
+  />
 
   <section class="container">
     <Accordion items={items} />
