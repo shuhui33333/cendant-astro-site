@@ -1,7 +1,14 @@
 ---
 import TemplateLayout from "../layouts/TemplateLayout.astro";
-import TopBanner from "../components/TopBanner.astro";
+import SubpageIntroBanner from "../../components/SubpageIntroBanner.astro";
 import Accordion from "../components/Accordion.astro";
+
+const introItems = [
+  { title: "房产买卖", desc: "选房建议、谈判策略、合同要点与成交协助。" },
+  { title: "房产租赁", desc: "出租策略、租客筛选、租约管理与维护建议。" },
+  { title: "开发管理", desc: "土地/项目评估、预算控制、节点管理与交付。" },
+  { title: "法务过户", desc: "产权、过户流程、合规文件与风险提示。" },
+];
 
 const items = [
   {
@@ -73,7 +80,7 @@ const items = [
 ---
 
 <TemplateLayout title="房产服务" subtitle="PROPERTY SERVICE">
-  <TopBanner zh="房产服务" en="PROPERTY SERVICE" />
+  <SubpageIntroBanner zh="房产服务" en="PROPERTY SERVICE" />
 
   <section class="container">
     <Accordion items={items} />

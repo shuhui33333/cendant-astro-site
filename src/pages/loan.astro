@@ -1,7 +1,14 @@
 ---
 import TemplateLayout from "../layouts/TemplateLayout.astro";
-import TopBanner from "../components/TopBanner.astro";
+import SubpageIntroBanner from "../components/SubpageIntroBanner.astro";
 import Accordion from "../components/Accordion.astro";
+
+const introItems = [
+  { title: "贷款评估", desc: "收入/负债/征信结构初步评估与可贷测算。" },
+  { title: "产品对比", desc: "利率、费用、还款方式、固定/浮动方案。" },
+  { title: "预批与批贷", desc: "预批准备、材料递交、批贷跟进与落地。" },
+  { title: "再融资优化", desc: "利率下调、现金流优化、结构调整建议。" },
+];
 
 const items = [
   {
@@ -86,7 +93,7 @@ const items = [
 ---
 
 <TemplateLayout title="贷款服务" subtitle="LOAN SERVICE">
-  <TopBanner zh="贷款服务" en="LOAN SERVICE" />
+  <SubpageIntroBanner zh="贷款服务" en="LOAN SERVICE" />
 
   <section class="container">
     <Accordion items={items} />
