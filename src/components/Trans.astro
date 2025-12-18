@@ -1,0 +1,14 @@
+---
+const { zh, en, as = "span", class: className = "" } = Astro.props as {
+  zh: string;
+  en: string;
+  as?: keyof HTMLElementTagNameMap;
+  class?: string;
+};
+const Tag = as;
+---
+
+<Tag class={className}>
+  <span data-lang="zh">{zh}</span>
+  <span data-lang="en">{en}</span>
+</Tag>
