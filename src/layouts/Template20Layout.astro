@@ -1,169 +1,362 @@
 ---
 import "../styles/global.css";
 
-/**
- * Template20Layout
- * - 使用 public/template20 下的 CSS/JS（模板资源）
- * - 所有子页面统一外壳：Header / Footer / Slot
- * - 你只需要在各个 page 里写 <Template20Layout> ...页面主体... </Template20Layout>
- */
+type NavItem = { href: string; label: string };
 
-const title =
-  Astro.props.title ??
-  Astro.props.frontmatter?.title ??
-  "Cendant";
+const props = Astro.props as {
+  title?: string;
+  description?: string;
+  showFooter?: boolean;
+  hasHero?: boolean;
+  nav?: NavItem[];
+};
 
-const showFooter = Astro.props.showFooter ?? true;
+const title = props.title ?? Astro.props.frontmatter?.title ?? "页面";
+const description =
+  props.description ??
+  "墨尔本·胜腾国际 - 房产投资 / 项目开发 / 租赁管理 / 移民服务";
 
-// 顶部导航（你只要改这里就行）
-const nav = [
-  { href: "/", label: "首页" },
-  { href: "/real-estate", label: "房产资讯" },
-  { href: "/property-service", label: "房产服务" },
-  { href: "/loan", label: "贷款服务" },
-  { href: "/immigration", label: "移民服务" },
-  { href: "/company-profile", label: "公司概况" },
-  { href: "/contact", label: "联系我们" },
-];
+/** ✅ 底部“联系我们”模块 => 默认开启 */
+const showFooter = props.showFooter ?? true;
+
+/** ✅ 首页传 hasHero={true} 贴顶；子页默认 false 不贴顶 */
+const hasHero = props.hasHero ?? false;
+
+const nav: NavItem[] =
+  props.nav ??
+  [
+    { href: "/", label: "首页" },
+    { href: "/real-estate", label: "房产资讯" },
+    { href: "/property-service", label: "房产服务" },
+    { href: "/loan", label: "贷款服务" },
+    { href: "/immigration", label: "移民服务" },
+    { href: "/company-profile", label: "公司概况" },
+    { href: "/contact", label: "联系我们" },
+  ];
 
 const pathname = Astro.url?.pathname ?? "/";
-const isActive = (href) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
+
+function isActive(href: string) {
+  if (href === "/") return pathname === "/";
+  return pathname.startsWith(href);
+}
 ---
 
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{title} | Melbourne Cendant</title>
+    <title>{title} | Cendant</title>
+    <meta name="description" content={description} />
 
-    <!-- ===== Template20 CSS (public/template20) ===== -->
-    <link rel="stylesheet" href="/template20/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="/template20/css/font-awesome.min.css" />
-    <link rel="stylesheet" href="/template20/css/owl.carousel.css" />
-    <link rel="stylesheet" href="/template20/css/owl.theme.default.css" />
-    <link rel="stylesheet" href="/template20/css/jquery.nouislider.min.css" />
-    <link rel="stylesheet" href="/template20/css/animate.min.css" />
-    <link rel="stylesheet" href="/template20/css/header-menu-responsive.css" />
-    <link rel="stylesheet" href="/template20/css/responsive.css" />
-    <link rel="stylesheet" href="/template20/css/style.css" />
+    <!-- ===== template15 CSS ===== -->
+    <link rel="stylesheet" href="/template15/css/bootstrap.css" />
+    <link rel="stylesheet" href="/template15/css/font-awesome.min.css" />
+    <link rel="stylesheet" href="/template15/css/flexslider.css" />
+    <link rel="stylesheet" href="/template15/css/owl.carousel.css" />
+    <link rel="stylesheet" href="/template15/css/owl.theme.css" />
+    <link rel="stylesheet" href="/template15/css/easy-responsive-tabs.css" />
+    <link rel="stylesheet" href="/template15/css/style.css" />
+    <link rel="stylesheet" href="/template15/css/mainStyles.css" />
 
-    <!-- 可选：你站点自己的全局样式 -->
-    <style>
-      /* 让模板的 logo/导航更贴合你现在的文字 */
-      .cendant-brand {
-        display: flex;
+    <style is:global>
+      /* =========================================================
+         0) 基础
+      ========================================================= */
+      html, body { margin: 0; padding: 0; }
+
+      /* 用 CSS 变量控制子页顶部留白（由 JS 动态写入） */
+      body.tpl-body:not(.tpl-has-hero) { padding-top: var(--nav-h, 96px); }
+      body.tpl-body.tpl-has-hero { padding-top: 0; }
+
+      /* =========================================================
+         1) Banner / Navbar：子页固定在顶部 + 白底；首页叠在 hero 上
+         （关键：避免子页内容被覆盖，同时保持顶部栏可见）
+      ========================================================= */
+      .banner#home { z-index: 9999; width: 100%; }
+
+      body.tpl-body.tpl-has-hero .banner#home {
+        position: absolute;
+        left: 0; top: 0;
+        background: transparent;
+      }
+
+      body.tpl-body:not(.tpl-has-hero) .banner#home {
+        position: fixed; /* ✅ 子页固定顶端 */
+        left: 0; top: 0;
+        background: #fff;
+      }
+
+      .banner#home .navbar {
+        margin: 0;
+        border: none;
+        padding: 10px 0;
+        background: transparent;
+      }
+
+      body.tpl-body:not(.tpl-has-hero) .banner#home .navbar {
+        background: #fff;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+      }
+
+      /* =========================================================
+         2) 解决 Logo 太靠左：给 navbar 内部左右留白
+      ========================================================= */
+      .banner#home .navbar {
+        padding-left: 18px;
+        padding-right: 18px;
+      }
+      @media (max-width: 768px) {
+        .banner#home .navbar {
+          padding-left: 12px;
+          padding-right: 12px;
+        }
+      }
+
+      /* =========================================================
+         3) 彻底解决“品牌旁边四个框”：
+            - template15 很可能在 navbar-brand、h1、span、伪元素上叠加了 border/outline/box-shadow
+            - 我们强制清掉所有这些，只允许 brand-badge 本身有 1 个边框
+      ========================================================= */
+      /* 清掉 h1 可能带的框/间距影响 */
+      .navbar-header h1 {
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+      }
+
+      /* 清掉 navbar-brand 及其后代（先全部清掉） */
+      a.navbar-brand.brand-with-logo,
+      a.navbar-brand.brand-with-logo * {
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+      }
+      /* 清掉伪元素（常见制造“多一层框”） */
+      a.navbar-brand.brand-with-logo::before,
+      a.navbar-brand.brand-with-logo::after,
+      .brand-badge::before,
+      .brand-badge::after {
+        content: none !important;
+      }
+
+      /* ✅ 布局：Logo + 品牌文字 */
+      .brand-with-logo {
+        display: flex !important;
+        align-items: center !important;
+        gap: 14px !important;
+        height: auto !important;
+        line-height: normal !important;
+        padding: 6px 0 !important;
+      }
+
+      /* 你截图里 logo 尺寸已经正常：保持你想要的大小 */
+      .brand-logo {
+        height: 64px !important;
+        width: auto !important;
+        display: block !important;
+        max-height: none !important;
+      }
+      @media (max-width: 768px) {
+        .brand-logo { height: 44px !important; }
+      }
+
+      /* ✅ 只允许这一层出现 1 个边框 */
+      .brand-badge {
+        display: inline-flex;
         flex-direction: column;
         line-height: 1.1;
-        text-decoration: none;
+
+        border: 2px solid rgba(255,255,255,0.8) !important; /* 首页白框 */
+        border-radius: 10px !important;
+        padding: 6px 10px !important;
+
+        box-shadow: none !important;
+        outline: none !important;
       }
-      .cendant-brand .zh {
-        font-size: 28px;
-        font-weight: 900;
-        letter-spacing: 1px;
+
+      /* 子页边框用淡深蓝（更高级） */
+      body.tpl-body:not(.tpl-has-hero) .brand-badge {
+        border-color: rgba(9,26,93,0.35) !important;
       }
-      .cendant-brand .en {
-        font-size: 12px;
+
+      /* 保证 badge 内部不会再生成额外线框（关键） */
+      .brand-badge * {
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+      }
+
+      .brand-main {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 8px;
+        font-size: 20px;
         font-weight: 800;
-        opacity: .9;
+        white-space: nowrap;
+        line-height: 1.1;
+      }
+      .brand-sub {
+        display: block;
+        font-size: 11px;
+        opacity: 0.75;
         letter-spacing: 2px;
+        margin-top: 3px;
+        white-space: nowrap;
+      }
+      @media (max-width: 768px) {
+        .brand-main { font-size: 16px; }
+        .brand-sub { font-size: 10px; letter-spacing: 1.5px; }
       }
 
-      /* 导航 active 状态（不依赖模板 JS） */
-      .tpl-nav a.active {
-        font-weight: 900;
+      /* =========================================================
+         4) 首页 vs 子页：导航字色
+      ========================================================= */
+      body.tpl-body.tpl-has-hero .navbar-default .navbar-brand,
+      body.tpl-body.tpl-has-hero .navbar-default .navbar-brand span,
+      body.tpl-body.tpl-has-hero .navbar-default .navbar-nav > li > a,
+      body.tpl-body.tpl-has-hero .navbar-default .navbar-nav > li > a span {
+        color: #fff !important;
       }
 
-      /* 子页面容器（让内容宽度舒服一点） */
-      .tpl-page {
-        padding: 40px 0 80px;
+      body.tpl-body:not(.tpl-has-hero) .navbar-default .navbar-brand,
+      body.tpl-body:not(.tpl-has-hero) .navbar-default .navbar-brand span,
+      body.tpl-body:not(.tpl-has-hero) .navbar-default .navbar-nav > li > a,
+      body.tpl-body:not(.tpl-has-hero) .navbar-default .navbar-nav > li > a span {
+        color: #091a5d !important;
       }
+
+      /* 移动端三条杠颜色 */
+      body.tpl-body.tpl-has-hero .navbar-default .navbar-toggle .icon-bar {
+        background: #fff !important;
+      }
+      body.tpl-body:not(.tpl-has-hero) .navbar-default .navbar-toggle .icon-bar {
+        background: #091a5d !important;
+      }
+
+      /* active 更明显 */
+      .navbar-nav > li.active > a span,
+      .navbar-nav > li.active > a span:hover { font-weight: 800; }
+
+      /* 页面内容容器：不额外加 padding（由 body padding-top 解决遮挡） */
+      main.tpl-main { padding-top: 0; }
     </style>
   </head>
 
-  <body>
-    <!-- ===== Header（按模板风格做一个可用版本）===== -->
-    <header class="header header-3">
-      <div class="container">
-        <div class="row">
-          <div class="col-md-12">
+  <body class:list={["tpl-body", hasHero ? "tpl-has-hero" : ""]}>
+    <!-- ===== 顶部 Navbar ===== -->
+    <div class="banner" id="home">
+      <nav class="navbar navbar-default" id="site-navbar">
+        <div class="navbar-header navbar-left">
+          <button
+            type="button"
+            class="navbar-toggle collapsed"
+            data-toggle="collapse"
+            data-target="#bs-example-navbar-collapse-1"
+          >
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
 
-            <nav class="navbar navbar-default">
-              <div class="navbar-header">
-                <button
-                  type="button"
-                  class="navbar-toggle collapsed"
-                  data-toggle="collapse"
-                  data-target="#cendant-navbar"
-                  aria-expanded="false"
-                >
-                  <span class="sr-only">Toggle navigation</span>
-                  <span class="icon-bar"></span>
-                  <span class="icon-bar"></span>
-                  <span class="icon-bar"></span>
-                </button>
-
-                <a class="navbar-brand cendant-brand" href="/">
-                  <span class="zh">墨尔本·胜腾国际</span>
-                  <span class="en">MELBOURNE · CENDANT</span>
-                </a>
-              </div>
-
-              <div class="collapse navbar-collapse navbar-right" id="cendant-navbar">
-                <ul class="nav navbar-nav tpl-nav">
-                  {nav.map((i) => (
-                    <li class={isActive(i.href) ? "active" : ""}>
-                      <a class={isActive(i.href) ? "active" : ""} href={i.href}>{i.label}</a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </nav>
-
-          </div>
+          <h1>
+            <a class="navbar-brand brand-with-logo" href="/">
+              <img src="/images/logo.png" alt="Cendant Logo" class="brand-logo" />
+              <span class="brand-badge">
+                <span class="brand-main">墨尔本 · 胜腾国际</span>
+                <span class="brand-sub">MELBOURNE · CENDANT</span>
+              </span>
+            </a>
+          </h1>
         </div>
-      </div>
-    </header>
 
-    <!-- ===== 页面主体（每个子页面写在这里）===== -->
-    <main class="tpl-page">
+        <div
+          class="collapse navbar-collapse navbar-right"
+          id="bs-example-navbar-collapse-1"
+        >
+          <nav class="link-effect-2" id="link-effect-2">
+            <ul class="nav navbar-nav">
+              {nav.map((i) => (
+                <li class={isActive(i.href) ? "active" : ""}>
+                  <a href={i.href}>
+                    <span data-hover={i.label}>{i.label}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
+      </nav>
+    </div>
+
+    <!-- ===== 页面内容 ===== -->
+    <main class="tpl-main">
       <slot />
     </main>
 
-    <!-- ===== Footer（保留模板结构，你可后续替换成模板原 footer）===== -->
+    <!-- ===== Footer：保留底部黑色“联系我们”模块 ===== -->
     {showFooter && (
-      <footer class="footer">
-        <div class="container">
-          <div class="row">
-            <div class="col-md-6 subscribe">
-              <h3>联系我们</h3>
-              <form action="#" method="post" onsubmit="return false;">
-                <input type="text" placeholder="输入邮箱（可选）" name="Subscribe" />
-                <a class="btn1" href="/contact">去填写表单</a>
-              </form>
-            </div>
-
-            <div class="col-md-6 copyright">
-              <ul>
-                {nav.slice(0, 6).map((i) => (
-                  <li><a href={i.href}>{i.label}</a></li>
-                ))}
-              </ul>
-              <p>© {new Date().getFullYear()} Melbourne Cendant. All rights reserved.</p>
-            </div>
-
-            <div class="clearfix"></div>
-          </div>
+      <div class="footer">
+        <div class="col-md-6 subscribe">
+          <form action="#" method="post" onsubmit="return false;">
+            <h3>联系我们</h3>
+            <input type="text" name="Subscribe" placeholder="输入邮箱（可选）" />
+            <a class="btn1" href="/contact">联系咨询</a>
+          </form>
         </div>
-      </footer>
+
+        <div class="col-md-6 copyright">
+          <ul>
+            {nav.slice(0, 6).map((i) => (
+              <li><a href={i.href}>{i.label}</a></li>
+            ))}
+          </ul>
+          <p>© {new Date().getFullYear()} Melbourne Cendant. All rights reserved.</p>
+        </div>
+
+        <div class="clearfix"></div>
+      </div>
     )}
 
-    <!-- ===== Template20 JS（public 资源：必须 is:inline，避免 Astro 打包报错）===== -->
-    <script is:inline src="/template20/js/jquery-2.2.3.min.js"></script>
-    <script is:inline src="/template20/js/bootstrap.min.js"></script>
-    <script is:inline src="/template20/js/owl.carousel.min.js"></script>
-    <script is:inline src="/template20/js/jquery.nouislider.min.js"></script>
-    <script is:inline src="/template20/js/wow.min.js"></script>
-    <script is:inline src="/template20/js/custom.js"></script>
+    <!-- =========================================================
+         ✅ 关键：动态测量 navbar 高度，写入 --nav-h
+         ✅ 解决：子页内容仍被顶部覆盖（不同屏幕高度不同）
+    ========================================================= -->
+    <script is:inline>
+      (function () {
+        function setNavHeight() {
+          var nav = document.getElementById("site-navbar");
+          if (!nav) return;
+          var h = nav.getBoundingClientRect().height;
+          // 多给一点缓冲，避免字体/阴影导致的“刚好压住一点点”
+          document.body.style.setProperty("--nav-h", (h + 12) + "px");
+        }
+        window.addEventListener("load", setNavHeight);
+        window.addEventListener("resize", setNavHeight);
+        // 兼容移动端展开/收起菜单后高度变化
+        document.addEventListener("click", function () {
+          setTimeout(setNavHeight, 50);
+        });
+      })();
+    </script>
+
+    <!-- ===== template15 JS（Cloudflare/Astro 构建必须 is:inline）===== -->
+    <script is:inline src="/template15/js/jquery-2.1.4.min.js"></script>
+    <script is:inline src="/template15/js/bootstrap.js"></script>
+    <script is:inline src="/template15/js/numscroller-1.0.js"></script>
+    <script is:inline src="/template15/js/owl.carousel.js"></script>
+    <script is:inline src="/template15/js/jquery.flexslider.js"></script>
+    <script is:inline src="/template15/js/easy-responsive-tabs.js"></script>
+    <script is:inline src="/template15/js/SmoothScroll.min.js"></script>
+    <script is:inline src="/template15/js/move-top.js"></script>
+    <script is:inline src="/template15/js/easing.js"></script>
+    <script is:inline src="/template15/js/mainScript.js"></script>
+    <script is:inline src="/template15/js/rgbSlide.min.js"></script>
   </body>
 </html>
