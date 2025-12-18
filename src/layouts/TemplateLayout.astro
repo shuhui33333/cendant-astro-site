@@ -15,7 +15,7 @@ const title = props.title ?? Astro.props.frontmatter?.title ?? "页面";
 const description =
   props.description ?? "墨尔本·胜腾国际 - 房产投资 / 项目开发 / 租赁管理 / 移民服务";
 
-/** ✅ 保留底部黑色“联系我们”模块 => 默认开启 */
+/** ✅ 底部“联系我们”模块 => 默认开启 */
 const showFooter = props.showFooter ?? true;
 
 /** ✅ 首页传 hasHero={true} 贴顶；子页默认 false 不贴顶 */
@@ -72,6 +72,7 @@ function isActive(href: string) {
     />
 
     <style is:global>
+      /* ===== 基础清零 ===== */
       html,
       body {
         margin: 0;
@@ -93,18 +94,18 @@ function isActive(href: string) {
         font-weight: 800;
       }
 
-      /* ✅ 让左侧品牌/图标区域和右侧菜单有“呼吸感” */
+      /* ✅ 导航整体上下留白，让logo/菜单不拥挤 */
       .banner#home .navbar {
-        padding: 20px 0; /* 上下拉开一点 */
+        padding: 10px 0;
       }
 
-      /* ✅ 左侧 fa-home 图标与菜单/内容分隔（避免贴太近） */
+      /* ✅ 左侧 home 图标与品牌/菜单拉开距离 */
       .navbar-header .fa-home {
-        margin-left: 18px;
-        margin-top: 10px;
+        margin-left: 12px;
+        margin-top: 8px;
       }
 
-      /* ✅ 给右侧导航一点右边距（避免贴边/贴得太紧） */
+      /* ✅ 右侧菜单靠边不要贴死 */
       .navbar-collapse.navbar-right {
         padding-right: 12px;
       }
@@ -113,7 +114,7 @@ function isActive(href: string) {
          A) 首页（hasHero=true）：贴顶 + 导航叠在图上 + 白色导航字
          ========================================================= */
       body.tpl-body.tpl-has-hero .banner#home {
-        position: absolute;
+        position: absolute; /* 不占高度，不会把 slider 往下推 */
         left: 0;
         top: 0;
         width: 100%;
@@ -127,7 +128,7 @@ function isActive(href: string) {
         margin: 0;
       }
 
-      /* 首页：导航文字白色 */
+      /* 首页：导航文字白色（品牌/菜单） */
       body.tpl-body.tpl-has-hero .navbar-default .navbar-brand,
       body.tpl-body.tpl-has-hero .navbar-default .navbar-brand span,
       body.tpl-body.tpl-has-hero .navbar-default .navbar-nav > li > a,
@@ -140,12 +141,12 @@ function isActive(href: string) {
         background: #fff !important;
       }
 
-      /* 首页：页面内容不加顶 padding */
+      /* 首页：内容不留顶 padding（hero 从0开始） */
       body.tpl-body.tpl-has-hero main.tpl-main {
         padding-top: 0;
       }
 
-      /* 首页：清掉可能顶出空隙的 margin/padding（竖屏贴顶关键） */
+      /* 首页：竖屏贴顶补强（清掉 slider 上方的 margin/padding） */
       body.tpl-body.tpl-has-hero #exampleSlider,
       body.tpl-body.tpl-has-hero .callbacks_container,
       body.tpl-body.tpl-has-hero .rslides,
@@ -155,10 +156,10 @@ function isActive(href: string) {
       }
 
       /* =========================================================
-         B) 子页（hasHero=false）：不贴顶 + 导航正常占位 + 深蓝导航字
+         B) 子页（hasHero=false）：不贴顶 + 导航占位 + 深蓝导航字
          ========================================================= */
       body.tpl-body:not(.tpl-has-hero) .banner#home {
-        position: relative;
+        position: relative; /* 导航占位 */
         background: #fff;
         z-index: 10;
       }
@@ -170,7 +171,7 @@ function isActive(href: string) {
         box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
       }
 
-      /* ✅ 子页：导航字体用深蓝（不是黑色） */
+      /* 子页：导航字体深蓝 */
       body.tpl-body:not(.tpl-has-hero) .navbar-default .navbar-brand,
       body.tpl-body:not(.tpl-has-hero) .navbar-default .navbar-brand span,
       body.tpl-body:not(.tpl-has-hero) .navbar-default .navbar-nav > li > a,
@@ -183,7 +184,7 @@ function isActive(href: string) {
         background: #091a5d !important;
       }
 
-      /* 子页：保留 padding-top（不贴顶） */
+      /* 子页：内容留出顶部空间（你要的“不贴顶”） */
       body.tpl-body:not(.tpl-has-hero) main.tpl-main {
         padding-top: 28px;
       }
@@ -214,7 +215,6 @@ function isActive(href: string) {
             </a>
           </h1>
 
-          <!-- ✅ 保留 home 图标，但拉开间距（上面 CSS 已处理） -->
           <i class="fa fa-home" aria-hidden="true"></i>
         </div>
 
@@ -232,7 +232,7 @@ function isActive(href: string) {
           </nav>
         </div>
 
-        <!-- ✅ 已删除：右上角社交图标 agileits-social -->
+        <!-- ✅ 已删除：右上角社交图标 -->
       </nav>
     </div>
 
@@ -241,7 +241,7 @@ function isActive(href: string) {
       <slot />
     </main>
 
-    <!-- ===== Footer（保留底部黑色“联系我们”模块） ===== -->
+    <!-- ===== Footer：保留底部黑色“联系我们”模块 ===== -->
     {showFooter && (
       <div class="footer">
         <div class="col-md-6 subscribe">
