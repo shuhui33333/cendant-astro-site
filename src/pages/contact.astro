@@ -1,14 +1,24 @@
 ---
 import TemplateLayout from "../layouts/TemplateLayout.astro";
+
+// ✅ 关键：部署到子路径时，BASE_URL 会自动带上前缀（例如 /xxx/）
+const BASE = import.meta.env.BASE_URL;
+
+// 图标真实路径：public/images/contacts/...
+const icons = {
+  wechat: `${BASE}images/contacts/wechat.png`,
+  phone: `${BASE}images/contacts/phone.png`,
+  email: `${BASE}images/contacts/email.png`,
+  whatsapp: `${BASE}images/contacts/whatsapp.png`,
+};
 ---
 
 <TemplateLayout title="联系我们">
-  <!-- ===== Subpage Intro Banner：4个图标（沿用模板 fun facts 结构）===== -->
+  <!-- ===== Banner：沿用模板 fun facts / count-agileits 结构 ===== -->
   <section class="count-agileits subpage-intro contact-banner" aria-label="联系我们简介">
     <div class="container">
       <h3 class="heading">
         <span>联系我们</span>
-        <small class="subpage-intro-en">CONTACT US</small>
       </h3>
 
       <div class="count-grids">
@@ -16,7 +26,7 @@ import TemplateLayout from "../layouts/TemplateLayout.astro";
           <div class="col-md-3 col-sm-6 count-grid">
             <div class="count hvr-bounce-to-bottom intro-card">
               <div class="intro-icon">
-                <img src="/images/contacts/wechat.png" alt="WeChat" loading="lazy" />
+                <img src={icons.wechat} alt="WeChat" loading="lazy" />
               </div>
               <h4 class="intro-title">微信</h4>
               <p class="intro-desc">your-wechat-id</p>
@@ -26,7 +36,7 @@ import TemplateLayout from "../layouts/TemplateLayout.astro";
           <div class="col-md-3 col-sm-6 count-grid">
             <div class="count hvr-bounce-to-bottom intro-card">
               <div class="intro-icon">
-                <img src="/images/contacts/phone.png" alt="Phone" loading="lazy" />
+                <img src={icons.phone} alt="Phone" loading="lazy" />
               </div>
               <h4 class="intro-title">电话</h4>
               <p class="intro-desc">+61 420 616 883</p>
@@ -36,7 +46,7 @@ import TemplateLayout from "../layouts/TemplateLayout.astro";
           <div class="col-md-3 col-sm-6 count-grid">
             <div class="count hvr-bounce-to-bottom intro-card">
               <div class="intro-icon">
-                <img src="/images/contacts/email.png" alt="Email" loading="lazy" />
+                <img src={icons.email} alt="Email" loading="lazy" />
               </div>
               <h4 class="intro-title">邮箱</h4>
               <p class="intro-desc">info@cendantpgau.com</p>
@@ -46,7 +56,7 @@ import TemplateLayout from "../layouts/TemplateLayout.astro";
           <div class="col-md-3 col-sm-6 count-grid">
             <div class="count hvr-bounce-to-bottom intro-card">
               <div class="intro-icon">
-                <img src="/images/contacts/whatsapp.png" alt="WhatsApp" loading="lazy" />
+                <img src={icons.whatsapp} alt="WhatsApp" loading="lazy" />
               </div>
               <h4 class="intro-title">WhatsApp</h4>
               <p class="intro-desc">+61 420 616 883</p>
@@ -59,7 +69,7 @@ import TemplateLayout from "../layouts/TemplateLayout.astro";
     </div>
   </section>
 
-  <!-- ===== 联系我们内容区：恢复成你之前的三列结构 ===== -->
+  <!-- ===== 内容区：恢复你之前“联系我们页面”的结构（电话/邮箱/地址/入口）===== -->
   <div class="contact" id="contact">
     <h3 class="heading"><span>联系我们</span></h3>
 
@@ -74,7 +84,7 @@ import TemplateLayout from "../layouts/TemplateLayout.astro";
         </p>
         <p>
           <span class="glyphicon glyphicon-comment"></span>
-          WeChat: <span>your-wechat-id</span>
+          WeChat：<span>your-wechat-id</span>
         </p>
       </div>
 
@@ -86,7 +96,7 @@ import TemplateLayout from "../layouts/TemplateLayout.astro";
           2 Aquitania Way, Docklands VIC 3008
         </p>
         <p style="opacity:.75; margin-top:10px;">
-          （可预约面谈 / 线上咨询）
+          可预约面谈 / 线上咨询
         </p>
       </div>
 
@@ -105,7 +115,7 @@ import TemplateLayout from "../layouts/TemplateLayout.astro";
     <div class="clearfix"></div>
   </div>
 
-  <!-- ===== 在线留言：保持你之前的 API 提交 ===== -->
+  <!-- ===== 在线留言（保留你的提交逻辑）===== -->
   <div class="contact-form">
     <h3 class="heading"><span>在线留言</span></h3>
     <div class="container">
@@ -155,20 +165,12 @@ import TemplateLayout from "../layouts/TemplateLayout.astro";
 </TemplateLayout>
 
 <style is:global>
-  /* ===== Banner 白字 + 图标卡片（只增强，不破坏模板） ===== */
+  /* ===== Banner：白字 + 图标卡片 ===== */
   .contact-banner {
     color: #fff;
   }
-  .contact-banner .heading span,
-  .contact-banner .heading small {
+  .contact-banner .heading span {
     color: #fff !important;
-  }
-  .contact-banner .subpage-intro-en {
-    display: block;
-    font-size: 12px;
-    opacity: 0.75;
-    margin-top: 8px;
-    letter-spacing: 2px;
   }
 
   .contact-banner .intro-card {
@@ -209,16 +211,7 @@ import TemplateLayout from "../layouts/TemplateLayout.astro";
   }
 
   @media (max-width: 768px) {
-    .contact-banner .intro-card {
-      min-height: auto;
-    }
-    .contact-banner .intro-icon img {
-      width: 42px;
-      height: 42px;
-    }
+    .contact-banner .intro-card { min-height: auto; }
+    .contact-banner .intro-icon img { width: 42px; height: 42px; }
   }
-
-  /* ===== 让 contact 三列在一行更稳定（模板有时会缺 row 的清除） ===== */
-  .contact .row { margin-left: 0; margin-right: 0; }
-  .contact .mail, .contact .address, .contact .social { margin-bottom: 18px; }
 </style>
