@@ -1,12 +1,18 @@
 ---
 import TemplateLayout from "../../layouts/TemplateLayout.astro";
 import { getRealEstatePosts } from "../../lib/contentful";
-
+import SubpageIntroBanner from "../../components/SubpageIntroBanner.astro";
 /**
  * 这里是房产资讯首页
  * 只展示分类入口 + 最新发布
  */
 const posts = await getRealEstatePosts(6);
+const introItems = [
+  { title: "覆盖类别", desc: "售卖/出租/土地开发/商业办公等分类入口。" },
+  { title: "信息更新", desc: "后台发布后同步展示，支持日期与分类标记。" },
+  { title: "选房要点", desc: "整理交易流程、议价策略、回报与风险提示。" },
+  { title: "咨询对接", desc: "有意向可直接提交表单，专人对接。" },
+];
 
 /**
  * 出售分类
@@ -34,6 +40,7 @@ const rentCats = [
 ---
 
 <TemplateLayout title="房产资讯" subtitle="REAL ESTATE">
+  <SubpageIntroBanner titleZh="房产资讯" titleEn="REAL ESTATE" items={introItems} />
   <!-- ===============================
        分类入口
   ================================ -->

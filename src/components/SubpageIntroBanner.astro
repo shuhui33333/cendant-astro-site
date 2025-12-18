@@ -1,0 +1,71 @@
+---
+type Item = { title: string; desc: string };
+
+const { titleZh, titleEn, items = [] } = Astro.props as {
+  titleZh: string;
+  titleEn?: string;
+  items?: Item[];
+};
+---
+
+<section class="count-agileits subpage-intro" aria-label={`${titleZh} 简介`}>
+  <div class="container">
+    <h3 class="heading">
+      <span>{titleZh}</span>
+      {titleEn ? <small class="subpage-intro-en">{titleEn}</small> : null}
+    </h3>
+
+    <div class="count-grids">
+      <div class="count-bgcolor-w3ls">
+        {items.map((it) => (
+          <div class="col-md-3 count-grid">
+            <div class="count hvr-bounce-to-bottom intro-card">
+              <h4 class="intro-title">{it.title}</h4>
+              <p class="intro-desc">{it.desc}</p>
+            </div>
+          </div>
+        ))}
+
+        <div class="clearfix"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* 标题更精致一点（不改模板全局，只影响本组件） */
+  .subpage-intro .subpage-intro-en{
+    display:block;
+    font-size:12px;
+    opacity:.75;
+    margin-top:8px;
+    letter-spacing:2px;
+  }
+
+  /* 把“数字块”改成简介卡片排版 */
+  .subpage-intro .intro-card{
+    padding: 18px 16px;
+    min-height: 140px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+  }
+
+  .subpage-intro .intro-title{
+    margin:0 0 8px;
+    font-size:16px;
+    font-weight:800;
+    line-height:1.25;
+  }
+
+  .subpage-intro .intro-desc{
+    margin:0;
+    font-size:13px;
+    line-height:1.6;
+    opacity:.95;
+  }
+
+  @media (max-width: 768px){
+    .subpage-intro .intro-card{ min-height: auto; }
+  }
+</style>
