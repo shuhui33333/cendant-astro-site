@@ -3,7 +3,7 @@ import TemplateLayout from "../layouts/TemplateLayout.astro";
 ---
 
 <TemplateLayout title="联系我们">
-  <!-- ===== Contact Intro Banner（不替换你已有组件，仅在本页实现图标 Banner）===== -->
+  <!-- ===== Subpage Intro Banner：4个图标（沿用模板 fun facts 结构）===== -->
   <section class="count-agileits subpage-intro contact-banner" aria-label="联系我们简介">
     <div class="container">
       <h3 class="heading">
@@ -59,22 +59,64 @@ import TemplateLayout from "../layouts/TemplateLayout.astro";
     </div>
   </section>
 
-  <!-- ===== 下面你可以继续放“在线留言表单/地图/联系方式”等内容 ===== -->
-  <div class="container" style="padding: 30px 0 60px;">
-    <div class="row">
-      <div class="col-md-12">
-        <h3 style="margin: 0 0 14px; font-weight: 800; color: #0b1b54;">在线留言</h3>
-        <p style="margin: 0 0 18px; color: #667085;">我们会在 24 小时内与您联系。</p>
+  <!-- ===== 联系我们内容区：恢复成你之前的三列结构 ===== -->
+  <div class="contact" id="contact">
+    <h3 class="heading"><span>联系我们</span></h3>
 
-        <form id="lead-form">
-          <input name="name" type="text" placeholder="姓名" required />
-          <input name="email" type="email" placeholder="邮箱" required />
-          <input name="phone" type="text" placeholder="电话" />
-          <textarea name="message" placeholder="留言内容" required></textarea>
-          <button class="btn1" type="submit">提交</button>
-          <p id="lead-result" style="margin-top:10px;"></p>
-        </form>
+    <div class="row">
+      <!-- 联系方式 -->
+      <div class="col-md-4 col-sm-12 mail">
+        <h4>联系方式</h4>
+        <p><span class="glyphicon glyphicon-phone"></span> +61 420 616 883</p>
+        <p>
+          <span class="glyphicon glyphicon-envelope"></span>
+          <a href="mailto:info@cendantpgau.com">info@cendantpgau.com</a>
+        </p>
+        <p>
+          <span class="glyphicon glyphicon-comment"></span>
+          WeChat: <span>your-wechat-id</span>
+        </p>
       </div>
+
+      <!-- 地址 -->
+      <div class="col-md-4 col-sm-12 address">
+        <h4>地址</h4>
+        <p>
+          <span class="glyphicon glyphicon-map-marker"></span>
+          2 Aquitania Way, Docklands VIC 3008
+        </p>
+        <p style="opacity:.75; margin-top:10px;">
+          （可预约面谈 / 线上咨询）
+        </p>
+      </div>
+
+      <!-- 快速入口 -->
+      <div class="col-md-4 col-sm-12 social">
+        <h4>快速入口</h4>
+        <ul>
+          <li><a href="/company-profile" aria-label="company"><i class="fa fa-info"></i></a></li>
+          <li><a href="/real-estate" aria-label="real-estate"><i class="fa fa-building"></i></a></li>
+          <li><a href="/immigration" aria-label="immigration"><i class="fa fa-plane"></i></a></li>
+          <li><a href="/loan" aria-label="loan"><i class="fa fa-money"></i></a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="clearfix"></div>
+  </div>
+
+  <!-- ===== 在线留言：保持你之前的 API 提交 ===== -->
+  <div class="contact-form">
+    <h3 class="heading"><span>在线留言</span></h3>
+    <div class="container">
+      <form id="lead-form">
+        <input name="name" type="text" placeholder="姓名" required />
+        <input name="email" type="email" placeholder="邮箱" required />
+        <input name="phone" type="text" placeholder="电话" />
+        <textarea name="message" placeholder="留言内容" required></textarea>
+        <button class="btn1" type="submit">提交</button>
+        <p id="lead-result" style="margin-top:10px;"></p>
+      </form>
     </div>
   </div>
 
@@ -113,7 +155,7 @@ import TemplateLayout from "../layouts/TemplateLayout.astro";
 </TemplateLayout>
 
 <style is:global>
-  /* ===== Banner 白字 + 背景（与模板 fun facts 风格一致） ===== */
+  /* ===== Banner 白字 + 图标卡片（只增强，不破坏模板） ===== */
   .contact-banner {
     color: #fff;
   }
@@ -129,7 +171,6 @@ import TemplateLayout from "../layouts/TemplateLayout.astro";
     letter-spacing: 2px;
   }
 
-  /* ===== 卡片内容布局（不破坏模板，只增强） ===== */
   .contact-banner .intro-card {
     padding: 18px 16px;
     min-height: 150px;
@@ -176,4 +217,8 @@ import TemplateLayout from "../layouts/TemplateLayout.astro";
       height: 42px;
     }
   }
+
+  /* ===== 让 contact 三列在一行更稳定（模板有时会缺 row 的清除） ===== */
+  .contact .row { margin-left: 0; margin-right: 0; }
+  .contact .mail, .contact .address, .contact .social { margin-bottom: 18px; }
 </style>
