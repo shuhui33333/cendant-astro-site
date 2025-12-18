@@ -1,8 +1,19 @@
 ---
 import TemplateLayout from "../layouts/TemplateLayout.astro";
+import SubpageIntroBanner from "../components/SubpageIntroBanner.astro";
 ---
 
 <TemplateLayout title="联系我们">
+  <SubpageIntroBanner
+    titleZh="联系我们"
+    titleEn="CONTACT US"
+    items={[
+      { title: "微信", desc: "your-wechat-id", fa: "fa fa-wechat" },
+      { title: "电话", desc: "+61 420 616 883", fa: "fa fa-phone" },
+      { title: "邮箱", desc: "info@cendantpgau.com", fa: "fa fa-envelope" },
+      { title: "WhatsApp", desc: "+61 420 616 883", fa: "fa fa-whatsapp" },
+    ]}
+  />
   <!-- 子页面内容：从上到下 -->
   <section class="contact-page">
     <div class="container">
