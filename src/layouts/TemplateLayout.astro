@@ -1,15 +1,14 @@
 ---
 import "../styles/global.css";
-import { zh } from "../i18n/zh";
-import { en } from "../i18n/en";
 
-type NavItem = { href: string; key: string };
+type NavItem = { href: string; label: string };
 
 const props = Astro.props as {
   title?: string;
   description?: string;
   showFooter?: boolean;
   hasHero?: boolean;
+  nav?: NavItem[];
 };
 
 const title = props.title ?? Astro.props.frontmatter?.title ?? "页面";
@@ -19,18 +18,24 @@ const description =
 const showFooter = props.showFooter ?? true;
 const hasHero = props.hasHero ?? false;
 
-const nav: NavItem[] = [
-  { href: "/", key: "nav.home" },
-  { href: "/real-estate", key: "nav.realEstate" },
-  { href: "/property-service", key: "nav.propertyService" },
-  { href: "/loan", key: "nav.loan" },
-  { href: "/immigration", key: "nav.immigration" },
-  { href: "/company-profile", key: "nav.company" },
-  { href: "/contact", key: "nav.contact" },
-];
+const nav: NavItem[] =
+  props.nav ??
+  [
+    { href: "/", label: "首页" },
+    { href: "/real-estate", label: "房产资讯" },
+    { href: "/property-service", label: "房产服务" },
+    { href: "/loan", label: "贷款服务" },
+    { href: "/immigration", label: "移民服务" },
+    { href: "/company-profile", label: "公司概况" },
+    { href: "/contact", label: "联系我们" },
+  ];
 
-// 把字典下发到前端（用于不跳转切换）
-const I18N = { zh, en };
+const pathname = Astro.url?.pathname ?? "/";
+
+function isActive(href: string) {
+  if (href === "/") return pathname === "/";
+  return pathname === href || pathname.startsWith(href + "/");
+}
 ---
 
 <!DOCTYPE html>
@@ -52,20 +57,38 @@ const I18N = { zh, en };
     <link rel="stylesheet" href="/template15/css/mainStyles.css" />
 
     <style is:global>
+      /* =========================================================
+         0) 防空白兜底（关键）
+         - 如果你项目里残留了 data-lang 的隐藏规则，这里会强制让页面显示出来
+      ========================================================= */
       html, body { margin: 0; padding: 0; }
+      html, body { visibility: visible !important; }
+      body { display: block !important; }
 
-      /* 子页顶部留白：由 JS 动态写入 */
+      /* 万一有人写了 [data-lang]{display:none} 导致全站隐藏，这里兜底恢复 */
+      html:not([data-lang]) [data-lang] { display: revert !important; }
+
+      /* =========================================================
+         1) 子页不被顶部遮挡：用 CSS 变量控制 padding-top（JS 会写入 --nav-h）
+      ========================================================= */
       body.tpl-body:not(.tpl-has-hero) { padding-top: var(--nav-h, 96px); }
       body.tpl-body.tpl-has-hero { padding-top: 0; }
 
-      /* Navbar 定位：子页固定顶端；首页叠在 hero 上 */
+      /* =========================================================
+         2) Navbar：首页叠在 hero 上；子页固定顶部
+      ========================================================= */
       .banner#home { z-index: 9999; width: 100%; }
 
       body.tpl-body.tpl-has-hero .banner#home {
-        position: absolute; left: 0; top: 0; background: transparent;
+        position: absolute;
+        left: 0; top: 0;
+        background: transparent;
       }
+
       body.tpl-body:not(.tpl-has-hero) .banner#home {
-        position: fixed; left: 0; top: 0; background: #fff;
+        position: fixed;
+        left: 0; top: 0;
+        background: #fff;
       }
 
       .banner#home .navbar {
@@ -83,8 +106,16 @@ const I18N = { zh, en };
         box-shadow: 0 6px 18px rgba(0,0,0,0.08);
       }
 
-      /* 清掉多层边框（只允许 brand-badge 有边框） */
-      .navbar-header h1 { margin: 0 !important; padding: 0 !important; border: none !important; box-shadow:none!important; }
+      /* =========================================================
+         3) 清掉模板叠加的多层框，只保留 brand-badge 一个框
+      ========================================================= */
+      .navbar-header h1 {
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+      }
 
       a.navbar-brand.brand-with-logo,
       a.navbar-brand.brand-with-logo * {
@@ -96,7 +127,9 @@ const I18N = { zh, en };
       a.navbar-brand.brand-with-logo::before,
       a.navbar-brand.brand-with-logo::after,
       .brand-badge::before,
-      .brand-badge::after { content: none !important; }
+      .brand-badge::after {
+        content: none !important;
+      }
 
       .brand-with-logo {
         display: flex !important;
@@ -107,24 +140,30 @@ const I18N = { zh, en };
         padding: 6px 0 !important;
       }
 
+      /* Logo 尺寸（你之前说现在大小正常，就保持这个） */
       .brand-logo {
         height: 64px !important;
         width: auto !important;
         display: block !important;
         max-height: none !important;
       }
-      @media (max-width: 768px) { .brand-logo { height: 44px !important; } }
+      @media (max-width: 768px) {
+        .brand-logo { height: 44px !important; }
+      }
 
+      /* 只保留这一层边框 */
       .brand-badge {
         display: inline-flex;
         flex-direction: column;
         line-height: 1.1;
-        border: 2px solid rgba(255,255,255,0.8) !important;
+        border: 2px solid rgba(255,255,255,0.8) !important; /* 首页白框 */
         border-radius: 10px !important;
         padding: 6px 10px !important;
+        box-shadow: none !important;
+        outline: none !important;
       }
       body.tpl-body:not(.tpl-has-hero) .brand-badge {
-        border-color: rgba(9,26,93,0.35) !important;
+        border-color: rgba(9,26,93,0.35) !important; /* 子页淡深蓝框 */
       }
 
       .brand-main {
@@ -145,13 +184,16 @@ const I18N = { zh, en };
         .brand-sub { font-size: 10px; letter-spacing: 1.5px; }
       }
 
-      /* 首页白字，子页深蓝字 */
+      /* =========================================================
+         4) 导航颜色：首页白字；子页深蓝字
+      ========================================================= */
       body.tpl-body.tpl-has-hero .navbar-default .navbar-brand,
       body.tpl-body.tpl-has-hero .navbar-default .navbar-brand span,
       body.tpl-body.tpl-has-hero .navbar-default .navbar-nav > li > a,
       body.tpl-body.tpl-has-hero .navbar-default .navbar-nav > li > a span {
         color: #fff !important;
       }
+
       body.tpl-body:not(.tpl-has-hero) .navbar-default .navbar-brand,
       body.tpl-body:not(.tpl-has-hero) .navbar-default .navbar-brand span,
       body.tpl-body:not(.tpl-has-hero) .navbar-default .navbar-nav > li > a,
@@ -159,36 +201,17 @@ const I18N = { zh, en };
         color: #091a5d !important;
       }
 
-      /* 语言切换按钮 */
-      .lang-switch-btn{
-        display:inline-block;
-        margin-left: 12px;
-        padding: 8px 10px;
-        border-radius: 10px;
-        font-weight: 800;
-        line-height: 1;
-        border: 1px solid rgba(255,255,255,.55);
-        background: transparent;
-        cursor: pointer;
+      body.tpl-body.tpl-has-hero .navbar-default .navbar-toggle .icon-bar {
+        background: #fff !important;
       }
-      body.tpl-body:not(.tpl-has-hero) .lang-switch-btn{
-        border-color: rgba(9,26,93,.25);
-        color: #091a5d;
-      }
-      body.tpl-body.tpl-has-hero .lang-switch-btn{
-        color: #fff;
+      body.tpl-body:not(.tpl-has-hero) .navbar-default .navbar-toggle .icon-bar {
+        background: #091a5d !important;
       }
 
-      /* 页面内容容器：不额外加 padding（由 body padding-top 解决遮挡） */
+      .navbar-nav > li.active > a span,
+      .navbar-nav > li.active > a span:hover { font-weight: 800; }
+
       main.tpl-main { padding-top: 0; }
-
-      /* ====== 运行时语言切换：两种写法都支持 ======
-         1) data-i18n="nav.home" 这种：脚本会替换 text
-         2) data-lang="zh|en" 这种：脚本会显示/隐藏
-      */
-      [data-lang] { display: none; }
-      html[data-lang="zh"] [data-lang="zh"] { display: revert; }
-      html[data-lang="en"] [data-lang="en"] { display: revert; }
     </style>
   </head>
 
@@ -213,9 +236,8 @@ const I18N = { zh, en };
             <a class="navbar-brand brand-with-logo" href="/">
               <img src="/images/logo.png" alt="Cendant Logo" class="brand-logo" />
               <span class="brand-badge">
-                <!-- 这里用 data-i18n：点击 EN 会自动替换 -->
-                <span class="brand-main" data-i18n="brand.title">墨尔本 · 胜腾国际</span>
-                <span class="brand-sub" data-i18n="brand.sub">MELBOURNE · CENDANT</span>
+                <span class="brand-main">墨尔本 · 胜腾国际</span>
+                <span class="brand-sub">MELBOURNE · CENDANT</span>
               </span>
             </a>
           </h1>
@@ -225,17 +247,12 @@ const I18N = { zh, en };
           <nav class="link-effect-2" id="link-effect-2">
             <ul class="nav navbar-nav">
               {nav.map((i) => (
-                <li>
+                <li class={isActive(i.href) ? "active" : ""}>
                   <a href={i.href}>
-                    <span data-i18n={i.key}>{zh.nav?.[i.key.split(".")[1]] ?? ""}</span>
+                    <span data-hover={i.label}>{i.label}</span>
                   </a>
                 </li>
               ))}
-
-              <!-- ✅ 不跳转：按钮切换语言 -->
-              <li>
-                <button id="langToggle" class="lang-switch-btn" type="button">EN</button>
-              </li>
             </ul>
           </nav>
         </div>
@@ -247,26 +264,21 @@ const I18N = { zh, en };
       <slot />
     </main>
 
-    <!-- ===== Footer ===== -->
+    <!-- ===== Footer：底部黑色“联系我们”模块 ===== -->
     {showFooter && (
       <div class="footer">
         <div class="col-md-6 subscribe">
           <form action="#" method="post" onsubmit="return false;">
-            <h3 data-i18n="footer.contactTitle">联系我们</h3>
-            <input
-              type="text"
-              name="Subscribe"
-              data-i18n-placeholder="footer.emailPlaceholder"
-              placeholder="输入邮箱（可选）"
-            />
-            <a class="btn1" href="/contact" data-i18n="cta.consult">联系咨询</a>
+            <h3>联系我们</h3>
+            <input type="text" name="Subscribe" placeholder="输入邮箱（可选）" />
+            <a class="btn1" href="/contact">联系咨询</a>
           </form>
         </div>
 
         <div class="col-md-6 copyright">
           <ul>
             {nav.slice(0, 6).map((i) => (
-              <li><a href={i.href} data-i18n={i.key}>{zh.nav?.[i.key.split(".")[1]] ?? ""}</a></li>
+              <li><a href={i.href}>{i.label}</a></li>
             ))}
           </ul>
           <p>© {new Date().getFullYear()} Melbourne Cendant. All rights reserved.</p>
@@ -276,7 +288,7 @@ const I18N = { zh, en };
       </div>
     )}
 
-    <!-- ✅ 子页不被遮挡：动态测量 navbar 高度 -->
+    <!-- ✅ 子页不被遮挡：动态测量 navbar 高度，写入 --nav-h -->
     <script is:inline>
       (function () {
         function setNavHeight() {
@@ -290,61 +302,6 @@ const I18N = { zh, en };
         document.addEventListener("click", function () {
           setTimeout(setNavHeight, 50);
         });
-      })();
-    </script>
-
-    <!-- ✅ 语言切换核心：不跳转，替换所有 data-i18n 文本 -->
-    <script is:inline define:vars={{ I18N }}>
-      (function () {
-        const dicts = I18N;
-
-        function get(obj, path) {
-          return path.split(".").reduce((acc, k) => (acc && acc[k] != null ? acc[k] : null), obj);
-        }
-
-        function applyLang(lang) {
-          const d = dicts[lang] || dicts.zh;
-
-          document.documentElement.setAttribute("data-lang", lang);
-          document.documentElement.setAttribute("lang", lang === "en" ? "en" : "zh-CN");
-
-          // 替换文本
-          document.querySelectorAll("[data-i18n]").forEach((el) => {
-            const key = el.getAttribute("data-i18n");
-            const val = get(d, key);
-            if (typeof val === "string") el.textContent = val;
-          });
-
-          // 替换 placeholder
-          document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
-            const key = el.getAttribute("data-i18n-placeholder");
-            const val = get(d, key);
-            if (typeof val === "string") el.setAttribute("placeholder", val);
-          });
-
-          // 切换按钮文字
-          const btn = document.getElementById("langToggle");
-          if (btn) btn.textContent = lang === "en" ? "中文" : "EN";
-
-          // 保存选择
-          localStorage.setItem("site_lang", lang);
-        }
-
-        function init() {
-          const saved = localStorage.getItem("site_lang");
-          const lang = saved === "en" ? "en" : "zh";
-          applyLang(lang);
-
-          const btn = document.getElementById("langToggle");
-          if (btn) {
-            btn.addEventListener("click", function () {
-              const current = document.documentElement.getAttribute("data-lang") === "en" ? "en" : "zh";
-              applyLang(current === "en" ? "zh" : "en");
-            });
-          }
-        }
-
-        window.addEventListener("load", init);
       })();
     </script>
 
