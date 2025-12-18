@@ -1,21 +1,222 @@
 ---
 import TemplateLayout from "../layouts/TemplateLayout.astro";
-import SubpageIntroBanner from "../components/SubpageIntroBanner.astro";
 ---
 
 <TemplateLayout title="公司概况">
-  <SubpageIntroBanner
-    titleZh="公司概况"
-    titleEn="COMPANY PROFILE"
-    items={[
-      { label: "服务范围", value: "房产投资 · 移民规划 · 资产配置" },
-      { label: "核心优势", value: "专业 · 合规 · 高效" },
-      { label: "本地资源", value: "项目对接 · 法务 · 金融" },
-    ]}
-  />
+  <!-- ✅ 仍然沿用“模板的子页 Banner 结构”，但高度压缩为一半 -->
+  <section class="sub-banner sub-banner--compact" aria-label="公司概况 Banner">
+    <div class="container">
+      <div class="sub-banner__inner">
+        <h2 class="sub-banner__title">公司概况</h2>
+        <div class="sub-banner__en">COMPANY PROFILE</div>
 
-  <!-- 下面放你原来的公司概况正文内容即可 -->
-  <section class="container" style="margin-bottom:60px;">
-    <!-- 你的正文... -->
+        <!-- ✅ 不放四个介绍块（你说这里不需要） -->
+        <p class="sub-banner__hint">
+          墨尔本 · 胜腾国际（Cendant）｜房产投资 · 项目开发 · 租赁管理 · 移民咨询
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ✅ 页面正文：按你网站深蓝商务风（从上到下，不左右分栏也可以） -->
+  <section class="cp-page">
+    <div class="container">
+      <div class="cp-card">
+        <h3 class="cp-h3">墨尔本胜腾国际</h3>
+
+        <ul class="cp-list">
+          <li>
+            胜腾国际是澳大利亚房地产市场的专业服务团队，公司扎根墨尔本 Docklands，
+            在房产行业拥有超过 15 年经验，累计管理资产逾一亿澳元。
+          </li>
+          <li>
+            我们致力于澳洲房产投资买卖、房地产项目开发管理、物业租赁维护、
+            留学移民咨询及投资管理等综合服务。
+          </li>
+          <li>
+            作为全方位市场研究与多元化投资管理机构，我们整合优质房产资源，
+            通过专业项目分析与多维对比，为客户提供一站式解决方案，
+            协助投资者获得更理想的回报与更稳健的资产配置路径。
+          </li>
+        </ul>
+      </div>
+
+      <div class="cp-card">
+        <h3 class="cp-h3">我们的核心优势</h3>
+        <div class="cp-grid">
+          <div class="cp-box">
+            <div class="cp-box-title">本地资源与项目对接</div>
+            <div class="cp-box-desc">
+              结合墨尔本本地合作网络与开发商资源，匹配客户预算、偏好与投资目标。
+            </div>
+          </div>
+
+          <div class="cp-box">
+            <div class="cp-box-title">合规流程与风险控制</div>
+            <div class="cp-box-desc">
+              严格把控合同条款、关键节点与材料准备，降低交易与交付的不确定性。
+            </div>
+          </div>
+
+          <div class="cp-box">
+            <div class="cp-box-title">市场研究与选房策略</div>
+            <div class="cp-box-desc">
+              基于区域供需、租金回报、人口与规划趋势，提供更清晰的决策依据。
+            </div>
+          </div>
+
+          <div class="cp-box">
+            <div class="cp-box-title">一站式服务体验</div>
+            <div class="cp-box-desc">
+              从咨询评估、选房谈判、贷款协助到交付与物业管理，全流程对接。
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cp-card">
+        <h3 class="cp-h3">服务方向</h3>
+        <div class="cp-tags">
+          <span>房产买卖与投资配置</span>
+          <span>房地产开发与项目管理</span>
+          <span>物业租赁与长期维护</span>
+          <span>豪宅定制与过户法务</span>
+          <span>移民与留学咨询服务</span>
+        </div>
+      </div>
+    </div>
   </section>
 </TemplateLayout>
+
+<style>
+  /* =========================
+     1) 子页 Banner（同款风格）但高度减半
+     ========================= */
+
+  /* 背景图（如果你想换图，改 url 即可）
+     这里用你模板常用那张建筑图风格 */
+  .sub-banner {
+    position: relative;
+    color: #fff;
+    background:
+      linear-gradient(rgba(7,16,55,.70), rgba(7,16,55,.70)),
+      url("/template20/images/banner.jpg");
+    background-size: cover;
+    background-position: center;
+    margin-bottom: 28px;
+  }
+
+  /* ✅ 压缩高度：把 padding 缩小到“其他页面的一半左右” */
+  .sub-banner--compact {
+    padding: 48px 0 36px;
+  }
+
+  .sub-banner__inner {
+    text-align: center;
+  }
+
+  .sub-banner__title {
+    margin: 0;
+    font-size: 44px;
+    font-weight: 900;
+    letter-spacing: 1px;
+  }
+
+  .sub-banner__en {
+    margin-top: 10px;
+    font-size: 14px;
+    letter-spacing: 5px;
+    opacity: 0.9;
+  }
+
+  .sub-banner__hint {
+    margin: 14px auto 0;
+    max-width: 980px;
+    font-size: 14px;
+    line-height: 1.7;
+    opacity: 0.92;
+  }
+
+  @media (max-width: 768px) {
+    .sub-banner--compact { padding: 34px 0 26px; }
+    .sub-banner__title { font-size: 30px; }
+    .sub-banner__en { letter-spacing: 3px; }
+  }
+
+  /* =========================
+     2) 页面正文：深蓝商务风（贴合你网站）
+     ========================= */
+  .cp-page { padding: 10px 0 60px; }
+
+  .cp-card {
+    background: #fff;
+    border: 1px solid rgba(11, 27, 84, 0.10);
+    border-radius: 12px;
+    padding: 22px 18px;
+    margin-bottom: 18px;
+  }
+
+  .cp-h3 {
+    margin: 0 0 12px;
+    font-size: 22px;
+    font-weight: 900;
+    color: #0b1b54;
+    letter-spacing: .2px;
+  }
+
+  .cp-list {
+    margin: 0;
+    padding-left: 20px;
+    color: rgba(11, 27, 84, 0.9);
+    line-height: 1.85;
+    font-size: 15px;
+  }
+
+  .cp-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 10px;
+  }
+
+  .cp-box {
+    border: 1px solid rgba(11, 27, 84, 0.10);
+    border-radius: 12px;
+    padding: 14px 14px;
+    background: rgba(11, 27, 84, 0.02);
+  }
+
+  .cp-box-title {
+    font-weight: 900;
+    color: #0b1b54;
+    margin-bottom: 6px;
+    font-size: 15px;
+  }
+
+  .cp-box-desc {
+    color: rgba(11, 27, 84, 0.85);
+    line-height: 1.7;
+    font-size: 14px;
+  }
+
+  .cp-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .cp-tags span {
+    display: inline-block;
+    padding: 8px 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(11, 27, 84, 0.14);
+    background: rgba(11, 27, 84, 0.03);
+    color: #0b1b54;
+    font-weight: 700;
+    font-size: 13px;
+  }
+
+  @media (max-width: 992px) {
+    .cp-grid { grid-template-columns: 1fr; }
+  }
+</style>
