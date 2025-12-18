@@ -1,113 +1,71 @@
-
 ---
 import TemplateLayout from "../layouts/TemplateLayout.astro";
-import ContactIntroBanner from "../components/ContactIntroBanner.astro";
 ---
 
 <TemplateLayout title="联系我们">
-  <ContactIntroBanner
-    items={[
-      {
-        label: "微信",
-        value: "Cendant_Property",
-        icon: "/images/contact/wechat.png",
-      },
-      {
-        label: "电话",
-        value: "+61 420 616 883",
-        icon: "/images/contact/phone.png",
-      },
-      {
-        label: "邮箱",
-        value: "info@cendantpgau.com",
-        icon: "/images/contact/email.png",
-      },
-      {
-        label: "WhatsApp",
-        value: "+61 420 616 883",
-        icon: "/images/contact/whatsapp.png",
-      },
-    ]}
-  />
 
-  <section class="info">
-    <h2>公司地址</h2>
-    <p>2 Aquitania Way, Docklands VIC 3008</p>
+  <!-- ===== Subpage Intro Banner（完全沿用模板结构）===== -->
+  <div class="subpage-banner contact-banner">
+    <div class="container">
+      <h2>联系我们</h2>
+      <p>CONTACT US</p>
 
-    <h2>电话 & 邮箱</h2>
-    <ul>
-      <li>Tel: +61 420 616 883</li>
-      <li>Email: <a href="mailto:info@cendantpgau.com">info@cendantpgau.com</a></li>
-    </ul>
-  </section>
+      <div class="row banner-info">
+        <div class="col-md-3 col-sm-6 banner-item">
+          <img src="/images/contacts/wechat.png" alt="WeChat" />
+          <h4>微信</h4>
+          <p>your-wechat-id</p>
+        </div>
 
-  <form id="contact-form" class="contact">
-    <input name="name" placeholder="姓名" required />
-    <input name="email" type="email" placeholder="邮箱" required />
-    <input name="phone" placeholder="电话" />
-    <select name="topic">
-      <option value="服务项目">服务项目</option>
-      <option value="移民服务">移民服务</option>
-      <option value="地产咨询">地产咨询</option>
-    </select>
-    <textarea name="message" placeholder="留言内容" required></textarea>
+        <div class="col-md-3 col-sm-6 banner-item">
+          <img src="/images/contacts/phone.png" alt="Phone" />
+          <h4>电话</h4>
+          <p>+61 420 616 883</p>
+        </div>
 
-    <button type="submit">提交咨询</button>
-  </form>
+        <div class="col-md-3 col-sm-6 banner-item">
+          <img src="/images/contacts/email.png" alt="Email" />
+          <h4>邮箱</h4>
+          <p>info@cendantpgau.com</p>
+        </div>
 
-  <p id="result" class="result"></p>
+        <div class="col-md-3 col-sm-6 banner-item">
+          <img src="/images/contacts/whatsapp.png" alt="WhatsApp" />
+          <h4>WhatsApp</h4>
+          <p>+61 420 616 883</p>
+        </div>
+      </div>
+    </div>
+  </div>
 
-  <script is:inline>
-    const form = document.getElementById("contact-form");
-    const result = document.getElementById("result");
-
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      result.textContent = "提交中…";
-
-      const data = Object.fromEntries(new FormData(form));
-
-      const res = await fetch("/api/leads", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-
-      if (res.ok) {
-        result.textContent = "我们已收到您的信息，会尽快联系您。";
-        form.reset();
-      } else {
-        result.textContent = "提交失败，请稍后再试。";
-      }
-    });
-  </script>
-
-  <style>
-    .info { margin: 16px 0 24px; }
-    .info h2 { margin: 16px 0 8px; }
-    .info ul { margin: 0; padding-left: 18px; }
-
-    .contact {
-      max-width: 420px;
-      display: grid;
-      gap: 12px;
-    }
-    input, textarea, select {
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 14px;
-    }
-    textarea { min-height: 120px; resize: vertical; }
-    button {
-      background: #0B1F6B;
-      color: #fff;
-      padding: 12px;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      font-weight: 700;
-    }
-    .result { margin-top: 12px; }
-  </style>
 </TemplateLayout>
+
+<style>
+/* 只做“增强”，不破坏模板 */
+
+/* 图标尺寸统一 */
+.contact-banner .banner-item img {
+  width: 42px;
+  height: 42px;
+  margin-bottom: 12px;
+}
+
+/* 文字居中（模板一般默认是左对齐） */
+.contact-banner .banner-item {
+  text-align: center;
+}
+
+/* 副标题白色（防止模板被覆盖） */
+.contact-banner h2,
+.contact-banner p,
+.contact-banner h4 {
+  color: #fff;
+}
+
+/* 小屏优化 */
+@media (max-width: 768px) {
+  .contact-banner .banner-item {
+    margin-bottom: 24px;
+  }
+}
+</style>
