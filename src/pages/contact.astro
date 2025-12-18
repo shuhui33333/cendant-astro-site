@@ -3,69 +3,177 @@ import TemplateLayout from "../layouts/TemplateLayout.astro";
 ---
 
 <TemplateLayout title="联系我们">
-
-  <!-- ===== Subpage Intro Banner（完全沿用模板结构）===== -->
-  <div class="subpage-banner contact-banner">
+  <!-- ===== Contact Intro Banner（不替换你已有组件，仅在本页实现图标 Banner）===== -->
+  <section class="count-agileits subpage-intro contact-banner" aria-label="联系我们简介">
     <div class="container">
-      <h2>联系我们</h2>
-      <p>CONTACT US</p>
+      <h3 class="heading">
+        <span>联系我们</span>
+        <small class="subpage-intro-en">CONTACT US</small>
+      </h3>
 
-      <div class="row banner-info">
-        <div class="col-md-3 col-sm-6 banner-item">
-          <img src="/images/contacts/wechat.png" alt="WeChat" />
-          <h4>微信</h4>
-          <p>your-wechat-id</p>
-        </div>
+      <div class="count-grids">
+        <div class="count-bgcolor-w3ls">
+          <div class="col-md-3 col-sm-6 count-grid">
+            <div class="count hvr-bounce-to-bottom intro-card">
+              <div class="intro-icon">
+                <img src="/images/contacts/wechat.png" alt="WeChat" loading="lazy" />
+              </div>
+              <h4 class="intro-title">微信</h4>
+              <p class="intro-desc">your-wechat-id</p>
+            </div>
+          </div>
 
-        <div class="col-md-3 col-sm-6 banner-item">
-          <img src="/images/contacts/phone.png" alt="Phone" />
-          <h4>电话</h4>
-          <p>+61 420 616 883</p>
-        </div>
+          <div class="col-md-3 col-sm-6 count-grid">
+            <div class="count hvr-bounce-to-bottom intro-card">
+              <div class="intro-icon">
+                <img src="/images/contacts/phone.png" alt="Phone" loading="lazy" />
+              </div>
+              <h4 class="intro-title">电话</h4>
+              <p class="intro-desc">+61 420 616 883</p>
+            </div>
+          </div>
 
-        <div class="col-md-3 col-sm-6 banner-item">
-          <img src="/images/contacts/email.png" alt="Email" />
-          <h4>邮箱</h4>
-          <p>info@cendantpgau.com</p>
-        </div>
+          <div class="col-md-3 col-sm-6 count-grid">
+            <div class="count hvr-bounce-to-bottom intro-card">
+              <div class="intro-icon">
+                <img src="/images/contacts/email.png" alt="Email" loading="lazy" />
+              </div>
+              <h4 class="intro-title">邮箱</h4>
+              <p class="intro-desc">info@cendantpgau.com</p>
+            </div>
+          </div>
 
-        <div class="col-md-3 col-sm-6 banner-item">
-          <img src="/images/contacts/whatsapp.png" alt="WhatsApp" />
-          <h4>WhatsApp</h4>
-          <p>+61 420 616 883</p>
+          <div class="col-md-3 col-sm-6 count-grid">
+            <div class="count hvr-bounce-to-bottom intro-card">
+              <div class="intro-icon">
+                <img src="/images/contacts/whatsapp.png" alt="WhatsApp" loading="lazy" />
+              </div>
+              <h4 class="intro-title">WhatsApp</h4>
+              <p class="intro-desc">+61 420 616 883</p>
+            </div>
+          </div>
+
+          <div class="clearfix"></div>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 下面你可以继续放“在线留言表单/地图/联系方式”等内容 ===== -->
+  <div class="container" style="padding: 30px 0 60px;">
+    <div class="row">
+      <div class="col-md-12">
+        <h3 style="margin: 0 0 14px; font-weight: 800; color: #0b1b54;">在线留言</h3>
+        <p style="margin: 0 0 18px; color: #667085;">我们会在 24 小时内与您联系。</p>
+
+        <form id="lead-form">
+          <input name="name" type="text" placeholder="姓名" required />
+          <input name="email" type="email" placeholder="邮箱" required />
+          <input name="phone" type="text" placeholder="电话" />
+          <textarea name="message" placeholder="留言内容" required></textarea>
+          <button class="btn1" type="submit">提交</button>
+          <p id="lead-result" style="margin-top:10px;"></p>
+        </form>
       </div>
     </div>
   </div>
 
+  <script is:inline>
+    (function () {
+      const form = document.getElementById("lead-form");
+      const result = document.getElementById("lead-result");
+      if (!form || !result) return;
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        result.textContent = "提交中…";
+
+        const data = Object.fromEntries(new FormData(form));
+        data.topic = "联系我们";
+
+        try {
+          const res = await fetch("/api/leads", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+          });
+
+          if (res.ok) {
+            result.textContent = "我们已收到您的信息，会尽快联系您。";
+            form.reset();
+          } else {
+            result.textContent = "提交失败，请稍后再试。";
+          }
+        } catch (err) {
+          result.textContent = "网络异常，请稍后再试。";
+        }
+      });
+    })();
+  </script>
 </TemplateLayout>
 
-<style>
-/* 只做“增强”，不破坏模板 */
-
-/* 图标尺寸统一 */
-.contact-banner .banner-item img {
-  width: 42px;
-  height: 42px;
-  margin-bottom: 12px;
-}
-
-/* 文字居中（模板一般默认是左对齐） */
-.contact-banner .banner-item {
-  text-align: center;
-}
-
-/* 副标题白色（防止模板被覆盖） */
-.contact-banner h2,
-.contact-banner p,
-.contact-banner h4 {
-  color: #fff;
-}
-
-/* 小屏优化 */
-@media (max-width: 768px) {
-  .contact-banner .banner-item {
-    margin-bottom: 24px;
+<style is:global>
+  /* ===== Banner 白字 + 背景（与模板 fun facts 风格一致） ===== */
+  .contact-banner {
+    color: #fff;
   }
-}
+  .contact-banner .heading span,
+  .contact-banner .heading small {
+    color: #fff !important;
+  }
+  .contact-banner .subpage-intro-en {
+    display: block;
+    font-size: 12px;
+    opacity: 0.75;
+    margin-top: 8px;
+    letter-spacing: 2px;
+  }
+
+  /* ===== 卡片内容布局（不破坏模板，只增强） ===== */
+  .contact-banner .intro-card {
+    padding: 18px 16px;
+    min-height: 150px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .contact-banner .intro-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+  }
+
+  .contact-banner .intro-icon img {
+    width: 46px;
+    height: 46px;
+    object-fit: contain;
+    display: block;
+  }
+
+  .contact-banner .intro-title {
+    margin: 0 0 8px;
+    font-size: 16px;
+    font-weight: 800;
+    color: #fff;
+  }
+
+  .contact-banner .intro-desc {
+    margin: 0;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.88);
+    word-break: break-word;
+  }
+
+  @media (max-width: 768px) {
+    .contact-banner .intro-card {
+      min-height: auto;
+    }
+    .contact-banner .intro-icon img {
+      width: 42px;
+      height: 42px;
+    }
+  }
 </style>
