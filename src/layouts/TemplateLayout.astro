@@ -6,14 +6,26 @@ type NavItem = { href: string; label: string };
 const props = Astro.props as {
   title?: string;
   description?: string;
+
+  /** 是否显示底部 footer（你说的“黑色联系我们模块”基本就在这里） */
   showFooter?: boolean;
+
+  /** 页面是否有“首屏大图/轮播”，需要导航叠在图上且内容不留顶 padding */
+  hasHero?: boolean;
+
+  /** 自定义导航 */
   nav?: NavItem[];
 };
 
 const title = props.title ?? Astro.props.frontmatter?.title ?? "页面";
 const description =
   props.description ?? "墨尔本·胜腾国际 - 房产投资 / 项目开发 / 租赁管理 / 移民服务";
-const showFooter = props.showFooter ?? true;
+
+/** ✅ 默认改为 false：不再自动出现你说的那个黑色 footer 模块 */
+const showFooter = props.showFooter ?? false;
+
+/** ✅ 首页/有轮播的页面传 hasHero={true}，让内容顶到最上面 */
+const hasHero = props.hasHero ?? false;
 
 const nav: NavItem[] =
   props.nav ??
@@ -51,12 +63,10 @@ function isActive(href: string) {
     <link rel="stylesheet" href="/template15/css/owl.theme.css" />
     <link rel="stylesheet" href="/template15/css/easy-responsive-tabs.css" />
 
-    <!-- 模板主样式（通常就是它） -->
     <link rel="stylesheet" href="/template15/css/style.css" />
-    <!-- 如果你的模板还有 mainStyles.css / 其它文件，保留也没问题 -->
     <link rel="stylesheet" href="/template15/css/mainStyles.css" />
 
-    <!-- 字体（https 更稳） -->
+    <!-- 字体 -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -68,45 +78,73 @@ function isActive(href: string) {
       rel="stylesheet"
     />
 
-    <style>
-      /* 子页内容容器：默认用“白色卡片”装内容，更商务 */
-      .tpl-page {
-        padding: 40px 0 70px;
+    <style is:global>
+      /* ========== 关键：实现“贴顶+导航叠在图上” ========== */
+      html,
+      body {
+        margin: 0;
+        padding: 0;
       }
-      .tpl-card {
-        background: rgba(255, 255, 255, 0.97);
-        border: 1px solid rgba(226, 230, 240, 0.9);
-        border-radius: 12px;
-        padding: 24px;
+
+      /* 让顶部 banner/nav 不占文档流高度（不会把 slider 往下推） */
+      body.tpl-body .banner#home {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        z-index: 9999;
+        background: transparent;
+      }
+
+      /* navbar 背景透明，叠在图上（模板常见效果） */
+      body.tpl-body .banner#home .navbar {
+        background: transparent;
+        border: none;
+        margin: 0;
+      }
+
+      /* 修复某些模板默认给 banner/slider 加了 padding-top 的情况 */
+      body.tpl-body #exampleSlider,
+      body.tpl-body .flexslider,
+      body.tpl-body .slides {
+        margin-top: 0 !important;
+      }
+
+      /* 有首屏大图/轮播：内容区域不留顶 padding（让 hero 从最上开始） */
+      body.tpl-body.tpl-has-hero main.tpl-main {
+        padding-top: 0;
+      }
+
+      /* 没有首屏大图：给内容留出顶部空间，避免被 overlay 导航挡住 */
+      body.tpl-body:not(.tpl-has-hero) main.tpl-main {
+        padding-top: 110px; /* 可按手机实际再调 */
+      }
+
+      @media (max-width: 768px) {
+        body.tpl-body:not(.tpl-has-hero) main.tpl-main {
+          padding-top: 85px;
+        }
       }
 
       /* 顶部品牌副标题 */
       .navbar-brand .brand-sub {
         display: block;
         font-size: 12px;
-        opacity: 0.7;
+        opacity: 0.75;
         letter-spacing: 2px;
         margin-top: 2px;
       }
 
-      /* 让 active 更明显（不破坏模板） */
+      /* active 更明显 */
       .navbar-nav > li.active > a span,
       .navbar-nav > li.active > a span:hover {
         font-weight: 800;
       }
-
-      /* footer 按钮：如果模板没有 btn1 的样式，这里兜底 */
-      a.btn1 {
-        display: inline-block;
-        padding: 10px 16px;
-        border-radius: 6px;
-        text-decoration: none;
-      }
     </style>
   </head>
 
-  <body>
-    <!-- ===== 顶部 Banner + Navbar（模板结构） ===== -->
+  <body class:list={["tpl-body", hasHero ? "tpl-has-hero" : ""]}>
+    <!-- ===== 顶部 Navbar（叠在首屏上） ===== -->
     <div class="banner" id="home">
       <nav class="navbar navbar-default">
         <div class="navbar-header navbar-left">
@@ -145,7 +183,7 @@ function isActive(href: string) {
           </nav>
         </div>
 
-        <!-- 右上角社交（你不需要可以删） -->
+        <!-- 右上角社交：不需要就删掉 -->
         <div class="agileits-social top_content">
           <ul>
             <li><a href="#" aria-label="facebook"><i class="fa fa-facebook"></i></a></li>
@@ -157,28 +195,19 @@ function isActive(href: string) {
       </nav>
     </div>
 
-    <!-- ===== 子页面内容 ===== -->
-    <div class="container tpl-page">
-      <div class="tpl-card">
-        <slot />
-      </div>
-    </div>
+    <!-- ===== 页面内容（不再强制套 container/card，保持模板原生布局） ===== -->
+    <main class="tpl-main">
+      <slot />
+    </main>
 
-    <!-- ===== Footer（模板结构保留，写法更安全） ===== -->
+    <!-- ===== Footer（默认关闭，避免出现你说的黑色模块） ===== -->
     {showFooter && (
       <div class="footer">
         <div class="col-md-6 subscribe">
           <form action="#" method="post" onsubmit="return false;">
-            <h3>联系我们</h3>
-
-            <input
-              type="text"
-              name="Subscribe"
-              placeholder="输入邮箱（可选）"
-            />
-
-            <!-- 用 a 链接替代 onclick（避免引号问题，也更专业） -->
-            <a class="btn1" href="/contact">去填写表单</a>
+            <h3>Cendant</h3>
+            <input type="text" name="Subscribe" placeholder="输入邮箱（可选）" />
+            <a class="btn1" href="/contact">联系咨询</a>
           </form>
         </div>
 
@@ -202,8 +231,6 @@ function isActive(href: string) {
     <script is:inline src="/template15/js/numscroller-1.0.js"></script>
     <script is:inline src="/template15/js/owl.carousel.js"></script>
     <script is:inline src="/template15/js/jquery.flexslider.js"></script>
-
-    <!-- 下面这些按你模板实际存在与否保留/删除即可 -->
     <script is:inline src="/template15/js/easy-responsive-tabs.js"></script>
     <script is:inline src="/template15/js/SmoothScroll.min.js"></script>
     <script is:inline src="/template15/js/move-top.js"></script>
