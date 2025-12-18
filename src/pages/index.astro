@@ -1,5 +1,24 @@
 ---
 import TemplateLayout from "../layouts/TemplateLayout.astro";
+
+/** 首页：地产资讯入口（按你子页面的“卡片+小圆点”模板） */
+const saleCats = [
+  { label: "公寓", href: "/real-estate/sale/apartment" },
+  { label: "二手房", href: "/real-estate/sale/second-hand" },
+  { label: "联排别墅", href: "/real-estate/sale/townhouse" },
+  { label: "土地别墅", href: "/real-estate/sale/land-villa" },
+  { label: "商业办公楼", href: "/real-estate/sale/commercial" },
+  { label: "土地开发", href: "/real-estate/sale/land" },
+  { label: "农场", href: "/real-estate/sale/farm" },
+  { label: "酒店", href: "/real-estate/sale/hotel" },
+];
+
+const rentCats = [
+  { label: "公寓", href: "/real-estate/rent/apartment" },
+  { label: "联排别墅", href: "/real-estate/rent/townhouse" },
+  { label: "土地别墅", href: "/real-estate/rent/land-villa" },
+  { label: "商业办公", href: "/real-estate/rent/commercial" },
+];
 ---
 
 <TemplateLayout title="首页" hasHero={true}>
@@ -8,7 +27,9 @@ import TemplateLayout from "../layouts/TemplateLayout.astro";
     document.body && document.body.classList.add("home-page");
   </script>
 
-  <!-- slider -->
+  <!-- =====================
+       首页 Slider（保留你的模板结构）
+  ====================== -->
   <div class="home-hero">
     <div id="exampleSlider">
       <div>
@@ -34,12 +55,15 @@ import TemplateLayout from "../layouts/TemplateLayout.astro";
     </div>
   </div>
 
-  <!-- about -->
+  <!-- =====================
+       公司概况
+  ====================== -->
   <div class="about" id="about">
-    <div class="section-title">
-      <h3 class="title-zh">公司概况</h3>
-      <p class="section-sub">COMPANY PROFILE</p>
-    </div>
+    <h3 class="heading heading-with-sub">
+      <span>公司概况</span>
+      <small class="heading-sub heading-sub-dark">COMPANY PROFILE</small>
+    </h3>
+
     <div class="container">
       <div class="services-grids">
         <div class="col-md-4 services-grids-info sgi">
@@ -48,10 +72,10 @@ import TemplateLayout from "../layouts/TemplateLayout.astro";
             专注澳洲房地产投资与资产配置，提供项目推荐、开发管理、租赁管理及移民咨询等综合服务。
           </p>
           <ul>
-            <li><i class="glyphicon glyphicon-arrow-right"> </i><a href="/real-estate">房产买卖与房地产开发</a></li>
-            <li><i class="glyphicon glyphicon-arrow-right"> </i><a href="/real-estate">豪宅定制与过户法务</a></li>
-            <li><i class="glyphicon glyphicon-arrow-right"> </i><a href="/real-estate">房产租赁与长期维护</a></li>
-            <li><i class="glyphicon glyphicon-arrow-right"> </i><a href="/immigration">澳洲移民咨询服务</a></li>
+            <li><i class="glyphicon glyphicon-arrow-right"></i> <a href="/property-service">房产买卖与房地产开发</a></li>
+            <li><i class="glyphicon glyphicon-arrow-right"></i> <a href="/property-service">豪宅定制与过户法务</a></li>
+            <li><i class="glyphicon glyphicon-arrow-right"></i> <a href="/property-service">房产租赁与长期维护</a></li>
+            <li><i class="glyphicon glyphicon-arrow-right"></i> <a href="/immigration">澳洲移民咨询服务</a></li>
           </ul>
         </div>
 
@@ -65,24 +89,27 @@ import TemplateLayout from "../layouts/TemplateLayout.astro";
             以专业研究与风控为基础，结合本地资源与项目对接能力，为投资者提供更稳健的资产配置路径。
           </p>
           <ul>
-            <li><i class="glyphicon glyphicon-arrow-right"> </i><a href="/company-profile">本地资源与合作网络</a></li>
-            <li><i class="glyphicon glyphicon-arrow-right"> </i><a href="/company-profile">合规流程与风险控制</a></li>
-            <li><i class="glyphicon glyphicon-arrow-right"> </i><a href="/real-estate">市场分析与选房策略</a></li>
-            <li><i class="glyphicon glyphicon-arrow-right"> </i><a href="/contact">预约咨询与项目对接</a></li>
+            <li><i class="glyphicon glyphicon-arrow-right"></i> <a href="/company-profile">本地资源与合作网络</a></li>
+            <li><i class="glyphicon glyphicon-arrow-right"></i> <a href="/company-profile">合规流程与风险控制</a></li>
+            <li><i class="glyphicon glyphicon-arrow-right"></i> <a href="/real-estate">市场分析与选房策略</a></li>
+            <li><i class="glyphicon glyphicon-arrow-right"></i> <a href="/contact">预约咨询与项目对接</a></li>
           </ul>
         </div>
 
-        <div class="clearfix"> </div>
+        <div class="clearfix"></div>
       </div>
     </div>
   </div>
 
-  <!-- services -->
+  <!-- =====================
+       服务项目（保留模板彩色方块）
+  ====================== -->
   <div class="services" id="services">
-  <div class="section-title">
-    <h3 class="title-zh">服务项目</h3>
-    <p class="section-sub">OUR SERVICES</p>
-  </div>
+    <h3 class="heading heading-with-sub">
+      <span>服务项目</span>
+      <small class="heading-sub heading-sub-light">OUR SERVICES</small>
+    </h3>
+
     <div class="container">
       <div class="col-md-8 servicesleft">
         <h4>为澳洲房产投资与移民规划提供一站式支持</h4>
@@ -92,9 +119,9 @@ import TemplateLayout from "../layouts/TemplateLayout.astro";
           <div class="col-md-4">
             <a href="/real-estate" style="text-decoration:none;">
               <div class="grid1 clr1">
-                <i class="fa fa-home" aria-hidden="true"></i>
+                <i class="fa fa-home"></i>
                 <h4>房产资讯</h4>
-                <h4>- Cendant</h4>
+                <h4>- CENDANT</h4>
               </div>
             </a>
           </div>
@@ -102,9 +129,9 @@ import TemplateLayout from "../layouts/TemplateLayout.astro";
           <div class="col-md-4">
             <a href="/property-service" style="text-decoration:none;">
               <div class="grid1 clr2">
-                <i class="fa fa-building" aria-hidden="true"></i>
+                <i class="fa fa-building"></i>
                 <h4>房产服务</h4>
-                <h4>- Cendant</h4>
+                <h4>- CENDANT</h4>
               </div>
             </a>
           </div>
@@ -112,9 +139,9 @@ import TemplateLayout from "../layouts/TemplateLayout.astro";
           <div class="col-md-4">
             <a href="/loan" style="text-decoration:none;">
               <div class="grid1 clr3">
-                <i class="fa fa-money" aria-hidden="true"></i>
+                <i class="fa fa-money"></i>
                 <h4>贷款服务</h4>
-                <h4>- Cendant</h4>
+                <h4>- CENDANT</h4>
               </div>
             </a>
           </div>
@@ -126,9 +153,9 @@ import TemplateLayout from "../layouts/TemplateLayout.astro";
           <div class="col-md-4">
             <a href="/immigration" style="text-decoration:none;">
               <div class="grid1 clr4">
-                <i class="fa fa-key" aria-hidden="true"></i>
+                <i class="fa fa-key"></i>
                 <h4>移民服务</h4>
-                <h4>- Cendant</h4>
+                <h4>- CENDANT</h4>
               </div>
             </a>
           </div>
@@ -136,9 +163,9 @@ import TemplateLayout from "../layouts/TemplateLayout.astro";
           <div class="col-md-4">
             <a href="/company-profile" style="text-decoration:none;">
               <div class="grid1 clr5">
-                <i class="fa fa-plane" aria-hidden="true"></i>
+                <i class="fa fa-plane"></i>
                 <h4>公司概况</h4>
-                <h4>- Cendant</h4>
+                <h4>- CENDANT</h4>
               </div>
             </a>
           </div>
@@ -146,9 +173,9 @@ import TemplateLayout from "../layouts/TemplateLayout.astro";
           <div class="col-md-4">
             <a href="/contact" style="text-decoration:none;">
               <div class="grid1 clr6">
-                <i class="fa fa-phone" aria-hidden="true"></i>
+                <i class="fa fa-phone"></i>
                 <h4>预约咨询</h4>
-                <h4>- Cendant</h4>
+                <h4>- CENDANT</h4>
               </div>
             </a>
           </div>
@@ -161,18 +188,21 @@ import TemplateLayout from "../layouts/TemplateLayout.astro";
     </div>
   </div>
 
-  <!-- fun facts -->
+  <!-- =====================
+       数据概览（模板 fun facts）
+  ====================== -->
   <div class="count-agileits" id="stats">
-    <div class="section-title">
-      <h3 class="title-zh">数据概览</h3>
-      <p class="title-en">DATA OVERVIEW </p>
-    </div>
+    <h3 class="heading heading-with-sub">
+      <span>数据概览</span>
+      <small class="heading-sub heading-sub-light">DATA OVERVIEW</small>
+    </h3>
+
     <div class="container">
       <div class="count-grids">
         <div class="count-bgcolor-w3ls">
           <div class="col-md-3 count-grid">
             <div class="count hvr-bounce-to-bottom">
-              <div class="numscroller numscroller-big-bottom" data-slno="1" data-min="0" data-max="15" data-delay=".5" data-increment="1">15</div>
+              <div class="numscroller numscroller-big-bottom" data-min="0" data-max="15" data-delay=".5" data-increment="1">15</div>
               <span></span>
               <h5>行业经验（年）</h5>
             </div>
@@ -180,7 +210,7 @@ import TemplateLayout from "../layouts/TemplateLayout.astro";
 
           <div class="col-md-3 count-grid">
             <div class="count hvr-bounce-to-bottom">
-              <div class="numscroller numscroller-big-bottom" data-slno="1" data-min="0" data-max="100" data-delay=".5" data-increment="1">100</div>
+              <div class="numscroller numscroller-big-bottom" data-min="0" data-max="100" data-delay=".5" data-increment="1">100</div>
               <span></span>
               <h5>项目对接</h5>
             </div>
@@ -188,7 +218,7 @@ import TemplateLayout from "../layouts/TemplateLayout.astro";
 
           <div class="col-md-3 count-grid">
             <div class="count hvr-bounce-to-bottom">
-              <div class="numscroller numscroller-big-bottom" data-slno="1" data-min="0" data-max="40" data-delay=".5" data-increment="1">40</div>
+              <div class="numscroller numscroller-big-bottom" data-min="0" data-max="40" data-delay=".5" data-increment="1">40</div>
               <span></span>
               <h5>合作资源</h5>
             </div>
@@ -196,7 +226,7 @@ import TemplateLayout from "../layouts/TemplateLayout.astro";
 
           <div class="col-md-3 count-grid">
             <div class="count hvr-bounce-to-bottom">
-              <div class="numscroller numscroller-big-bottom" data-slno="1" data-min="0" data-max="500" data-delay=".5" data-increment="1">500</div>
+              <div class="numscroller numscroller-big-bottom" data-min="0" data-max="500" data-delay=".5" data-increment="1">500</div>
               <h5>咨询响应</h5>
             </div>
           </div>
@@ -207,68 +237,101 @@ import TemplateLayout from "../layouts/TemplateLayout.astro";
     </div>
   </div>
 
-  <!-- 地产资讯轮播 -->
-  <div class="special" id="offers">
-    <div class="section-title">
-      <h3 class="title-zh">地产资讯</h3>
-      <p class="title-en">REAL ESTATE</p>
-  </div>
-    
-
+  <!-- =====================
+       地产资讯（✅ 引入你给的模板：卡片网格 + 小圆点）
+       替代原来的 owl-carousel
+  ====================== -->
+  <section class="re-home section-padding" id="offers">
     <div class="container">
-      <div class="agileits-special-grids">
-        <div id="owl-demo" class="owl-carousel owl-theme">
-          <!-- ...（你原来的 item 不动） -->
-          <!-- 这里省略，保持你原样即可 -->
+      <h3 class="heading heading-with-sub">
+        <span>地产资讯</span>
+        <small class="heading-sub heading-sub-dark">REAL ESTATE</small>
+      </h3>
+
+      <div class="re-block">
+        <div class="re-block-title">
+          <h4>房产售卖资讯</h4>
+          <p>按类型快速查看在售项目与市场机会</p>
+        </div>
+
+        <div class="service-grid">
+          {saleCats.map((c) => (
+            <a class="service-card" href={c.href}>
+              <span class="service-dot"></span>
+              <h4>{c.label}</h4>
+            </a>
+          ))}
+        </div>
+      </div>
+
+      <div class="re-block re-mt">
+        <div class="re-block-title">
+          <h4>房产出租资讯</h4>
+          <p>按类型快速查看出租与租赁管理信息</p>
+        </div>
+
+        <div class="service-grid">
+          {rentCats.map((c) => (
+            <a class="service-card" href={c.href}>
+              <span class="service-dot"></span>
+              <h4>{c.label}</h4>
+            </a>
+          ))}
         </div>
       </div>
     </div>
+  </section>
+
+  <!-- =====================
+       联系我们（保留 3 列 + 加回联系照片 1 列）
+  ====================== -->
+  <div class="contact" id="contact">
+    <h3 class="heading heading-with-sub">
+      <span>联系我们</span>
+      <small class="heading-sub heading-sub-light">CONTACT US</small>
+    </h3>
+
+    <div class="col-md-3 mail">
+      <h4>联系方式</h4>
+      <p><span class="glyphicon glyphicon-phone"></span> +61 420 616 883</p>
+      <p>
+        <span class="glyphicon glyphicon-envelope"></span>
+        <a href="mailto:info@cendantpgau.com">info@cendantpgau.com</a>
+      </p>
+    </div>
+
+    <div class="col-md-3 address">
+      <h4>地址</h4>
+      <p><span class="glyphicon glyphicon-map-marker"></span> 2 Aquitania Way, Docklands VIC 3008</p>
+    </div>
+
+    <div class="col-md-3 social">
+      <h4>快速入口</h4>
+      <ul>
+        <li><a href="/company-profile"><i class="fa fa-info"></i></a></li>
+        <li><a href="/real-estate"><i class="fa fa-building"></i></a></li>
+        <li><a href="/immigration"><i class="fa fa-plane"></i></a></li>
+        <li><a href="/contact"><i class="fa fa-phone"></i></a></li>
+      </ul>
+    </div>
+
+    <!-- ✅ 联系照片（你把图片放到 public/template15/images/contact.jpg 或改路径） -->
+    <div class="col-md-3 contact-photo">
+      <img src="/template15/images/contact.jpg" alt="contact" />
+    </div>
+
+    <div class="clearfix"></div>
   </div>
 
-
-    <!-- contact 信息块（已移除图片列，三列等宽） -->
-  <div class="contact" id="contact">
-      <h3 class="heading"><span>联系我们</span></h3>
-
-      <div class="row">
-        <div class="col-md-4 col-sm-12 mail">
-          <div class="section-title">
-            <h3 class="title-zh">公司概况</h3>
-            <p class="section-sub">CONTACT US</p>
-          </div>
-          <p><span class="glyphicon glyphicon-phone"></span> +61 420 616 883</p>
-          <p>
-            <span class="glyphicon glyphicon-envelope"></span>
-            <a href="mailto:info@cendantpgau.com">info@cendantpgau.com</a>
-          </p>
-        </div>
-
-        <div class="col-md-4 col-sm-12 address">
-          <h4>地址</h4>
-          <p>
-            <span class="glyphicon glyphicon-map-marker"></span>
-            2 Aquitania Way, Docklands VIC 3008
-          </p>
-        </div>
-
-        <div class="col-md-4 col-sm-12 social">
-          <h4>快速入口</h4>
-          <ul>
-            <li><a href="/company-profile"><i class="fa fa-info"></i></a></li>
-            <li><a href="/real-estate"><i class="fa fa-building"></i></a></li>
-            <li><a href="/immigration"><i class="fa fa-plane"></i></a></li>
-            <li><a href="/contact"><i class="fa fa-phone"></i></a></li>
-          </ul>
-        </div>
-      </div>
-    </div>
-
- 
-
-  <!-- contact form -->
+  <!-- =====================
+       在线留言
+  ====================== -->
   <div class="contact-form">
-   
-    <h3 class="heading"><span>在线留言</span></h3>
+    <h3 class="heading heading-with-sub">
+      <span>在线留言</span>
+      <small class="heading-sub heading-sub-dark">LEAVE A MESSAGE</small>
+    </h3>
+
     <div class="container">
       <form id="lead-form">
         <input name="name" type="text" placeholder="姓名" required />
@@ -314,26 +377,88 @@ import TemplateLayout from "../layouts/TemplateLayout.astro";
     })();
   </script>
 
+  <!-- =====================
+       样式：只做英文副标题 + 地产资讯卡片，不破坏模板
+  ====================== -->
   <style is:global>
-    /* ✅ 保证首屏贴顶（如果模板本身还有 margin 这里兜底） */
-    .home-hero,
-    #exampleSlider {
-      margin-top: 0 !important;
-      padding-top: 0 !important;
+    .heading-with-sub {
+      position: relative;
+      text-align: center;
+    }
+    .heading-with-sub .heading-sub {
+      display: block;
+      margin-top: 8px;
+      font-size: 12px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      opacity: 0.85;
     }
 
-    /* ✅ 联系照片样式（不破坏模板栅格） */
+    /* 深色/浅色两套：用于不同背景的区块 */
+    .heading-sub-dark { color: #0b1b54; }
+    .heading-sub-light { color: #fff; }
+
+    /* ✅ 地产资讯：引入你给的“service-card”风格 */
+    .re-home { padding: 60px 0; }
+    .re-block-title { margin: 18px 0 14px; }
+    .re-block-title h4 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 800;
+      color: #0b1b54;
+    }
+    .re-block-title p {
+      margin: 8px 0 0;
+      color: #5b6474;
+      font-size: 13px;
+    }
+
+    .service-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 18px;
+    }
+
+    .service-card {
+      display: block;
+      padding: 18px;
+      border: 1px solid rgba(11, 27, 84, 0.10);
+      border-radius: 12px;
+      background: #fff;
+      transition: all 0.25s ease;
+      text-decoration: none;
+    }
+
+    .service-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.08);
+      border-color: rgba(11, 27, 84, 0.18);
+    }
+
+    .service-card h4 {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 800;
+      color: #0b1b54;
+    }
+
+    .service-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: #0b1b54;
+      border-radius: 50%;
+      margin-bottom: 12px;
+    }
+
+    .re-mt { margin-top: 34px; }
+
+    /* 联系照片 */
     .contact-photo img {
       width: 100%;
       height: auto;
       display: block;
       border-radius: 6px;
-    }
-
-    @media (max-width: 992px) {
-      .contact-photo {
-        margin-top: 18px;
-      }
     }
   </style>
 </TemplateLayout>
