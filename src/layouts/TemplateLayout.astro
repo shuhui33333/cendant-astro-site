@@ -15,7 +15,7 @@ const title = props.title ?? Astro.props.frontmatter?.title ?? "页面";
 const description =
   props.description ?? "墨尔本·胜腾国际 - 房产投资 / 项目开发 / 租赁管理 / 移民服务";
 
-/** ✅ 你说“底部黑色联系我们模块需要保留” => 默认开启 */
+/** “底部黑色联系我们模块需要保留”
 const showFooter = props.showFooter ?? true;
 
 /** ✅ 首页传 hasHero={true} 贴顶；子页默认 false 不贴顶 */
@@ -159,17 +159,17 @@ function isActive(href: string) {
       body.tpl-body:not(.tpl-has-hero) .navbar-default .navbar-brand span,
       body.tpl-body:not(.tpl-has-hero) .navbar-default .navbar-nav > li > a,
       body.tpl-body:not(.tpl-has-hero) .navbar-default .navbar-nav > li > a span {
-        color: #111 !important;
+        color: #091a5d !important;
       }
 
       /* 子页：移动端三条杠黑色 */
       body.tpl-body:not(.tpl-has-hero) .navbar-default .navbar-toggle .icon-bar {
-        background: #111 !important;
+        background: #091a5d !important;
       }
 
       /* 子页：保留一段 padding-top（你要的“不贴顶”感觉） */
       body.tpl-body:not(.tpl-has-hero) main.tpl-main {
-        padding-top: 28px;
+        padding-top: 30px;
       }
     </style>
   </head>
