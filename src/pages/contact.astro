@@ -1,16 +1,32 @@
+
 ---
 import TemplateLayout from "../layouts/TemplateLayout.astro";
-import SubpageIntroBanner from "../components/SubpageIntroBanner.astro";
+import ContactIntroBanner from "../components/ContactIntroBanner.astro";
 ---
 
-<TemplateLayout title="联系我们" subtitle="CONTACT US">
-  <SubpageIntroBanner
-    titleZh="联系我们"
-    titleEn="CONTACT US"
+<TemplateLayout title="联系我们">
+  <ContactIntroBanner
     items={[
-      { label: "电话", value: "+61 420 616 883" },
-      { label: "邮箱", value: "info@cendantpgau.com" },
-      { label: "地址", value: "Docklands VIC 3008" },
+      {
+        label: "微信",
+        value: "Cendant_Property",
+        icon: "/images/contact/wechat.png",
+      },
+      {
+        label: "电话",
+        value: "+61 420 616 883",
+        icon: "/images/contact/phone.png",
+      },
+      {
+        label: "邮箱",
+        value: "info@cendantpgau.com",
+        icon: "/images/contact/email.png",
+      },
+      {
+        label: "WhatsApp",
+        value: "+61 420 616 883",
+        icon: "/images/contact/whatsapp.png",
+      },
     ]}
   />
 
