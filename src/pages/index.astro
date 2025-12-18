@@ -2,12 +2,11 @@
 import TemplateLayout from "../layouts/TemplateLayout.astro";
 import { getRealEstatePosts } from "../lib/contentful";
 
-// 取最新发布（轮播用）
+/** 地产资讯：从 Contentful 拉最新文章，用作首页轮播 */
 const posts = await getRealEstatePosts(8);
 
-// 给每条文章找一张图：按你 Contentful 字段做容错
-function pickImage(p) {
-  // 你项目里常见的命名：coverImage / featuredImage / image
+/** 尝试从你的 Contentful 字段里挑一张封面图（没有就用模板默认图兜底） */
+function pickImage(p: any) {
   const img =
     p.coverImage?.url ||
     p.featuredImage?.url ||
@@ -15,19 +14,12 @@ function pickImage(p) {
     p.heroImage?.url ||
     p.thumbnail?.url ||
     "";
-  return img || "/template15/images/about.jpg"; // 没图就兜底
+  return img || "/template15/images/about.jpg";
 }
 ---
 
-<TemplateLayout title="首页" hasHero={true}>
-  <script is:inline>
-    document.documentElement.classList.add("home-page");
-    document.body && document.body.classList.add("home-page");
-  </script>
-
-  <!-- =======================
-       你的 Slider（保持原样）
-  ======================== -->
+<TemplateLayout title="首页" hasHero={true} showFooter={true}>
+  <!-- slider（模板结构） -->
   <div class="home-hero">
     <div id="exampleSlider">
       <div>
@@ -40,7 +32,7 @@ function pickImage(p) {
       <div>
         <h3>澳洲房产投资 <span>选房 · 评估 · 交易 · 管理</span></h3>
         <div class="readmore-w3">
-          <a class="readmore" href="/real-estate">查看地产资讯</a>
+          <a class="readmore" href="/real-estate">查看更多资讯</a>
         </div>
       </div>
 
@@ -53,40 +45,203 @@ function pickImage(p) {
     </div>
   </div>
 
-  <!-- =========================================================
-       地产资讯（✅ 用 Contentful 最新内容 + ✅ 模板同款轮播视觉）
-       说明：每张卡片直接链接到文章详情 /real-estate/{slug}
-  ========================================================== -->
+  <!-- about -->
+  <div class="about" id="about">
+    <div class="section-title">
+      <h3 class="title-zh">公司概况</h3>
+      <p class="section-sub">COMPANY PROFILE</p>
+    </div>
+
+    <div class="container">
+      <div class="services-grids">
+        <div class="col-md-4 services-grids-info sgi">
+          <h3>墨尔本·胜腾国际</h3>
+          <p>
+            专注澳洲房地产投资与资产配置，提供项目推荐、开发管理、租赁管理及移民咨询等综合服务。
+          </p>
+          <ul>
+            <li><i class="glyphicon glyphicon-arrow-right"> </i><a href="/property-service">房产买卖与房地产开发</a></li>
+            <li><i class="glyphicon glyphicon-arrow-right"> </i><a href="/property-service">豪宅定制与过户法务</a></li>
+            <li><i class="glyphicon glyphicon-arrow-right"> </i><a href="/property-service">房产租赁与长期维护</a></li>
+            <li><i class="glyphicon glyphicon-arrow-right"> </i><a href="/immigration">澳洲移民咨询服务</a></li>
+          </ul>
+        </div>
+
+        <div class="col-md-4 services-grids-info">
+          <img src="/template15/images/about.jpg" alt="about" />
+        </div>
+
+        <div class="col-md-4 services-grids-info sgi1">
+          <h3>高端投资服务</h3>
+          <p>
+            以专业研究与风控为基础，结合本地资源与项目对接能力，为投资者提供更稳健的资产配置路径。
+          </p>
+          <ul>
+            <li><i class="glyphicon glyphicon-arrow-right"> </i><a href="/company-profile">本地资源与合作网络</a></li>
+            <li><i class="glyphicon glyphicon-arrow-right"> </i><a href="/company-profile">合规流程与风险控制</a></li>
+            <li><i class="glyphicon glyphicon-arrow-right"> </i><a href="/real-estate">市场分析与选房策略</a></li>
+            <li><i class="glyphicon glyphicon-arrow-right"> </i><a href="/contact">预约咨询与项目对接</a></li>
+          </ul>
+        </div>
+
+        <div class="clearfix"> </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- services -->
+  <div class="services" id="services">
+    <div class="section-title">
+      <h3 class="title-zh">服务项目</h3>
+      <p class="section-sub">OUR SERVICES</p>
+    </div>
+
+    <div class="container">
+      <div class="col-md-8 servicesleft">
+        <h4>为澳洲房产投资与移民规划提供一站式支持</h4>
+        <h4>专业 · 合规 · 高效</h4>
+
+        <div class="serviceslefttop">
+          <div class="col-md-4">
+            <a href="/real-estate" style="text-decoration:none;">
+              <div class="grid1 clr1">
+                <i class="fa fa-home" aria-hidden="true"></i>
+                <h4>房产资讯</h4>
+                <h4>- Cendant</h4>
+              </div>
+            </a>
+          </div>
+
+          <div class="col-md-4">
+            <a href="/property-service" style="text-decoration:none;">
+              <div class="grid1 clr2">
+                <i class="fa fa-building" aria-hidden="true"></i>
+                <h4>房产服务</h4>
+                <h4>- Cendant</h4>
+              </div>
+            </a>
+          </div>
+
+          <div class="col-md-4">
+            <a href="/loan" style="text-decoration:none;">
+              <div class="grid1 clr3">
+                <i class="fa fa-money" aria-hidden="true"></i>
+                <h4>贷款服务</h4>
+                <h4>- Cendant</h4>
+              </div>
+            </a>
+          </div>
+
+          <div class="clearfix"></div>
+        </div>
+
+        <div class="servicesleftbottom">
+          <div class="col-md-4">
+            <a href="/immigration" style="text-decoration:none;">
+              <div class="grid1 clr4">
+                <i class="fa fa-key" aria-hidden="true"></i>
+                <h4>移民服务</h4>
+                <h4>- Cendant</h4>
+              </div>
+            </a>
+          </div>
+
+          <div class="col-md-4">
+            <a href="/company-profile" style="text-decoration:none;">
+              <div class="grid1 clr5">
+                <i class="fa fa-plane" aria-hidden="true"></i>
+                <h4>公司概况</h4>
+                <h4>- Cendant</h4>
+              </div>
+            </a>
+          </div>
+
+          <div class="col-md-4">
+            <a href="/contact" style="text-decoration:none;">
+              <div class="grid1 clr6">
+                <i class="fa fa-phone" aria-hidden="true"></i>
+                <h4>预约咨询</h4>
+                <h4>- Cendant</h4>
+              </div>
+            </a>
+          </div>
+
+          <div class="clearfix"></div>
+        </div>
+      </div>
+
+      <div class="clearfix"></div>
+    </div>
+  </div>
+
+  <!-- fun facts -->
+  <div class="count-agileits" id="stats">
+    <div class="section-title">
+      <h3 class="title-zh">数据概览</h3>
+      <p class="section-sub">DATA OVERVIEW</p>
+    </div>
+
+    <div class="container">
+      <div class="count-grids">
+        <div class="count-bgcolor-w3ls">
+          <div class="col-md-3 count-grid">
+            <div class="count hvr-bounce-to-bottom">
+              <div class="numscroller numscroller-big-bottom" data-slno="1" data-min="0" data-max="15" data-delay=".5" data-increment="1">15</div>
+              <span></span>
+              <h5>行业经验（年）</h5>
+            </div>
+          </div>
+
+          <div class="col-md-3 count-grid">
+            <div class="count hvr-bounce-to-bottom">
+              <div class="numscroller numscroller-big-bottom" data-slno="1" data-min="0" data-max="100" data-delay=".5" data-increment="1">100</div>
+              <span></span>
+              <h5>项目对接</h5>
+            </div>
+          </div>
+
+          <div class="col-md-3 count-grid">
+            <div class="count hvr-bounce-to-bottom">
+              <div class="numscroller numscroller-big-bottom" data-slno="1" data-min="0" data-max="40" data-delay=".5" data-increment="1">40</div>
+              <span></span>
+              <h5>合作资源</h5>
+            </div>
+          </div>
+
+          <div class="col-md-3 count-grid">
+            <div class="count hvr-bounce-to-bottom">
+              <div class="numscroller numscroller-big-bottom" data-slno="1" data-min="0" data-max="500" data-delay=".5" data-increment="1">500</div>
+              <h5>咨询响应</h5>
+            </div>
+          </div>
+
+          <div class="clearfix"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ 地产资讯：改成模板式“滚动图片轮播”，内容来自 Contentful（不跳入口页） -->
   <div class="special" id="offers">
-    <h3 class="heading">
-      <span>地产资讯</span>
-    </h3>
-    <p class="heading-en">PROPERTIES FOR SALE</p>
+    <h3 class="heading"><span>地产资讯</span></h3>
+    <div class="re-heading-en re-heading-en-dark">PROPERTIES</div>
 
     <div class="container">
       <div class="agileits-special-grids">
         <div id="owl-demo" class="owl-carousel owl-theme">
           {posts && posts.length > 0 ? (
-            posts.map((p) => (
+            posts.map((p: any) => (
               <div class="item">
                 <a href={`/real-estate/${p.slug}`} style="text-decoration:none;">
-                  <div
-                    class="special-info re-prop-card"
-                    style={`background-image:url('${pickImage(p)}')`}
-                  >
+                  <div class="special-info re-prop-card" style={`background-image:url('${pickImage(p)}')`}>
                     <div class="re-prop-overlay">
-                      <div class="re-prop-top">
-                        <span class="re-prop-tag">{p.category ?? "资讯"}</span>
-                      </div>
-
+                      <span class="re-prop-tag">{p.category ?? "资讯"}</span>
                       <h4 class="re-prop-title">{p.title}</h4>
-
                       {p.publishDate && (
                         <p class="re-prop-date">
                           {new Date(p.publishDate).toLocaleDateString("zh-CN")}
                         </p>
                       )}
-
                       <p class="re-prop-cta">查看详情 →</p>
                     </div>
                   </div>
@@ -98,7 +253,7 @@ function pickImage(p) {
               <div class="special-info re-prop-card" style="background:#0b1b54;">
                 <div class="re-prop-overlay">
                   <h4 class="re-prop-title" style="color:#fff;">暂无内容</h4>
-                  <p style="color:#fff;opacity:.9;">请先在 Contentful 发布 realEstatePost</p>
+                  <p style="color:#fff;opacity:.9;">请在 Contentful 发布 realEstatePost</p>
                 </div>
               </div>
             </div>
@@ -108,14 +263,10 @@ function pickImage(p) {
     </div>
   </div>
 
-  <!-- =========================================================
-       联系我们（✅ 英文小标题 + ✅ 三列占满整行 + ✅ 不放图片）
-  ========================================================== -->
+  <!-- ✅ 联系我们：英文小标题；3列占满整行；不放图片 -->
   <div class="contact" id="contact">
-    <h3 class="heading">
-      <span>联系我们</span>
-    </h3>
-    <p class="heading-en heading-en-light">CONTACT US</p>
+    <h3 class="heading"><span>联系我们</span></h3>
+    <div class="re-heading-en">CONTACT US</div>
 
     <div class="container">
       <div class="row re-contact-row">
@@ -130,7 +281,10 @@ function pickImage(p) {
 
         <div class="col-md-4 col-sm-12 address re-contact-col">
           <h4>地址</h4>
-          <p><span class="glyphicon glyphicon-map-marker"></span> 2 Aquitania Way, Docklands VIC 3008</p>
+          <p>
+            <span class="glyphicon glyphicon-map-marker"></span>
+            2 Aquitania Way, Docklands VIC 3008
+          </p>
         </div>
 
         <div class="col-md-4 col-sm-12 social re-contact-col">
@@ -148,17 +302,28 @@ function pickImage(p) {
     <div class="clearfix"></div>
   </div>
 
-  <!-- 你原来的 contact-form / 其他模块保持不动即可 -->
+  <!-- contact form -->
+  <div class="contact-form">
+    <h3 class="heading"><span>在线留言</span></h3>
+    <div class="container">
+      <form id="lead-form">
+        <input name="name" type="text" placeholder="姓名" required />
+        <input name="email" type="email" placeholder="邮箱" required />
+        <input name="phone" type="text" placeholder="电话" />
+        <textarea name="message" placeholder="留言内容" required></textarea>
+        <button class="btn1" type="submit">提交</button>
+        <p id="lead-result" style="margin-top:10px;"></p>
+      </form>
+    </div>
+  </div>
 
-  <!-- ✅ 关键：强制初始化 Owl（避免“部署后不动/不显示”） -->
+  <!-- ✅ Owl 初始化：只影响 #owl-demo，不会吞其它模块 -->
   <script is:inline>
     (function () {
       function initOwl() {
         if (!window.jQuery) return;
         const $ = window.jQuery;
         const $owl = $("#owl-demo");
-
-        // 避免重复初始化
         if (!$owl.length || $owl.hasClass("owl-loaded")) return;
 
         $owl.owlCarousel({
@@ -178,42 +343,75 @@ function pickImage(p) {
       } else {
         initOwl();
       }
-
-      // 防止某些模板脚本延迟加载导致第一次 init 失败
       setTimeout(initOwl, 800);
     })();
   </script>
 
-  <style is:global>
-    /* 首屏贴顶兜底 */
-    .home-hero, #exampleSlider { margin-top: 0 !important; padding-top: 0 !important; }
+  <!-- 留言表单提交 -->
+  <script is:inline>
+    (function () {
+      const form = document.getElementById("lead-form");
+      const result = document.getElementById("lead-result");
+      if (!form || !result) return;
 
-    /* ===== 通用：模板 heading 下的英文小标题（强制显示） ===== */
-    .heading-en{
-      text-align:center !important;
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        result.textContent = "提交中…";
+
+        const data = Object.fromEntries(new FormData(form));
+        data.topic = "首页咨询";
+
+        try {
+          const res = await fetch("/api/leads", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+          });
+
+          if (res.ok) {
+            result.textContent = "我们已收到您的信息，会尽快联系您。";
+            form.reset();
+          } else {
+            result.textContent = "提交失败，请稍后再试。";
+          }
+        } catch (err) {
+          result.textContent = "网络异常，请稍后再试。";
+        }
+      });
+    })();
+  </script>
+
+  <style is:global>
+    /* ✅ 首页贴顶兜底 */
+    .home-hero,
+    #exampleSlider {
+      margin-top: 0 !important;
+      padding-top: 0 !important;
+    }
+
+    /* ✅ 统一英文小标题：强制显示（模板可能覆盖 display） */
+    .re-heading-en {
+      display: block !important;
+      text-align: center !important;
       margin: -10px 0 25px !important;
       font-size: 12px !important;
       letter-spacing: 3px !important;
       text-transform: uppercase !important;
-      color: #0b1b54 !important;
       font-weight: 700 !important;
-      opacity: .95 !important;
-      display:block !important;
+      opacity: 0.92 !important;
+      line-height: 1.4 !important;
+      color: #fff !important; /* contact 背景一般是深色 */
     }
-    .heading-en-light{
-      color:#fff !important;
-      opacity: .9 !important;
-    }
-
-    /* ===== 联系我们：确保三列真的“占满整行” ===== */
-    .re-contact-row{ margin-top: 10px; }
-    .re-contact-col{ margin-bottom: 10px; }
-    @media (min-width: 992px){
-      .re-contact-col{ min-height: 160px; }
+    .re-heading-en-dark {
+      color: #0b1b54 !important; /* special 区域用深蓝 */
     }
 
-    /* ===== 地产资讯：做成“模板 Properties for Sale 那种卡片背景图” ===== */
-    .re-prop-card{
+    /* ✅ 联系我们：三列占满整行 */
+    .re-contact-row { margin-top: 10px; }
+    .re-contact-col { margin-bottom: 12px; }
+
+    /* ✅ 地产资讯轮播卡片：图片 + 渐变遮罩 */
+    .re-prop-card {
       border-radius: 10px;
       overflow: hidden;
       background-size: cover;
@@ -223,15 +421,17 @@ function pickImage(p) {
       border: 1px solid rgba(0,0,0,.06);
     }
 
-    .re-prop-overlay{
-      position:absolute;
-      left:0; right:0; bottom:0;
+    .re-prop-overlay {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
       padding: 18px 18px 16px;
-      background: linear-gradient(to top, rgba(0,0,0,.75), rgba(0,0,0,.15));
+      background: linear-gradient(to top, rgba(0,0,0,.75), rgba(0,0,0,.12));
     }
 
-    .re-prop-tag{
-      display:inline-block;
+    .re-prop-tag {
+      display: inline-block;
       font-size: 12px;
       color: rgba(255,255,255,.92);
       background: rgba(11,27,84,.72);
@@ -240,7 +440,7 @@ function pickImage(p) {
       margin-bottom: 10px;
     }
 
-    .re-prop-title{
+    .re-prop-title {
       margin: 0;
       font-size: 16px;
       font-weight: 800;
@@ -248,25 +448,18 @@ function pickImage(p) {
       line-height: 1.35;
     }
 
-    .re-prop-date{
+    .re-prop-date {
       margin: 6px 0 0;
       font-size: 12px;
       color: rgba(255,255,255,.85);
     }
 
-    .re-prop-cta{
+    .re-prop-cta {
       margin: 10px 0 0;
       font-size: 12px;
       color: rgba(255,255,255,.92);
       font-weight: 700;
       letter-spacing: .5px;
-    }
-
-    /* 让 hover 更像模板 */
-    .re-prop-card:hover{
-      transform: translateY(-3px);
-      transition: all .25s ease;
-      box-shadow: 0 12px 30px rgba(0,0,0,.18);
     }
   </style>
 </TemplateLayout>
