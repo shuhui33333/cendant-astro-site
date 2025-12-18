@@ -15,7 +15,7 @@ const title = props.title ?? Astro.props.frontmatter?.title ?? "页面";
 const description =
   props.description ?? "墨尔本·胜腾国际 - 房产投资 / 项目开发 / 租赁管理 / 移民服务";
 
-/** “底部黑色联系我们模块需要保留”
+/** ✅ 保留底部黑色“联系我们”模块 => 默认开启 */
 const showFooter = props.showFooter ?? true;
 
 /** ✅ 首页传 hasHero={true} 贴顶；子页默认 false 不贴顶 */
@@ -93,11 +93,27 @@ function isActive(href: string) {
         font-weight: 800;
       }
 
+      /* ✅ 让左侧品牌/图标区域和右侧菜单有“呼吸感” */
+      .banner#home .navbar {
+        padding: 10px 0; /* 上下拉开一点 */
+      }
+
+      /* ✅ 左侧 fa-home 图标与菜单/内容分隔（避免贴太近） */
+      .navbar-header .fa-home {
+        margin-left: 12px;
+        margin-top: 8px;
+      }
+
+      /* ✅ 给右侧导航一点右边距（避免贴边/贴得太紧） */
+      .navbar-collapse.navbar-right {
+        padding-right: 12px;
+      }
+
       /* =========================================================
          A) 首页（hasHero=true）：贴顶 + 导航叠在图上 + 白色导航字
          ========================================================= */
       body.tpl-body.tpl-has-hero .banner#home {
-        position: absolute;     /* 关键：不占高度，不会把 slider 往下推 */
+        position: absolute;
         left: 0;
         top: 0;
         width: 100%;
@@ -111,7 +127,7 @@ function isActive(href: string) {
         margin: 0;
       }
 
-      /* 首页：导航文字白色（含品牌/菜单） */
+      /* 首页：导航文字白色 */
       body.tpl-body.tpl-has-hero .navbar-default .navbar-brand,
       body.tpl-body.tpl-has-hero .navbar-default .navbar-brand span,
       body.tpl-body.tpl-has-hero .navbar-default .navbar-nav > li > a,
@@ -124,12 +140,12 @@ function isActive(href: string) {
         background: #fff !important;
       }
 
-      /* 首页：页面内容不加顶 padding（让首屏从0开始） */
+      /* 首页：页面内容不加顶 padding */
       body.tpl-body.tpl-has-hero main.tpl-main {
         padding-top: 0;
       }
 
-      /* 首页：把可能顶出空隙的 margin/padding 清掉（重点解决竖屏不贴顶） */
+      /* 首页：清掉可能顶出空隙的 margin/padding（竖屏贴顶关键） */
       body.tpl-body.tpl-has-hero #exampleSlider,
       body.tpl-body.tpl-has-hero .callbacks_container,
       body.tpl-body.tpl-has-hero .rslides,
@@ -139,10 +155,10 @@ function isActive(href: string) {
       }
 
       /* =========================================================
-         B) 子页（hasHero=false）：不贴顶 + 导航正常占位 + 黑色导航字
+         B) 子页（hasHero=false）：不贴顶 + 导航正常占位 + 深蓝导航字
          ========================================================= */
       body.tpl-body:not(.tpl-has-hero) .banner#home {
-        position: relative;     /* 关键：让导航占位，页面不贴顶 */
+        position: relative;
         background: #fff;
         z-index: 10;
       }
@@ -154,7 +170,7 @@ function isActive(href: string) {
         box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
       }
 
-      /* 子页：导航文字黑色 */
+      /* ✅ 子页：导航字体用深蓝（不是黑色） */
       body.tpl-body:not(.tpl-has-hero) .navbar-default .navbar-brand,
       body.tpl-body:not(.tpl-has-hero) .navbar-default .navbar-brand span,
       body.tpl-body:not(.tpl-has-hero) .navbar-default .navbar-nav > li > a,
@@ -162,12 +178,12 @@ function isActive(href: string) {
         color: #091a5d !important;
       }
 
-      /* 子页：移动端三条杠黑色 */
+      /* 子页：移动端三条杠深蓝 */
       body.tpl-body:not(.tpl-has-hero) .navbar-default .navbar-toggle .icon-bar {
         background: #091a5d !important;
       }
 
-      /* 子页：保留一段 padding-top（你要的“不贴顶”感觉） */
+      /* 子页：保留 padding-top（不贴顶） */
       body.tpl-body:not(.tpl-has-hero) main.tpl-main {
         padding-top: 28px;
       }
@@ -197,6 +213,8 @@ function isActive(href: string) {
               <span class="brand-sub">MELBOURNE · CENDANT</span>
             </a>
           </h1>
+
+          <!-- ✅ 保留 home 图标，但拉开间距（上面 CSS 已处理） -->
           <i class="fa fa-home" aria-hidden="true"></i>
         </div>
 
@@ -214,14 +232,7 @@ function isActive(href: string) {
           </nav>
         </div>
 
-        <div class="agileits-social top_content">
-          <ul>
-            <li><a href="#" aria-label="facebook"><i class="fa fa-facebook"></i></a></li>
-            <li><a href="#" aria-label="twitter"><i class="fa fa-twitter"></i></a></li>
-            <li><a href="#" aria-label="rss"><i class="fa fa-rss"></i></a></li>
-            <li><a href="#" aria-label="vk"><i class="fa fa-vk"></i></a></li>
-          </ul>
-        </div>
+        <!-- ✅ 已删除：右上角社交图标 agileits-social -->
       </nav>
     </div>
 
