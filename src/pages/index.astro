@@ -2,10 +2,8 @@
 import TemplateLayout from "../layouts/TemplateLayout.astro";
 import { getRealEstatePosts } from "../lib/contentful";
 
-/** 地产资讯：从 Contentful 拉最新文章，用作首页轮播 */
 const posts = await getRealEstatePosts(8);
 
-/** 尝试从你的 Contentful 字段里挑一张封面图（没有就用模板默认图兜底） */
 function pickImage(p: any) {
   const img =
     p.coverImage?.url ||
@@ -19,7 +17,7 @@ function pickImage(p: any) {
 ---
 
 <TemplateLayout title="首页" hasHero={true} showFooter={true}>
-  <!-- slider（模板结构） -->
+  <!-- slider -->
   <div class="home-hero">
     <div id="exampleSlider">
       <div>
@@ -32,7 +30,7 @@ function pickImage(p: any) {
       <div>
         <h3>澳洲房产投资 <span>选房 · 评估 · 交易 · 管理</span></h3>
         <div class="readmore-w3">
-          <a class="readmore" href="/real-estate">查看更多资讯</a>
+          <a class="readmore" href="/real-estate">查看地产资讯</a>
         </div>
       </div>
 
@@ -45,12 +43,10 @@ function pickImage(p: any) {
     </div>
   </div>
 
-  <!-- about -->
+  <!-- 公司概况（标题回到模板 heading 样式 + 英文小标题） -->
   <div class="about" id="about">
-    <div class="section-title">
-      <h3 class="title-zh">公司概况</h3>
-      <p class="section-sub">COMPANY PROFILE</p>
-    </div>
+    <h3 class="heading"><span>公司概况</span></h3>
+    <p class="heading-en">COMPANY PROFILE</p>
 
     <div class="container">
       <div class="services-grids">
@@ -89,12 +85,10 @@ function pickImage(p: any) {
     </div>
   </div>
 
-  <!-- services -->
+  <!-- 服务项目（标题回到模板 heading 样式 + 英文小标题） -->
   <div class="services" id="services">
-    <div class="section-title">
-      <h3 class="title-zh">服务项目</h3>
-      <p class="section-sub">OUR SERVICES</p>
-    </div>
+    <h3 class="heading"><span>服务项目</span></h3>
+    <p class="heading-en">OUR SERVICES</p>
 
     <div class="container">
       <div class="col-md-8 servicesleft">
@@ -174,12 +168,10 @@ function pickImage(p: any) {
     </div>
   </div>
 
-  <!-- fun facts -->
+  <!-- 数据概览（标题回到模板 heading 样式 + 英文小标题） -->
   <div class="count-agileits" id="stats">
-    <div class="section-title">
-      <h3 class="title-zh">数据概览</h3>
-      <p class="section-sub">DATA OVERVIEW</p>
-    </div>
+    <h3 class="heading"><span>数据概览</span></h3>
+    <p class="heading-en heading-en-on-dark">DATA OVERVIEW</p>
 
     <div class="container">
       <div class="count-grids">
@@ -221,10 +213,10 @@ function pickImage(p: any) {
     </div>
   </div>
 
-  <!-- ✅ 地产资讯：改成模板式“滚动图片轮播”，内容来自 Contentful（不跳入口页） -->
+  <!-- 地产资讯：用 owl-carousel 图片滚动（来自 Contentful） -->
   <div class="special" id="offers">
     <h3 class="heading"><span>地产资讯</span></h3>
-    <div class="re-heading-en re-heading-en-dark">PROPERTIES</div>
+    <p class="heading-en heading-en-dark">PROPERTIES</p>
 
     <div class="container">
       <div class="agileits-special-grids">
@@ -233,7 +225,7 @@ function pickImage(p: any) {
             posts.map((p: any) => (
               <div class="item">
                 <a href={`/real-estate/${p.slug}`} style="text-decoration:none;">
-                  <div class="special-info re-prop-card" style={`background-image:url('${pickImage(p)}')`}>
+                  <div class="re-prop-card" style={`background-image:url('${pickImage(p)}')`}>
                     <div class="re-prop-overlay">
                       <span class="re-prop-tag">{p.category ?? "资讯"}</span>
                       <h4 class="re-prop-title">{p.title}</h4>
@@ -242,7 +234,6 @@ function pickImage(p: any) {
                           {new Date(p.publishDate).toLocaleDateString("zh-CN")}
                         </p>
                       )}
-                      <p class="re-prop-cta">查看详情 →</p>
                     </div>
                   </div>
                 </a>
@@ -250,10 +241,10 @@ function pickImage(p: any) {
             ))
           ) : (
             <div class="item">
-              <div class="special-info re-prop-card" style="background:#0b1b54;">
+              <div class="re-prop-card" style="background:#0b1b54;">
                 <div class="re-prop-overlay">
                   <h4 class="re-prop-title" style="color:#fff;">暂无内容</h4>
-                  <p style="color:#fff;opacity:.9;">请在 Contentful 发布 realEstatePost</p>
+                  <p class="re-prop-date" style="color:#fff;opacity:.9;">请在 Contentful 发布 realEstatePost</p>
                 </div>
               </div>
             </div>
@@ -263,14 +254,14 @@ function pickImage(p: any) {
     </div>
   </div>
 
-  <!-- ✅ 联系我们：英文小标题；3列占满整行；不放图片 -->
+  <!-- 联系我们：3列占满整行 + 英文小标题一定显示 -->
   <div class="contact" id="contact">
     <h3 class="heading"><span>联系我们</span></h3>
-    <div class="re-heading-en">CONTACT US</div>
+    <p class="heading-en heading-en-on-dark">CONTACT US</p>
 
     <div class="container">
-      <div class="row re-contact-row">
-        <div class="col-md-4 col-sm-12 mail re-contact-col">
+      <div class="row">
+        <div class="col-md-4 col-sm-12 mail">
           <h4>联系方式</h4>
           <p><span class="glyphicon glyphicon-phone"></span> +61 420 616 883</p>
           <p>
@@ -279,15 +270,12 @@ function pickImage(p: any) {
           </p>
         </div>
 
-        <div class="col-md-4 col-sm-12 address re-contact-col">
+        <div class="col-md-4 col-sm-12 address">
           <h4>地址</h4>
-          <p>
-            <span class="glyphicon glyphicon-map-marker"></span>
-            2 Aquitania Way, Docklands VIC 3008
-          </p>
+          <p><span class="glyphicon glyphicon-map-marker"></span> 2 Aquitania Way, Docklands VIC 3008</p>
         </div>
 
-        <div class="col-md-4 col-sm-12 social re-contact-col">
+        <div class="col-md-4 col-sm-12 social">
           <h4>快速入口</h4>
           <ul>
             <li><a href="/company-profile"><i class="fa fa-info"></i></a></li>
@@ -302,7 +290,7 @@ function pickImage(p: any) {
     <div class="clearfix"></div>
   </div>
 
-  <!-- contact form -->
+  <!-- 留言表单 -->
   <div class="contact-form">
     <h3 class="heading"><span>在线留言</span></h3>
     <div class="container">
@@ -317,13 +305,13 @@ function pickImage(p: any) {
     </div>
   </div>
 
-  <!-- ✅ Owl 初始化：只影响 #owl-demo，不会吞其它模块 -->
+  <!-- 初始化 Owl（只初始化 #owl-demo，避免影响其他模块） -->
   <script is:inline>
     (function () {
       function initOwl() {
         if (!window.jQuery) return;
-        const $ = window.jQuery;
-        const $owl = $("#owl-demo");
+        var $ = window.jQuery;
+        var $owl = $("#owl-demo");
         if (!$owl.length || $owl.hasClass("owl-loaded")) return;
 
         $owl.owlCarousel({
@@ -347,22 +335,22 @@ function pickImage(p: any) {
     })();
   </script>
 
-  <!-- 留言表单提交 -->
+  <!-- 留言提交 -->
   <script is:inline>
     (function () {
-      const form = document.getElementById("lead-form");
-      const result = document.getElementById("lead-result");
+      var form = document.getElementById("lead-form");
+      var result = document.getElementById("lead-result");
       if (!form || !result) return;
 
-      form.addEventListener("submit", async (e) => {
+      form.addEventListener("submit", async function (e) {
         e.preventDefault();
         result.textContent = "提交中…";
 
-        const data = Object.fromEntries(new FormData(form));
+        var data = Object.fromEntries(new FormData(form));
         data.topic = "首页咨询";
 
         try {
-          const res = await fetch("/api/leads", {
+          var res = await fetch("/api/leads", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
@@ -382,84 +370,61 @@ function pickImage(p: any) {
   </script>
 
   <style is:global>
-    /* ✅ 首页贴顶兜底 */
+    /* 首页贴顶兜底 */
     .home-hero,
-    #exampleSlider {
-      margin-top: 0 !important;
-      padding-top: 0 !important;
-    }
+    #exampleSlider { margin-top: 0 !important; padding-top: 0 !important; }
 
-    /* ✅ 统一英文小标题：强制显示（模板可能覆盖 display） */
-    .re-heading-en {
-      display: block !important;
-      text-align: center !important;
-      margin: -10px 0 25px !important;
-      font-size: 12px !important;
-      letter-spacing: 3px !important;
-      text-transform: uppercase !important;
-      font-weight: 700 !important;
-      opacity: 0.92 !important;
-      line-height: 1.4 !important;
-      color: #fff !important; /* contact 背景一般是深色 */
+    /* 英文小标题：强制显示，不被模板吃掉 */
+    .heading-en{
+      display:block !important;
+      text-align:center !important;
+      margin:-12px 0 26px !important;
+      font-size:12px !important;
+      letter-spacing:3px !important;
+      text-transform:uppercase !important;
+      font-weight:700 !important;
+      opacity:.9 !important;
+      line-height:1.4 !important;
+      color:#0b1b54 !important;
     }
-    .re-heading-en-dark {
-      color: #0b1b54 !important; /* special 区域用深蓝 */
+    .heading-en-dark{ color:#0b1b54 !important; }
+    .heading-en-on-dark{ color:#fff !important; }
+
+    /* 地产资讯轮播卡片 */
+    .re-prop-card{
+      border-radius:10px;
+      overflow:hidden;
+      background-size:cover;
+      background-position:center;
+      min-height:260px;
+      position:relative;
+      border:1px solid rgba(0,0,0,.06);
     }
-
-    /* ✅ 联系我们：三列占满整行 */
-    .re-contact-row { margin-top: 10px; }
-    .re-contact-col { margin-bottom: 12px; }
-
-    /* ✅ 地产资讯轮播卡片：图片 + 渐变遮罩 */
-    .re-prop-card {
-      border-radius: 10px;
-      overflow: hidden;
-      background-size: cover;
-      background-position: center;
-      min-height: 260px;
-      position: relative;
-      border: 1px solid rgba(0,0,0,.06);
+    .re-prop-overlay{
+      position:absolute; left:0; right:0; bottom:0;
+      padding:18px 18px 16px;
+      background:linear-gradient(to top, rgba(0,0,0,.75), rgba(0,0,0,.12));
     }
-
-    .re-prop-overlay {
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      padding: 18px 18px 16px;
-      background: linear-gradient(to top, rgba(0,0,0,.75), rgba(0,0,0,.12));
+    .re-prop-tag{
+      display:inline-block;
+      font-size:12px;
+      color:rgba(255,255,255,.92);
+      background:rgba(11,27,84,.72);
+      padding:4px 10px;
+      border-radius:999px;
+      margin-bottom:10px;
     }
-
-    .re-prop-tag {
-      display: inline-block;
-      font-size: 12px;
-      color: rgba(255,255,255,.92);
-      background: rgba(11,27,84,.72);
-      padding: 4px 10px;
-      border-radius: 999px;
-      margin-bottom: 10px;
+    .re-prop-title{
+      margin:0;
+      font-size:16px;
+      font-weight:800;
+      color:#fff;
+      line-height:1.35;
     }
-
-    .re-prop-title {
-      margin: 0;
-      font-size: 16px;
-      font-weight: 800;
-      color: #fff;
-      line-height: 1.35;
-    }
-
-    .re-prop-date {
-      margin: 6px 0 0;
-      font-size: 12px;
-      color: rgba(255,255,255,.85);
-    }
-
-    .re-prop-cta {
-      margin: 10px 0 0;
-      font-size: 12px;
-      color: rgba(255,255,255,.92);
-      font-weight: 700;
-      letter-spacing: .5px;
+    .re-prop-date{
+      margin:6px 0 0;
+      font-size:12px;
+      color:rgba(255,255,255,.85);
     }
   </style>
 </TemplateLayout>
