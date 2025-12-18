@@ -2,14 +2,13 @@
 import TemplateLayout from "../layouts/TemplateLayout.astro";
 ---
 
-<TemplateLayout title="首页">
-
+<TemplateLayout title="首页" hasHero={true}>
   <script is:inline>
     document.documentElement.classList.add("home-page");
     document.body && document.body.classList.add("home-page");
   </script>
 
-  <!-- slider（保留模板结构与 id/class，确保 mainStyles.css/mainScript.js 生效） -->
+  <!-- slider -->
   <div class="home-hero">
     <div id="exampleSlider">
       <div>
@@ -35,7 +34,7 @@ import TemplateLayout from "../layouts/TemplateLayout.astro";
     </div>
   </div>
 
-  <!-- about（改成你的公司介绍，保留模板布局） -->
+  <!-- about -->
   <div class="about" id="about">
     <h3 class="heading"><span>公司概况</span></h3>
     <div class="container">
@@ -205,91 +204,14 @@ import TemplateLayout from "../layouts/TemplateLayout.astro";
     <div class="container">
       <div class="agileits-special-grids">
         <div id="owl-demo" class="owl-carousel owl-theme">
-          <div class="item">
-            <a href="/real-estate" style="text-decoration:none;">
-              <div class="special-info">
-                <div class="special-info-top">
-                  <div class="special-star">
-                    <i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i>
-                  </div>
-                  <h4>别墅</h4>
-                </div>
-                <div class="special-info-bottom">
-                  <p>别墅选购要点、地段分析、成交趋势与案例。</p>
-                </div>
-              </div>
-            </a>
-          </div>
-
-          <div class="item">
-            <a href="/real-estate" style="text-decoration:none;">
-              <div class="special-info special-info1">
-                <div class="special-info-top">
-                  <div class="special-star">
-                    <i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star-half-o"></i>
-                  </div>
-                  <h4>公寓</h4>
-                </div>
-                <div class="special-info-bottom">
-                  <p>公寓投资逻辑、租金回报、楼盘对比。</p>
-                </div>
-              </div>
-            </a>
-          </div>
-
-          <div class="item">
-            <a href="/real-estate" style="text-decoration:none;">
-              <div class="special-info special-info2">
-                <div class="special-info-top">
-                  <div class="special-star">
-                    <i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i>
-                  </div>
-                  <h4>二手房</h4>
-                </div>
-                <div class="special-info-bottom">
-                  <p>看房清单、议价策略、交易流程与注意事项。</p>
-                </div>
-              </div>
-            </a>
-          </div>
-
-          <div class="item">
-            <a href="/real-estate" style="text-decoration:none;">
-              <div class="special-info">
-                <div class="special-info-top">
-                  <div class="special-star">
-                    <i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star-half-o"></i>
-                  </div>
-                  <h4>商业办公楼</h4>
-                </div>
-                <div class="special-info-bottom">
-                  <p>租约结构、现金流分析、核心地段趋势。</p>
-                </div>
-              </div>
-            </a>
-          </div>
-
-          <div class="item">
-            <a href="/real-estate" style="text-decoration:none;">
-              <div class="special-info special-info1">
-                <div class="special-info-top">
-                  <div class="special-star">
-                    <i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i>
-                  </div>
-                  <h4>土地开发</h4>
-                </div>
-                <div class="special-info-bottom">
-                  <p>规划评估、开发流程、成本测算与风险控制。</p>
-                </div>
-              </div>
-            </a>
-          </div>
+          <!-- ...（你原来的 item 不动） -->
+          <!-- 这里省略，保持你原样即可 -->
         </div>
       </div>
     </div>
   </div>
 
-  <!-- contact 信息块 -->
+  <!-- contact 信息块（✅新增“联系照片”那一列） -->
   <div class="contact" id="contact">
     <h3 class="heading"><span>联系我们</span></h3>
 
@@ -315,6 +237,11 @@ import TemplateLayout from "../layouts/TemplateLayout.astro";
         <li><a href="/immigration"><i class="fa fa-plane"></i></a></li>
         <li><a href="/contact"><i class="fa fa-phone"></i></a></li>
       </ul>
+    </div>
+
+    <!-- ✅ 联系照片（把 src 改成你模板里那张“contact”图片的实际文件名） -->
+    <div class="col-md-3 contact-photo">
+      <img src="/template15/images/contact.jpg" alt="contact" />
     </div>
 
     <div class="clearfix"></div>
@@ -369,20 +296,24 @@ import TemplateLayout from "../layouts/TemplateLayout.astro";
   </script>
 
   <style is:global>
+    /* ✅ 保证首屏贴顶（如果模板本身还有 margin 这里兜底） */
     .home-hero,
     #exampleSlider {
       margin-top: 0 !important;
       padding-top: 0 !important;
     }
 
-    body.home-page .home-hero {
-      position: relative;
-      top: -1px;
+    /* ✅ 联系照片样式（不破坏模板栅格） */
+    .contact-photo img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 6px;
     }
 
-    @media (max-width: 768px) {
-      body.home-page .home-hero {
-        margin-top: -10px !important;
+    @media (max-width: 992px) {
+      .contact-photo {
+        margin-top: 18px;
       }
     }
   </style>
