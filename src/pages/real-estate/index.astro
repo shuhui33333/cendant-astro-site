@@ -141,18 +141,51 @@ const rentCats = [
   margin-top:10px;
 }
 
-/* 标题之间拉开距离（解决你说的“太近”） */
-.section-title.mt-40{
-  margin-top: 56px !important;  /* 你想更松就 64 */
+/* ========== 让“房产售卖资讯”标题离 TopBanner 更远一点 ========== */
+/* 你的分类入口区块：第一个 section */
+.service-area.section-padding{
+  padding-top: 56px !important;   /* 原来可能很小/被覆盖 */
+  padding-bottom: 56px !important;
 }
 
-/* 小屏更紧凑 */
+/* ========== 让“最新发布”整个区块与上一块拉开 ========== */
+/* 你的最新发布区块：第二个 section */
+.blog-area.section-padding{
+  padding-top: 64px !important;   /* 关键：拉开“最新发布”上方距离 */
+  padding-bottom: 70px !important;
+}
+
+/* 如果 gray-bg 有把 padding 压扁，这里兜底 */
+.blog-area.section-padding.gray-bg{
+  padding-top: 64px !important;
+}
+
+/* ========== 每个标题本身：统一上下间距 ========== */
+.section-title{
+  margin-top: 0 !important;
+  margin-bottom: 22px !important; /* 标题与下面卡片的距离更舒服 */
+}
+
+/* 第二段标题（你用了 mt-40）：更明显的分隔 */
+.section-title.mt-40{
+  margin-top: 64px !important;
+}
+
+/* ========== 手机端再稍微紧凑一点 ========== */
 @media (max-width: 768px){
-  .section-title h2{
-    font-size: 18px !important;
+  .service-area.section-padding{
+    padding-top: 42px !important;
+    padding-bottom: 42px !important;
+  }
+  .blog-area.section-padding{
+    padding-top: 46px !important;
+    padding-bottom: 52px !important;
+  }
+  .section-title{
+    margin-bottom: 18px !important;
   }
   .section-title.mt-40{
-    margin-top: 42px !important;
+    margin-top: 46px !important;
   }
 }
 
