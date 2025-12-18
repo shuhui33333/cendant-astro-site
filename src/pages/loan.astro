@@ -1,0 +1,102 @@
+---
+import TemplateLayout from "../layouts/TemplateLayout.astro";
+import TopBanner from "../components/TopBanner.astro";
+import Accordion from "../components/Accordion.astro";
+
+const items = [
+  {
+    title: "首次置业贷款（First Home Buyer）",
+    body: `
+      <p><strong>服务说明：</strong>为首次置业客户提供从预算评估到贷款批复的全流程协助，帮助您更清晰地理解可贷额度、还款压力与购房节奏。</p>
+      <ul>
+        <li>预算与可贷额度评估（收入、负债、生活成本、现金流）</li>
+        <li>贷款产品对比（利率结构、费用、折扣、还款灵活度）</li>
+        <li>材料清单与递交规划（减少来回补件与延误）</li>
+        <li>批复后配合购房进度（合同节点、交割时间表）</li>
+      </ul>
+      <p>适合：首次买房、自住需求为主、希望流程更省心的客户。</p>
+    `,
+  },
+  {
+    title: "投资房贷款（Investment Loan）",
+    body: `
+      <p><strong>服务说明：</strong>围绕资产配置与现金流管理，协助投资者选择更符合持有目标的贷款结构，并评估租金回报与风险。</p>
+      <ul>
+        <li>投资目标梳理：现金流/增值/组合结构</li>
+        <li>利率与贷款结构建议：本息/只还息（以政策与银行为准）</li>
+        <li>多套房/组合贷款规划：分账户、分利率、分期限</li>
+        <li>与房产服务协同：交易节点、估价、交割配合</li>
+      </ul>
+      <p>适合：计划长期持有、希望优化资金效率与风险控制的投资者。</p>
+    `,
+  },
+  {
+    title: "再融资 / 转贷（Refinance）",
+    body: `
+      <p><strong>服务说明：</strong>当您希望降低利率、调整贷款结构、或释放资金用于再投资时，我们提供再融资方案对比与执行协助。</p>
+      <ul>
+        <li>现有贷款“体检”：利率、费用、锁定期、违约金风险</li>
+        <li>转贷对比：新贷款成本与收益测算（含一次性费用）</li>
+        <li>流程管理：估价、批复、结清与新贷款落地</li>
+        <li>资金释放规划：用于装修/再购置/现金流周转（按合规建议）</li>
+      </ul>
+      <p>目标：在可控风险下提升资金效率与整体财务结构。</p>
+    `,
+  },
+  {
+    title: "贷款预批（Pre-approval）",
+    body: `
+      <p><strong>服务说明：</strong>在正式出价/签约前进行贷款预批，有助于明确购买力与加快成交节奏。</p>
+      <ul>
+        <li>预批额度评估与可行性建议</li>
+        <li>关键材料准备与提交（提升一次通过率）</li>
+        <li>预批条件与有效期说明（避免误判时间窗口）</li>
+        <li>与购房节奏协同：出价策略与合同节点配合</li>
+      </ul>
+      <p>适合：正在看房阶段、准备竞拍或希望快速成交的客户。</p>
+    `,
+  },
+  {
+    title: "商业/自雇人士贷款（Business & Self-employed）",
+    body: `
+      <p><strong>服务说明：</strong>面向企业主与自雇人士，协助梳理财务材料与申贷策略，提高审批成功率并减少补件。</p>
+      <ul>
+        <li>材料规划：报税、财务报表、银行流水等（以贷款机构要求为准）</li>
+        <li>收入认定与负债结构梳理</li>
+        <li>贷款机构匹配：审批偏好与时间节奏评估</li>
+        <li>复杂情况处理：多收入来源、多资产、多贷款并行</li>
+      </ul>
+      <p>建议尽早准备材料与规划时间，避免影响购房/投资窗口。</p>
+    `,
+  },
+  {
+    title: "贷款流程与所需材料（通用指南）",
+    body: `
+      <p><strong>参考流程：</strong>需求评估 → 产品匹配 → 材料准备 → 递交审批 → 批复 → 交割放款。</p>
+      <ul>
+        <li>身份证明：护照/驾照等</li>
+        <li>收入证明：工资单/雇佣合同/报税资料等</li>
+        <li>资产负债：存款、房产、贷款、信用卡、分期等</li>
+        <li>交易文件：购房合同、估价、保险等（视阶段而定）</li>
+      </ul>
+      <p>如您不确定该准备什么，建议直接联系我们，我们会按您的情况给一份清晰清单。</p>
+    `,
+  },
+];
+---
+
+<TemplateLayout title="贷款服务" subtitle="LOAN SERVICE">
+  <TopBanner zh="贷款服务" en="LOAN SERVICE" />
+
+  <section class="container">
+    <Accordion items={items} />
+  </section>
+
+  <style>
+    .container{
+      max-width: 960px;
+      margin: 40px auto 80px;
+      padding: 0 20px;
+    }
+  </style>
+</TemplateLayout>
