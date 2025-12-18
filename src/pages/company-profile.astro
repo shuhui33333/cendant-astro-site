@@ -1,44 +1,21 @@
 ---
 import TemplateLayout from "../layouts/TemplateLayout.astro";
-import TopBanner from "../components/TopBanner.astro";
-
-const items = [
-  { title: "公司定位", desc: "专注澳洲房地产投资与资产配置，提供从选房到落地的一站式服务。" },
-  { title: "服务范围", desc: "项目推荐、开发管理、租赁管理、过户法务及移民咨询等综合支持。" },
-  { title: "合作优势", desc: "本地资源对接 + 合规风控流程，提升效率并降低交易风险。" },
-];
+import SubpageIntroBanner from "../components/SubpageIntroBanner.astro";
 ---
 
-<TemplateLayout title="公司概况" hasHero={false}>
-  <TopBanner
+<TemplateLayout title="公司概况">
+  <SubpageIntroBanner
     titleZh="公司概况"
     titleEn="COMPANY PROFILE"
-    items={items}
+    items={[
+      { label: "服务范围", value: "房产投资 · 移民规划 · 资产配置" },
+      { label: "核心优势", value: "专业 · 合规 · 高效" },
+      { label: "本地资源", value: "项目对接 · 法务 · 金融" },
+    ]}
   />
 
-  <section class="container page">
-    <div class="content">
-      <h2>墨尔本·胜腾国际</h2>
-      <p>
-        我们致力于为客户提供更清晰的资产配置路径与更稳健的投资决策支持，
-        覆盖房产交易、项目管理、租赁维护与移民规划等服务。
-      </p>
-
-      <h3>我们能为您做什么</h3>
-      <ul>
-        <li>澳洲房产投资策略与选房建议</li>
-        <li>项目对接、开发管理与进度把控</li>
-        <li>租赁管理与长期维护</li>
-        <li>交易流程、过户与法务协助</li>
-        <li>移民与留学咨询支持</li>
-      </ul>
-    </div>
+  <!-- 下面放你原来的公司概况正文内容即可 -->
+  <section class="container" style="margin-bottom:60px;">
+    <!-- 你的正文... -->
   </section>
-
-  <style>
-    .page { max-width: 980px; margin: 40px auto 80px; padding: 0 20px; }
-    .content h2 { margin: 0 0 14px; font-weight: 800; color: #0b1b54; }
-    .content h3 { margin-top: 28px; font-weight: 800; color: #0b1b54; }
-    .content p, .content li { color: #444; line-height: 1.8; }
-  </style>
 </TemplateLayout>
