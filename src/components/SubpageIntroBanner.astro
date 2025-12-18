@@ -68,4 +68,39 @@ const { titleZh, titleEn, items = [] } = Astro.props as {
   @media (max-width: 768px){
     .subpage-intro .intro-card{ min-height: auto; }
   }
+
+  /* ===== 子页面 TopBanner 统一白色字体 ===== */
+.subpage-intro {
+  color: #fff;
+}
+
+.subpage-intro .heading span,
+.subpage-intro .heading small {
+  color: #fff !important;
+}
+
+/* 每个卡片里的文字 */
+.subpage-intro .intro-title {
+  color: #fff;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.subpage-intro .intro-desc {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* 覆盖模板里数字/线条的颜色 */
+.subpage-intro .count span,
+.subpage-intro .count h5 {
+  color: #fff;
+}
+
+/* 背景保持模板深色即可 */
+.subpage-intro .count-bgcolor-w3ls {
+  background: #0b1f3a; /* 深蓝，和你网站风格一致 */
+}
 </style>
