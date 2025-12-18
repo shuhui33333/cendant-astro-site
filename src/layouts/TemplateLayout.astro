@@ -84,43 +84,76 @@ function isActive(href: string) {
       /* ✅ 右侧菜单靠边不要贴死 */
       .navbar-collapse.navbar-right { padding-right: 12px; }
 
-      /* ===== Logo + 品牌文字布局（解决 Logo 太大/不对齐）===== */
+      /* =========================================================
+         ✅ 关键修复 1：彻底清掉模板在 navbar-brand 里叠加的边框/伪元素
+         （解决“4个方框套着字”的问题）
+         ========================================================= */
+      a.navbar-brand.brand-with-logo,
+      a.navbar-brand.brand-with-logo * {
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+      }
+      a.navbar-brand.brand-with-logo::before,
+      a.navbar-brand.brand-with-logo::after {
+        content: none !important;
+      }
+
+      /* =========================================================
+         ✅ 关键修复 2：重新定义 Logo + 文字布局（并强制覆盖模板限制）
+         ========================================================= */
       .brand-with-logo {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 6px 0;
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+        padding: 6px 0 !important;
+
+        /* 有些模板会给 navbar-brand 固定高度/行高，强制解除 */
+        height: auto !important;
+        line-height: normal !important;
       }
+
+      /* ✅ LOGO：用 clamp 自适应 + !important 反压模板 */
       .brand-logo {
-        height: 42px; /* 桌面端 */
-        width: auto;
-        display: block;
+        height: clamp(38px, 4.2vw, 58px) !important; /* 小屏38，中屏随宽度，大屏58 */
+        width: auto !important;
+        max-height: none !important;
+        display: block !important;
+        object-fit: contain !important;
       }
-      .brand-text {
-        display: flex;
+
+      /* 文字区域：我们单独做一个“badge”，只留这一层边框 */
+      .brand-badge {
+        display: inline-flex;
         flex-direction: column;
-        line-height: 1.15;
+        line-height: 1.1;
+
+        border: 2px solid rgba(255,255,255,0.75); /* 首页默认白框，子页下面会改色 */
+        padding: 6px 10px;
+        border-radius: 10px;
       }
+
       .brand-main{
-        display:inline-flex;      /* ✅ 关键：同一行，不再拆开 */
+        display:inline-flex;
         align-items: baseline;
         gap: 8px;
         font-size: 20px;
         font-weight: 800;
-        line-height: 1.1;
-        white-space: nowrap;      /* ✅ 关键：尽量不换行 */
+        white-space: nowrap;
       }
       .brand-sub {
         display: block;
         font-size: 11px;
         opacity: 0.75;
         letter-spacing: 2px;
-        margin-top: 2px;
+        margin-top: 3px;
       }
+
       @media (max-width: 768px) {
-        .brand-logo { height: 32px; }
         .brand-main { font-size: 17px; }
         .navbar-header .fa-home { margin-top: 8px; }
+        .brand-badge { padding: 5px 8px; border-radius: 9px; }
       }
 
       /* active 更明显 */
@@ -151,6 +184,11 @@ function isActive(href: string) {
         color: #fff !important;
       }
 
+      /* ✅ 首页：badge 边框白色 */
+      body.tpl-body.tpl-has-hero .brand-badge {
+        border-color: rgba(255,255,255,0.75) !important;
+      }
+
       /* 首页：移动端三条杠白色 */
       body.tpl-body.tpl-has-hero .navbar-default .navbar-toggle .icon-bar {
         background: #fff !important;
@@ -159,7 +197,7 @@ function isActive(href: string) {
       /* 首页：内容不留顶 padding（hero 从0开始） */
       body.tpl-body.tpl-has-hero main.tpl-main { padding-top: 0; }
 
-      /* 首页：强制轮播贴顶（清掉模板可能加的上边距） */
+      /* 首页：强制轮播贴顶 */
       body.tpl-body.tpl-has-hero #exampleSlider,
       body.tpl-body.tpl-has-hero .callbacks_container,
       body.tpl-body.tpl-has-hero .rslides,
@@ -183,7 +221,7 @@ function isActive(href: string) {
         box-shadow: 0 6px 18px rgba(0,0,0,0.08);
       }
 
-      /* 子页：导航字体深蓝（不是黑） */
+      /* 子页：导航字体深蓝 */
       body.tpl-body:not(.tpl-has-hero) .navbar-default .navbar-brand,
       body.tpl-body:not(.tpl-has-hero) .navbar-default .navbar-brand span,
       body.tpl-body:not(.tpl-has-hero) .navbar-default .navbar-nav > li > a,
@@ -191,12 +229,17 @@ function isActive(href: string) {
         color: #091a5d !important;
       }
 
+      /* ✅ 子页：badge 边框改深蓝（看起来更“高级”） */
+      body.tpl-body:not(.tpl-has-hero) .brand-badge {
+        border-color: rgba(9,26,93,0.35) !important;
+      }
+
       /* 子页：移动端三条杠深蓝 */
       body.tpl-body:not(.tpl-has-hero) .navbar-default .navbar-toggle .icon-bar {
         background: #091a5d !important;
       }
 
-      /* 子页：内容留出顶部空间（你要的“不贴顶”） */
+      /* 子页：内容留出顶部空间 */
       body.tpl-body:not(.tpl-has-hero) main.tpl-main { padding-top: 28px; }
     </style>
   </head>
@@ -221,7 +264,8 @@ function isActive(href: string) {
           <h1>
             <a class="navbar-brand brand-with-logo" href="/">
               <img src="/images/logo.png" alt="Cendant Logo" class="brand-logo" />
-              <span class="brand-text">
+              <!-- ✅ 只在这一层画边框：避免多层方框 -->
+              <span class="brand-badge">
                 <span class="brand-main"><span>墨尔本</span> 胜腾国际</span>
                 <span class="brand-sub">MELBOURNE · CENDANT</span>
               </span>
@@ -244,8 +288,6 @@ function isActive(href: string) {
             </ul>
           </nav>
         </div>
-
-        <!-- ✅ 已删除：右上角社交图标 -->
       </nav>
     </div>
 
