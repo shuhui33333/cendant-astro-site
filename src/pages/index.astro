@@ -1,23 +1,17 @@
 ---
 import TemplateLayout from "../layouts/TemplateLayout.astro";
 
-/** 首页：地产资讯入口（按你子页面的“卡片+小圆点”模板） */
-const saleCats = [
-  { label: "公寓", href: "/real-estate/sale/apartment" },
-  { label: "二手房", href: "/real-estate/sale/second-hand" },
-  { label: "联排别墅", href: "/real-estate/sale/townhouse" },
-  { label: "土地别墅", href: "/real-estate/sale/land-villa" },
-  { label: "商业办公楼", href: "/real-estate/sale/commercial" },
-  { label: "土地开发", href: "/real-estate/sale/land" },
-  { label: "农场", href: "/real-estate/sale/farm" },
-  { label: "酒店", href: "/real-estate/sale/hotel" },
-];
-
-const rentCats = [
-  { label: "公寓", href: "/real-estate/rent/apartment" },
-  { label: "联排别墅", href: "/real-estate/rent/townhouse" },
-  { label: "土地别墅", href: "/real-estate/rent/land-villa" },
-  { label: "商业办公", href: "/real-estate/rent/commercial" },
+/**
+ * 首页：地产资讯轮播（只保留“最新发布”入口）
+ * 这里不依赖 contentful，避免你首页再引入数据导致出错
+ * 你也可以 later 换成真的 posts.map（我也可以帮你接上）
+ */
+const latestCards = [
+  { title: "最新发布", desc: "最新房产资讯与更新同步", href: "/real-estate" },
+  { title: "市场更新", desc: "关注墨尔本热门板块动态", href: "/real-estate" },
+  { title: "投资要点", desc: "选房逻辑、回报与风险提示", href: "/real-estate" },
+  { title: "出租资讯", desc: "租赁趋势与管理建议", href: "/real-estate" },
+  { title: "购买流程", desc: "交易步骤与注意事项", href: "/real-estate" },
 ];
 ---
 
@@ -27,9 +21,7 @@ const rentCats = [
     document.body && document.body.classList.add("home-page");
   </script>
 
-  <!-- =====================
-       首页 Slider（保留你的模板结构）
-  ====================== -->
+  <!-- slider -->
   <div class="home-hero">
     <div id="exampleSlider">
       <div>
@@ -55,9 +47,7 @@ const rentCats = [
     </div>
   </div>
 
-  <!-- =====================
-       公司概况
-  ====================== -->
+  <!-- about -->
   <div class="about" id="about">
     <h3 class="heading heading-with-sub">
       <span>公司概况</span>
@@ -101,9 +91,7 @@ const rentCats = [
     </div>
   </div>
 
-  <!-- =====================
-       服务项目（保留模板彩色方块）
-  ====================== -->
+  <!-- services -->
   <div class="services" id="services">
     <h3 class="heading heading-with-sub">
       <span>服务项目</span>
@@ -188,9 +176,7 @@ const rentCats = [
     </div>
   </div>
 
-  <!-- =====================
-       数据概览（模板 fun facts）
-  ====================== -->
+  <!-- fun facts -->
   <div class="count-agileits" id="stats">
     <h3 class="heading heading-with-sub">
       <span>数据概览</span>
@@ -238,52 +224,41 @@ const rentCats = [
   </div>
 
   <!-- =====================
-       地产资讯（✅ 引入你给的模板：卡片网格 + 小圆点）
-       替代原来的 owl-carousel
+       地产资讯（✅ 只连接“最新发布”，✅ 模板轮播可滚动）
   ====================== -->
-  <section class="re-home section-padding" id="offers">
+  <div class="special" id="offers">
+    <h3 class="heading heading-with-sub">
+      <span>地产资讯</span>
+      <small class="heading-sub heading-sub-dark">REAL ESTATE</small>
+    </h3>
+
     <div class="container">
-      <h3 class="heading heading-with-sub">
-        <span>地产资讯</span>
-        <small class="heading-sub heading-sub-dark">REAL ESTATE</small>
-      </h3>
-
-      <div class="re-block">
-        <div class="re-block-title">
-          <h4>房产售卖资讯</h4>
-          <p>按类型快速查看在售项目与市场机会</p>
-        </div>
-
-        <div class="service-grid">
-          {saleCats.map((c) => (
-            <a class="service-card" href={c.href}>
-              <span class="service-dot"></span>
-              <h4>{c.label}</h4>
-            </a>
-          ))}
-        </div>
-      </div>
-
-      <div class="re-block re-mt">
-        <div class="re-block-title">
-          <h4>房产出租资讯</h4>
-          <p>按类型快速查看出租与租赁管理信息</p>
-        </div>
-
-        <div class="service-grid">
-          {rentCats.map((c) => (
-            <a class="service-card" href={c.href}>
-              <span class="service-dot"></span>
-              <h4>{c.label}</h4>
-            </a>
+      <div class="agileits-special-grids">
+        <div id="owl-demo" class="owl-carousel owl-theme">
+          {latestCards.map((c) => (
+            <div class="item">
+              <a href={c.href} style="text-decoration:none;">
+                <div class="special-info special-info1 re-latest">
+                  <div class="special-info-top">
+                    <div class="special-star">
+                      <i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star-half-o"></i>
+                    </div>
+                    <h4>{c.title}</h4>
+                  </div>
+                  <div class="special-info-bottom">
+                    <p>{c.desc}</p>
+                  </div>
+                </div>
+              </a>
+            </div>
           ))}
         </div>
       </div>
     </div>
-  </section>
+  </div>
 
   <!-- =====================
-       联系我们（保留 3 列 + 加回联系照片 1 列）
+       联系我们（✅ 英文小标题 + ✅ 三列占满整行 + ✅ 不放图片）
   ====================== -->
   <div class="contact" id="contact">
     <h3 class="heading heading-with-sub">
@@ -291,41 +266,38 @@ const rentCats = [
       <small class="heading-sub heading-sub-light">CONTACT US</small>
     </h3>
 
-    <div class="col-md-3 mail">
-      <h4>联系方式</h4>
-      <p><span class="glyphicon glyphicon-phone"></span> +61 420 616 883</p>
-      <p>
-        <span class="glyphicon glyphicon-envelope"></span>
-        <a href="mailto:info@cendantpgau.com">info@cendantpgau.com</a>
-      </p>
-    </div>
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4 col-sm-12 mail">
+          <h4>联系方式</h4>
+          <p><span class="glyphicon glyphicon-phone"></span> +61 420 616 883</p>
+          <p>
+            <span class="glyphicon glyphicon-envelope"></span>
+            <a href="mailto:info@cendantpgau.com">info@cendantpgau.com</a>
+          </p>
+        </div>
 
-    <div class="col-md-3 address">
-      <h4>地址</h4>
-      <p><span class="glyphicon glyphicon-map-marker"></span> 2 Aquitania Way, Docklands VIC 3008</p>
-    </div>
+        <div class="col-md-4 col-sm-12 address">
+          <h4>地址</h4>
+          <p><span class="glyphicon glyphicon-map-marker"></span> 2 Aquitania Way, Docklands VIC 3008</p>
+        </div>
 
-    <div class="col-md-3 social">
-      <h4>快速入口</h4>
-      <ul>
-        <li><a href="/company-profile"><i class="fa fa-info"></i></a></li>
-        <li><a href="/real-estate"><i class="fa fa-building"></i></a></li>
-        <li><a href="/immigration"><i class="fa fa-plane"></i></a></li>
-        <li><a href="/contact"><i class="fa fa-phone"></i></a></li>
-      </ul>
-    </div>
-
-    <!-- ✅ 联系照片（你把图片放到 public/template15/images/contact.jpg 或改路径） -->
-    <div class="col-md-3 contact-photo">
-      <img src="/template15/images/contact.jpg" alt="contact" />
+        <div class="col-md-4 col-sm-12 social">
+          <h4>快速入口</h4>
+          <ul>
+            <li><a href="/company-profile"><i class="fa fa-info"></i></a></li>
+            <li><a href="/real-estate"><i class="fa fa-building"></i></a></li>
+            <li><a href="/immigration"><i class="fa fa-plane"></i></a></li>
+            <li><a href="/contact"><i class="fa fa-phone"></i></a></li>
+          </ul>
+        </div>
+      </div>
     </div>
 
     <div class="clearfix"></div>
   </div>
 
-  <!-- =====================
-       在线留言
-  ====================== -->
+  <!-- contact form -->
   <div class="contact-form">
     <h3 class="heading heading-with-sub">
       <span>在线留言</span>
@@ -377,88 +349,27 @@ const rentCats = [
     })();
   </script>
 
-  <!-- =====================
-       样式：只做英文副标题 + 地产资讯卡片，不破坏模板
-  ====================== -->
   <style is:global>
-    .heading-with-sub {
-      position: relative;
-      text-align: center;
-    }
+    .heading-with-sub { text-align: center; }
     .heading-with-sub .heading-sub {
       display: block;
       margin-top: 8px;
       font-size: 12px;
       letter-spacing: 3px;
       text-transform: uppercase;
-      opacity: 0.85;
+      opacity: 0.9;
     }
-
-    /* 深色/浅色两套：用于不同背景的区块 */
     .heading-sub-dark { color: #0b1b54; }
     .heading-sub-light { color: #fff; }
 
-    /* ✅ 地产资讯：引入你给的“service-card”风格 */
-    .re-home { padding: 60px 0; }
-    .re-block-title { margin: 18px 0 14px; }
-    .re-block-title h4 {
-      margin: 0;
-      font-size: 18px;
-      font-weight: 800;
-      color: #0b1b54;
-    }
-    .re-block-title p {
-      margin: 8px 0 0;
-      color: #5b6474;
-      font-size: 13px;
-    }
+    /* 联系我们：保证三列对齐、间距更舒展 */
+    .contact .row { margin-top: 18px; }
 
-    .service-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 18px;
-    }
+    /* 地产资讯轮播卡片：文字更精致一点 */
+    .re-latest h4 { font-weight: 800; }
+    .re-latest p { font-size: 13px; opacity: 0.9; }
 
-    .service-card {
-      display: block;
-      padding: 18px;
-      border: 1px solid rgba(11, 27, 84, 0.10);
-      border-radius: 12px;
-      background: #fff;
-      transition: all 0.25s ease;
-      text-decoration: none;
-    }
-
-    .service-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.08);
-      border-color: rgba(11, 27, 84, 0.18);
-    }
-
-    .service-card h4 {
-      margin: 0;
-      font-size: 15px;
-      font-weight: 800;
-      color: #0b1b54;
-    }
-
-    .service-dot {
-      display: inline-block;
-      width: 8px;
-      height: 8px;
-      background: #0b1b54;
-      border-radius: 50%;
-      margin-bottom: 12px;
-    }
-
-    .re-mt { margin-top: 34px; }
-
-    /* 联系照片 */
-    .contact-photo img {
-      width: 100%;
-      height: auto;
-      display: block;
-      border-radius: 6px;
-    }
+    /* 首屏贴顶兜底 */
+    .home-hero, #exampleSlider { margin-top: 0 !important; padding-top: 0 !important; }
   </style>
 </TemplateLayout>
