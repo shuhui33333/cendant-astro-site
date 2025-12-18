@@ -88,23 +88,27 @@ function isActive(href: string) {
       .brand-with-logo {
         display: flex;
         align-items: center;
-        gap: 10px;
-        padding: 4px 0;
+        gap: 12px;
+        padding: 6px 0;
       }
       .brand-logo {
-        height: 28px; /* 桌面端 */
+        height: 42px; /* 桌面端 */
         width: auto;
         display: block;
       }
       .brand-text {
         display: flex;
         flex-direction: column;
-        line-height: 1.1;
+        line-height: 1.15;
       }
-      .brand-main {
-        font-size: 18px;
-        font-weight: 700;
-        line-height: 1.2;
+      .brand-main{
+        display:inline-flex;      /* ✅ 关键：同一行，不再拆开 */
+        align-items: baseline;
+        gap: 8px;
+        font-size: 20px;
+        font-weight: 800;
+        line-height: 1.1;
+        white-space: nowrap;      /* ✅ 关键：尽量不换行 */
       }
       .brand-sub {
         display: block;
@@ -114,8 +118,8 @@ function isActive(href: string) {
         margin-top: 2px;
       }
       @media (max-width: 768px) {
-        .brand-logo { height: 22px; }
-        .brand-main { font-size: 16px; }
+        .brand-logo { height: 32px; }
+        .brand-main { font-size: 17px; }
         .navbar-header .fa-home { margin-top: 8px; }
       }
 
