@@ -1,15 +1,7 @@
 ---
 import "../styles/global.css";
-import { t, getLang, switchLangPath, withLang } from "../i18n";
-
-type NavKey =
-  | "home"
-  | "realEstate"
-  | "propertyService"
-  | "loan"
-  | "immigration"
-  | "company"
-  | "contact";
+import { zh } from "../i18n/zh";
+import { en } from "../i18n/en";
 
 const props = Astro.props as {
   title?: string;
@@ -20,53 +12,41 @@ const props = Astro.props as {
 
 const title = props.title ?? Astro.props.frontmatter?.title ?? "页面";
 const description =
-  props.description ??
-  "墨尔本·胜腾国际 - 房产投资 / 项目开发 / 租赁管理 / 移民服务";
+  props.description ?? "墨尔本·胜腾国际 - 房产投资 / 项目开发 / 租赁管理 / 移民服务";
 
-/** ✅ 底部“联系我们”模块 => 默认开启 */
 const showFooter = props.showFooter ?? true;
-
-/** ✅ 首页传 hasHero={true} 贴顶；子页默认 false 不贴顶 */
 const hasHero = props.hasHero ?? false;
 
 const pathname = Astro.url?.pathname ?? "/";
-
-/** ✅ 当前语言 + 字典 */
-const lang = getLang(pathname);
-const dict = t(pathname);
-
-/** ✅ 用 key 定义导航（label 由字典输出） */
-const nav = [
-  { href: "/", key: "home" },
-  { href: "/real-estate", key: "realEstate" },
-  { href: "/property-service", key: "propertyService" },
-  { href: "/loan", key: "loan" },
-  { href: "/immigration", key: "immigration" },
-  { href: "/company-profile", key: "company" },
-  { href: "/contact", key: "contact" },
-] as const satisfies ReadonlyArray<{ href: string; key: NavKey }>;
-
-/** ✅ active 判断（注意：英文带 /en 前缀） */
-function isActiveLocalized(hrefBase: string) {
-  const href = withLang(hrefBase, lang);
-
+function isActive(href: string) {
   if (href === "/") return pathname === "/";
-  if (href === "/en") return pathname === "/en" || pathname === "/en/";
-
-  // 兼容 /xxx 与 /xxx/ 两种
-  return pathname === href || pathname.startsWith(href + "/");
+  return pathname.startsWith(href);
 }
+
+/** 只保留 href，label 由前端 i18n 渲染 */
+const nav = [
+  { href: "/", key: "nav.home" },
+  { href: "/real-estate", key: "nav.realEstate" },
+  { href: "/property-service", key: "nav.propertyService" },
+  { href: "/loan", key: "nav.loan" },
+  { href: "/immigration", key: "nav.immigration" },
+  { href: "/company-profile", key: "nav.company" },
+  { href: "/contact", key: "nav.contact" },
+] as const;
+
+/** 把词典打包到前端（运行时切换） */
+const I18N = { zh, en };
 ---
 
 <!DOCTYPE html>
-<html lang={lang === "en" ? "en" : "zh-CN"}>
+<html lang="zh-CN">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title} | Cendant</title>
     <meta name="description" content={description} />
 
-    <!-- ===== template15 CSS ===== -->
+    <!-- template15 CSS -->
     <link rel="stylesheet" href="/template15/css/bootstrap.css" />
     <link rel="stylesheet" href="/template15/css/font-awesome.min.css" />
     <link rel="stylesheet" href="/template15/css/flexslider.css" />
@@ -77,203 +57,82 @@ function isActiveLocalized(hrefBase: string) {
     <link rel="stylesheet" href="/template15/css/mainStyles.css" />
 
     <style is:global>
-      /* =========================================================
-         0) 基础
-      ========================================================= */
       html, body { margin: 0; padding: 0; }
 
-      /* 子页顶部留白：由 JS 动态写入 */
+      /* 子页顶部留白：动态写入 */
       body.tpl-body:not(.tpl-has-hero) { padding-top: var(--nav-h, 96px); }
       body.tpl-body.tpl-has-hero { padding-top: 0; }
 
-      /* =========================================================
-         1) Banner / Navbar：子页固定在顶部；首页叠在 hero 上
-      ========================================================= */
       .banner#home { z-index: 9999; width: 100%; }
+      body.tpl-body.tpl-has-hero .banner#home { position: absolute; left:0; top:0; background: transparent; }
+      body.tpl-body:not(.tpl-has-hero) .banner#home { position: fixed; left:0; top:0; background: #fff; }
 
-      body.tpl-body.tpl-has-hero .banner#home {
-        position: absolute;
-        left: 0; top: 0;
-        background: transparent;
-      }
+      .banner#home .navbar { margin: 0; border: none; padding: 10px 0; background: transparent; }
+      body.tpl-body:not(.tpl-has-hero) .banner#home .navbar { background: #fff; box-shadow: 0 6px 18px rgba(0,0,0,0.08); }
 
-      body.tpl-body:not(.tpl-has-hero) .banner#home {
-        position: fixed;
-        left: 0; top: 0;
-        background: #fff;
-      }
+      /* Logo 不贴边 */
+      .banner#home .navbar { padding-left: 18px; padding-right: 18px; }
+      @media (max-width: 768px) { .banner#home .navbar { padding-left: 12px; padding-right: 12px; } }
 
-      .banner#home .navbar {
-        margin: 0;
-        border: none;
-        padding: 10px 0;
-        background: transparent;
-      }
-
-      body.tpl-body:not(.tpl-has-hero) .banner#home .navbar {
-        background: #fff;
-        box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-      }
-
-      /* =========================================================
-         2) 解决 Logo 太靠左：给 navbar 内部左右留白
-      ========================================================= */
-      .banner#home .navbar {
-        padding-left: 18px;
-        padding-right: 18px;
-      }
-      @media (max-width: 768px) {
-        .banner#home .navbar {
-          padding-left: 12px;
-          padding-right: 12px;
-        }
-      }
-
-      /* =========================================================
-         3) 彻底解决“品牌旁边四个框”
-      ========================================================= */
-      .navbar-header h1 {
-        margin: 0 !important;
-        padding: 0 !important;
-        border: none !important;
-        outline: none !important;
-        box-shadow: none !important;
-      }
-
-      a.navbar-brand.brand-with-logo,
-      a.navbar-brand.brand-with-logo * {
-        border: none !important;
-        outline: none !important;
-        box-shadow: none !important;
-        background: transparent !important;
+      /* 清掉模板叠加框（只留 brand-badge 1 层） */
+      .navbar-header h1 { margin:0 !important; padding:0 !important; border:none !important; outline:none !important; box-shadow:none !important; }
+      a.navbar-brand.brand-with-logo, a.navbar-brand.brand-with-logo * {
+        border:none !important; outline:none !important; box-shadow:none !important; background:transparent !important;
       }
       a.navbar-brand.brand-with-logo::before,
       a.navbar-brand.brand-with-logo::after,
       .brand-badge::before,
-      .brand-badge::after {
-        content: none !important;
-      }
+      .brand-badge::after { content:none !important; }
 
-      .brand-with-logo {
-        display: flex !important;
-        align-items: center !important;
-        gap: 14px !important;
-        height: auto !important;
-        line-height: normal !important;
-        padding: 6px 0 !important;
-      }
+      .brand-with-logo { display:flex !important; align-items:center !important; gap:14px !important; height:auto !important; line-height:normal !important; padding:6px 0 !important; }
+      .brand-logo { height:64px !important; width:auto !important; display:block !important; max-height:none !important; }
+      @media (max-width:768px){ .brand-logo{ height:44px !important; } }
 
-      .brand-logo {
-        height: 64px !important;
-        width: auto !important;
-        display: block !important;
-        max-height: none !important;
+      .brand-badge{
+        display:inline-flex; flex-direction:column; line-height:1.1;
+        border:2px solid rgba(255,255,255,.8) !important;
+        border-radius:10px !important;
+        padding:6px 10px !important;
       }
-      @media (max-width: 768px) {
-        .brand-logo { height: 44px !important; }
-      }
+      body.tpl-body:not(.tpl-has-hero) .brand-badge{ border-color: rgba(9,26,93,.35) !important; }
 
-      .brand-badge {
-        display: inline-flex;
-        flex-direction: column;
-        line-height: 1.1;
+      .brand-main{ display:inline-flex; align-items:baseline; gap:8px; font-size:20px; font-weight:800; white-space:nowrap; line-height:1.1; }
+      .brand-sub{ display:block; font-size:11px; opacity:.75; letter-spacing:2px; margin-top:3px; white-space:nowrap; }
+      @media (max-width:768px){ .brand-main{font-size:16px;} .brand-sub{font-size:10px; letter-spacing:1.5px;} }
 
-        border: 2px solid rgba(255,255,255,0.8) !important; /* 首页白框 */
-        border-radius: 10px !important;
-        padding: 6px 10px !important;
-
-        box-shadow: none !important;
-        outline: none !important;
-      }
-      body.tpl-body:not(.tpl-has-hero) .brand-badge {
-        border-color: rgba(9,26,93,0.35) !important;
-      }
-
-      .brand-badge * {
-        border: none !important;
-        outline: none !important;
-        box-shadow: none !important;
-        background: transparent !important;
-      }
-
-      .brand-main {
-        display: inline-flex;
-        align-items: baseline;
-        gap: 8px;
-        font-size: 20px;
-        font-weight: 800;
-        white-space: nowrap;
-        line-height: 1.1;
-      }
-      .brand-sub {
-        display: block;
-        font-size: 11px;
-        opacity: 0.75;
-        letter-spacing: 2px;
-        margin-top: 3px;
-        white-space: nowrap;
-      }
-      @media (max-width: 768px) {
-        .brand-main { font-size: 16px; }
-        .brand-sub { font-size: 10px; letter-spacing: 1.5px; }
-      }
-
-      /* =========================================================
-         4) 首页 vs 子页：导航字色
-      ========================================================= */
+      /* 首页/子页字色 */
       body.tpl-body.tpl-has-hero .navbar-default .navbar-brand,
       body.tpl-body.tpl-has-hero .navbar-default .navbar-brand span,
       body.tpl-body.tpl-has-hero .navbar-default .navbar-nav > li > a,
-      body.tpl-body.tpl-has-hero .navbar-default .navbar-nav > li > a span {
-        color: #fff !important;
-      }
+      body.tpl-body.tpl-has-hero .navbar-default .navbar-nav > li > a span { color:#fff !important; }
 
       body.tpl-body:not(.tpl-has-hero) .navbar-default .navbar-brand,
       body.tpl-body:not(.tpl-has-hero) .navbar-default .navbar-brand span,
       body.tpl-body:not(.tpl-has-hero) .navbar-default .navbar-nav > li > a,
-      body.tpl-body:not(.tpl-has-hero) .navbar-default .navbar-nav > li > a span {
-        color: #091a5d !important;
-      }
+      body.tpl-body:not(.tpl-has-hero) .navbar-default .navbar-nav > li > a span { color:#091a5d !important; }
 
-      body.tpl-body.tpl-has-hero .navbar-default .navbar-toggle .icon-bar {
-        background: #fff !important;
+      /* 语言切换按钮（不放进 ul，避免被模板拦截） */
+      .lang-switch{
+        display:inline-block;
+        margin-left:12px;
+        padding:8px 10px;
+        border-radius:10px;
+        font-weight:800;
+        letter-spacing:0 !important;
+        line-height:1;
+        text-decoration:none;
+        cursor:pointer;
+        user-select:none;
+        border:1px solid rgba(255,255,255,.55);
+        position: relative;
+        z-index: 100000;
       }
-      body.tpl-body:not(.tpl-has-hero) .navbar-default .navbar-toggle .icon-bar {
-        background: #091a5d !important;
-      }
-
-      .navbar-nav > li.active > a span,
-      .navbar-nav > li.active > a span:hover { font-weight: 800; }
-
-      main.tpl-main { padding-top: 0; }
-
-      /* =========================================================
-         5) 语言切换按钮（右上角）
-      ========================================================= */
-      .lang-switch {
-        display: inline-block;
-        margin-left: 12px;
-        padding: 8px 10px;
-        border-radius: 10px;
-        font-weight: 800;
-        line-height: 1;
-        text-decoration: none;
-        border: 1px solid rgba(255,255,255,0.55);
-      }
-      body.tpl-body:not(.tpl-has-hero) .lang-switch {
-        border-color: rgba(9,26,93,0.25);
-      }
-      body.tpl-body.tpl-has-hero .lang-switch { color: #fff !important; }
-      body.tpl-body:not(.tpl-has-hero) .lang-switch { color: #091a5d !important; }
-
-      @media (max-width: 768px) {
-        .lang-switch { padding: 7px 9px; margin-left: 8px; }
-      }
+      body.tpl-body:not(.tpl-has-hero) .lang-switch{ border-color: rgba(9,26,93,.25); color:#091a5d !important; }
+      body.tpl-body.tpl-has-hero .lang-switch{ color:#fff !important; }
     </style>
   </head>
 
   <body class:list={["tpl-body", hasHero ? "tpl-has-hero" : ""]}>
-    <!-- ===== 顶部 Navbar ===== -->
     <div class="banner" id="home">
       <nav class="navbar navbar-default" id="site-navbar">
         <div class="navbar-header navbar-left">
@@ -290,13 +149,10 @@ function isActiveLocalized(hrefBase: string) {
           </button>
 
           <h1>
-            <a class="navbar-brand brand-with-logo" href={withLang("/", lang)}>
+            <a class="navbar-brand brand-with-logo" href="/">
               <img src="/images/logo.png" alt="Cendant Logo" class="brand-logo" />
               <span class="brand-badge">
-                <!-- 中文/英文标题：如果你想英文也改，改这里即可 -->
-                <span class="brand-main">
-                  {lang === "en" ? "Melbourne · Cendant" : "墨尔本 · 胜腾国际"}
-                </span>
+                <span class="brand-main" data-i18n="brand.title">墨尔本 · 胜腾国际</span>
                 <span class="brand-sub">MELBOURNE · CENDANT</span>
               </span>
             </a>
@@ -306,61 +162,41 @@ function isActiveLocalized(hrefBase: string) {
         <div class="collapse navbar-collapse navbar-right" id="bs-example-navbar-collapse-1">
           <nav class="link-effect-2" id="link-effect-2">
             <ul class="nav navbar-nav">
-              {nav.map((i) => {
-                const href = withLang(i.href, lang);
-                const label = dict.nav[i.key];
-                return (
-                  <li class={isActiveLocalized(i.href) ? "active" : ""}>
-                    <a href={href}>
-                      <span data-hover={label}>{label}</span>
-                    </a>
-                  </li>
-                );
-              })}
-
-              <!-- ✅ 语言切换：保持当前路径对应语言 -->
-              <li>
-                <a class="lang-switch" href={switchLangPath(pathname)}>
-                  {dict.switchTo}
-                </a>
-              </li>
+              {nav.map((i) => (
+                <li class={isActive(i.href) ? "active" : ""}>
+                  <a href={i.href}>
+                    <span data-i18n={i.key}></span>
+                  </a>
+                </li>
+              ))}
             </ul>
           </nav>
+
+          <!-- ✅ 运行时切换按钮：不跳转页面 -->
+          <a id="langSwitch" class="lang-switch" href="javascript:void(0)">EN</a>
         </div>
       </nav>
     </div>
 
-    <!-- ===== 页面内容 ===== -->
     <main class="tpl-main">
       <slot />
     </main>
 
-    <!-- ===== Footer：保留底部黑色“联系我们”模块（中英文） ===== -->
     {showFooter && (
       <div class="footer">
         <div class="col-md-6 subscribe">
           <form action="#" method="post" onsubmit="return false;">
-            <h3>{dict.footer?.contactTitle ?? (lang === "en" ? "Contact" : "联系我们")}</h3>
-            <input
-              type="text"
-              name="Subscribe"
-              placeholder={dict.footer?.emailPlaceholder ?? (lang === "en" ? "Email (optional)" : "输入邮箱（可选）")}
-            />
-            <a class="btn1" href={withLang("/contact", lang)}>
-              {dict.cta?.consult ?? (lang === "en" ? "Contact Us" : "联系咨询")}
-            </a>
+            <h3 data-i18n="footer.contactTitle">联系我们</h3>
+            <input type="text" name="Subscribe" data-i18n-placeholder="footer.emailPlaceholder" placeholder="输入邮箱（可选）" />
+            <a class="btn1" href="/contact" data-i18n="footer.contactCta">联系咨询</a>
           </form>
         </div>
 
         <div class="col-md-6 copyright">
           <ul>
-            {nav.slice(0, 6).map((i) => {
-              const href = withLang(i.href, lang);
-              const label = dict.nav[i.key];
-              return (
-                <li><a href={href}>{label}</a></li>
-              );
-            })}
+            {nav.slice(0, 6).map((i) => (
+              <li><a href={i.href}><span data-i18n={i.key}></span></a></li>
+            ))}
           </ul>
           <p>© {new Date().getFullYear()} Melbourne Cendant. All rights reserved.</p>
         </div>
@@ -369,7 +205,7 @@ function isActiveLocalized(hrefBase: string) {
       </div>
     )}
 
-    <!-- ✅ 动态测量 navbar 高度，写入 --nav-h，避免子页被顶部覆盖 -->
+    <!-- ✅ 动态测量 navbar 高度，避免子页被遮挡 -->
     <script is:inline>
       (function () {
         function setNavHeight() {
@@ -380,13 +216,72 @@ function isActiveLocalized(hrefBase: string) {
         }
         window.addEventListener("load", setNavHeight);
         window.addEventListener("resize", setNavHeight);
-        document.addEventListener("click", function () {
-          setTimeout(setNavHeight, 50);
+        document.addEventListener("click", function () { setTimeout(setNavHeight, 50); });
+      })();
+    </script>
+
+    <!-- ✅ 运行时 i18n：点击按钮立即替换全站文案（不换页面） -->
+    <script is:inline>
+      (function () {
+        var DICT = {I18N:JSON.stringify(I18N)}; // Astro 会把对象注入进来
+        var dict = DICT.I18N;
+
+        function get(obj, path) {
+          return path.split(".").reduce(function (acc, k) { return acc && acc[k]; }, obj);
+        }
+
+        function getLang() {
+          return localStorage.getItem("lang") || "zh";
+        }
+
+        function setHtmlLang(lang) {
+          document.documentElement.lang = (lang === "en") ? "en" : "zh-CN";
+        }
+
+        function apply(lang) {
+          var pack = dict[lang] || dict.zh;
+
+          // text nodes
+          document.querySelectorAll("[data-i18n]").forEach(function (el) {
+            var key = el.getAttribute("data-i18n");
+            var v = get(pack, key);
+            if (typeof v === "string") el.textContent = v;
+          });
+
+          // placeholders
+          document.querySelectorAll("[data-i18n-placeholder]").forEach(function (el) {
+            var key = el.getAttribute("data-i18n-placeholder");
+            var v = get(pack, key);
+            if (typeof v === "string") el.setAttribute("placeholder", v);
+          });
+
+          // lang switch button label
+          var btn = document.getElementById("langSwitch");
+          if (btn) btn.textContent = (lang === "en") ? "中文" : "EN";
+
+          setHtmlLang(lang);
+          document.body.setAttribute("data-lang", lang);
+        }
+
+        function toggle() {
+          var next = (getLang() === "en") ? "zh" : "en";
+          localStorage.setItem("lang", next);
+          apply(next);
+        }
+
+        window.addEventListener("load", function () {
+          apply(getLang());
+          var btn = document.getElementById("langSwitch");
+          if (btn) btn.addEventListener("click", function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            toggle();
+          });
         });
       })();
     </script>
 
-    <!-- ===== template15 JS（Cloudflare/Astro 构建必须 is:inline）===== -->
+    <!-- template15 JS（Cloudflare/Astro 构建必须 is:inline） -->
     <script is:inline src="/template15/js/jquery-2.1.4.min.js"></script>
     <script is:inline src="/template15/js/bootstrap.js"></script>
     <script is:inline src="/template15/js/numscroller-1.0.js"></script>
