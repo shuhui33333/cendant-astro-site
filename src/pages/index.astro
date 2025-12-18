@@ -211,32 +211,39 @@ import TemplateLayout from "../layouts/TemplateLayout.astro";
     </div>
   </div>
 
-  <!-- contact 信息块（✅新增“联系照片”那一列） -->
+
+    <!-- contact 信息块（已移除图片列，三列等宽） -->
   <div class="contact" id="contact">
-    <h3 class="heading"><span>联系我们</span></h3>
+      <h3 class="heading"><span>联系我们</span></h3>
 
-    <div class="col-md-3 mail">
-      <h4>联系方式</h4>
-      <p><span class="glyphicon glyphicon-phone"></span> +61 420 616 883</p>
-      <p>
-        <span class="glyphicon glyphicon-envelope"></span>
-        <a href="mailto:info@cendantpgau.com">info@cendantpgau.com</a>
-      </p>
-    </div>
+      <div class="row">
+        <div class="col-md-4 col-sm-12 mail">
+          <h4>联系方式</h4>
+          <p><span class="glyphicon glyphicon-phone"></span> +61 420 616 883</p>
+          <p>
+            <span class="glyphicon glyphicon-envelope"></span>
+            <a href="mailto:info@cendantpgau.com">info@cendantpgau.com</a>
+          </p>
+        </div>
 
-    <div class="col-md-3 address">
-      <h4>地址</h4>
-      <p><span class="glyphicon glyphicon-map-marker"></span> 2 Aquitania Way, Docklands VIC 3008</p>
-    </div>
+        <div class="col-md-4 col-sm-12 address">
+          <h4>地址</h4>
+          <p>
+            <span class="glyphicon glyphicon-map-marker"></span>
+            2 Aquitania Way, Docklands VIC 3008
+          </p>
+        </div>
 
-    <div class="col-md-3 social">
-      <h4>快速入口</h4>
-      <ul>
-        <li><a href="/company-profile"><i class="fa fa-info"></i></a></li>
-        <li><a href="/real-estate"><i class="fa fa-building"></i></a></li>
-        <li><a href="/immigration"><i class="fa fa-plane"></i></a></li>
-        <li><a href="/contact"><i class="fa fa-phone"></i></a></li>
-      </ul>
+        <div class="col-md-4 col-sm-12 social">
+          <h4>快速入口</h4>
+          <ul>
+            <li><a href="/company-profile"><i class="fa fa-info"></i></a></li>
+            <li><a href="/real-estate"><i class="fa fa-building"></i></a></li>
+            <li><a href="/immigration"><i class="fa fa-plane"></i></a></li>
+            <li><a href="/contact"><i class="fa fa-phone"></i></a></li>
+          </ul>
+        </div>
+      </div>
     </div>
 
     <!-- logo照片 -->
