@@ -1,134 +1,82 @@
 ---
 import TemplateLayout from "../layouts/TemplateLayout.astro";
-
-// ✅ 关键：部署到子路径时，BASE_URL 会自动带上前缀（例如 /xxx/）
-const BASE = import.meta.env.BASE_URL;
-
-// 图标真实路径：public/images/contacts/...
-const icons = {
-  wechat: `${BASE}images/contacts/wechat.png`,
-  phone: `${BASE}images/contacts/phone.png`,
-  email: `${BASE}images/contacts/email.png`,
-  whatsapp: `${BASE}images/contacts/whatsapp.png`,
-};
 ---
 
 <TemplateLayout title="联系我们">
-  <!-- ===== Banner：沿用模板 fun facts / count-agileits 结构 ===== -->
-  <section class="count-agileits subpage-intro contact-banner" aria-label="联系我们简介">
+  <!-- 子页面内容：从上到下 -->
+  <section class="contact-page">
     <div class="container">
-      <h3 class="heading">
-        <span>联系我们</span>
-      </h3>
+      <!-- 1) 联系信息 -->
+      <div class="contact-block">
+        <h2 class="cp-title">联系我们</h2>
 
-      <div class="count-grids">
-        <div class="count-bgcolor-w3ls">
-          <div class="col-md-3 col-sm-6 count-grid">
-            <div class="count hvr-bounce-to-bottom intro-card">
-              <div class="intro-icon">
-                <img src={icons.wechat} alt="WeChat" loading="lazy" />
-              </div>
-              <h4 class="intro-title">微信</h4>
-              <p class="intro-desc">your-wechat-id</p>
-            </div>
-          </div>
-
-          <div class="col-md-3 col-sm-6 count-grid">
-            <div class="count hvr-bounce-to-bottom intro-card">
-              <div class="intro-icon">
-                <img src={icons.phone} alt="Phone" loading="lazy" />
-              </div>
-              <h4 class="intro-title">电话</h4>
-              <p class="intro-desc">+61 420 616 883</p>
-            </div>
-          </div>
-
-          <div class="col-md-3 col-sm-6 count-grid">
-            <div class="count hvr-bounce-to-bottom intro-card">
-              <div class="intro-icon">
-                <img src={icons.email} alt="Email" loading="lazy" />
-              </div>
-              <h4 class="intro-title">邮箱</h4>
-              <p class="intro-desc">info@cendantpgau.com</p>
-            </div>
-          </div>
-
-          <div class="col-md-3 col-sm-6 count-grid">
-            <div class="count hvr-bounce-to-bottom intro-card">
-              <div class="intro-icon">
-                <img src={icons.whatsapp} alt="WhatsApp" loading="lazy" />
-              </div>
-              <h4 class="intro-title">WhatsApp</h4>
-              <p class="intro-desc">+61 420 616 883</p>
-            </div>
-          </div>
-
-          <div class="clearfix"></div>
+        <div class="cp-item">
+          <div class="cp-label">电话</div>
+          <div class="cp-value">+61 420 616 883</div>
         </div>
+
+        <div class="cp-item">
+          <div class="cp-label">邮箱</div>
+          <div class="cp-value">
+            <a href="mailto:info@cendantpgau.com">info@cendantpgau.com</a>
+          </div>
+        </div>
+
+        <div class="cp-item">
+          <div class="cp-label">地址</div>
+          <div class="cp-value">2 Aquitania Way, Docklands VIC 3008</div>
+        </div>
+
+        <div class="cp-item">
+          <div class="cp-label">微信</div>
+          <div class="cp-value">your-wechat-id</div>
+        </div>
+
+        <div class="cp-item">
+          <div class="cp-label">WhatsApp</div>
+          <div class="cp-value">+61 420 616 883</div>
+        </div>
+
+        <div class="cp-quick">
+          <a class="cp-link" href="/company-profile">公司概况</a>
+          <a class="cp-link" href="/real-estate">房产资讯</a>
+          <a class="cp-link" href="/property-service">房产服务</a>
+          <a class="cp-link" href="/loan">贷款服务</a>
+          <a class="cp-link" href="/immigration">移民服务</a>
+        </div>
+      </div>
+
+      <!-- 2) 在线留言 -->
+      <div class="contact-block">
+        <h2 class="cp-title">在线留言</h2>
+
+        <form id="lead-form" class="cp-form">
+          <label class="cp-field">
+            <span>姓名 *</span>
+            <input name="name" type="text" required />
+          </label>
+
+          <label class="cp-field">
+            <span>邮箱 *</span>
+            <input name="email" type="email" required />
+          </label>
+
+          <label class="cp-field">
+            <span>电话</span>
+            <input name="phone" type="text" />
+          </label>
+
+          <label class="cp-field">
+            <span>留言内容 *</span>
+            <textarea name="message" rows="6" required></textarea>
+          </label>
+
+          <button class="btn1" type="submit">提交</button>
+          <p id="lead-result" class="cp-result"></p>
+        </form>
       </div>
     </div>
   </section>
-
-  <!-- ===== 内容区：恢复你之前“联系我们页面”的结构（电话/邮箱/地址/入口）===== -->
-  <div class="contact" id="contact">
-    <h3 class="heading"><span>联系我们</span></h3>
-
-    <div class="row">
-      <!-- 联系方式 -->
-      <div class="col-md-4 col-sm-12 mail">
-        <h4>联系方式</h4>
-        <p><span class="glyphicon glyphicon-phone"></span> +61 420 616 883</p>
-        <p>
-          <span class="glyphicon glyphicon-envelope"></span>
-          <a href="mailto:info@cendantpgau.com">info@cendantpgau.com</a>
-        </p>
-        <p>
-          <span class="glyphicon glyphicon-comment"></span>
-          WeChat：<span>your-wechat-id</span>
-        </p>
-      </div>
-
-      <!-- 地址 -->
-      <div class="col-md-4 col-sm-12 address">
-        <h4>地址</h4>
-        <p>
-          <span class="glyphicon glyphicon-map-marker"></span>
-          2 Aquitania Way, Docklands VIC 3008
-        </p>
-        <p style="opacity:.75; margin-top:10px;">
-          可预约面谈 / 线上咨询
-        </p>
-      </div>
-
-      <!-- 快速入口 -->
-      <div class="col-md-4 col-sm-12 social">
-        <h4>快速入口</h4>
-        <ul>
-          <li><a href="/company-profile" aria-label="company"><i class="fa fa-info"></i></a></li>
-          <li><a href="/real-estate" aria-label="real-estate"><i class="fa fa-building"></i></a></li>
-          <li><a href="/immigration" aria-label="immigration"><i class="fa fa-plane"></i></a></li>
-          <li><a href="/loan" aria-label="loan"><i class="fa fa-money"></i></a></li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="clearfix"></div>
-  </div>
-
-  <!-- ===== 在线留言（保留你的提交逻辑）===== -->
-  <div class="contact-form">
-    <h3 class="heading"><span>在线留言</span></h3>
-    <div class="container">
-      <form id="lead-form">
-        <input name="name" type="text" placeholder="姓名" required />
-        <input name="email" type="email" placeholder="邮箱" required />
-        <input name="phone" type="text" placeholder="电话" />
-        <textarea name="message" placeholder="留言内容" required></textarea>
-        <button class="btn1" type="submit">提交</button>
-        <p id="lead-result" style="margin-top:10px;"></p>
-      </form>
-    </div>
-  </div>
 
   <script is:inline>
     (function () {
@@ -164,54 +112,103 @@ const icons = {
   </script>
 </TemplateLayout>
 
-<style is:global>
-  /* ===== Banner：白字 + 图标卡片 ===== */
-  .contact-banner {
-    color: #fff;
-  }
-  .contact-banner .heading span {
-    color: #fff !important;
+<style>
+  /* 子页面内容：更“页面化”，不做左右分栏 */
+  .contact-page {
+    padding: 24px 0 60px;
   }
 
-  .contact-banner .intro-card {
-    padding: 18px 16px;
-    min-height: 150px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    text-align: center;
+  .contact-block {
+    background: #fff;
+    border: 1px solid rgba(11, 27, 84, 0.10);
+    border-radius: 12px;
+    padding: 22px 18px;
+    margin-bottom: 18px;
   }
 
-  .contact-banner .intro-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 12px;
+  .cp-title {
+    margin: 0 0 14px;
+    font-size: 20px;
+    font-weight: 900;
+    color: #0b1b54;
+    letter-spacing: 0.3px;
   }
 
-  .contact-banner .intro-icon img {
-    width: 46px;
-    height: 46px;
-    object-fit: contain;
-    display: block;
+  .cp-item {
+    display: grid;
+    grid-template-columns: 90px 1fr;
+    gap: 12px;
+    padding: 10px 0;
+    border-top: 1px solid rgba(11, 27, 84, 0.08);
+  }
+  .cp-item:first-of-type {
+    border-top: 0;
+    padding-top: 6px;
   }
 
-  .contact-banner .intro-title {
-    margin: 0 0 8px;
-    font-size: 16px;
-    font-weight: 800;
-    color: #fff;
+  .cp-label {
+    color: rgba(11, 27, 84, 0.75);
+    font-weight: 700;
   }
 
-  .contact-banner .intro-desc {
-    margin: 0;
-    font-size: 13px;
-    color: rgba(255, 255, 255, 0.88);
+  .cp-value {
+    color: #0b1b54;
     word-break: break-word;
   }
 
-  @media (max-width: 768px) {
-    .contact-banner .intro-card { min-height: auto; }
-    .contact-banner .intro-icon img { width: 42px; height: 42px; }
+  .cp-value a {
+    color: #0b1b54;
+    text-decoration: underline;
+  }
+
+  .cp-quick {
+    margin-top: 14px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .cp-link {
+    display: inline-block;
+    padding: 8px 12px;
+    border: 1px solid rgba(11, 27, 84, 0.14);
+    border-radius: 999px;
+    color: #0b1b54;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 13px;
+  }
+
+  /* 表单 */
+  .cp-form {
+    display: grid;
+    gap: 12px;
+  }
+
+  .cp-field span {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 700;
+    color: rgba(11, 27, 84, 0.85);
+  }
+
+  .cp-field input,
+  .cp-field textarea {
+    width: 100%;
+    border: 1px solid rgba(11, 27, 84, 0.16);
+    border-radius: 10px;
+    padding: 10px 12px;
+    outline: none;
+  }
+
+  .cp-field input:focus,
+  .cp-field textarea:focus {
+    border-color: rgba(11, 27, 84, 0.35);
+  }
+
+  .cp-result {
+    margin: 0;
+    font-size: 13px;
+    color: rgba(11, 27, 84, 0.75);
   }
 </style>
