@@ -318,7 +318,7 @@ function isRealEstateActive() {
                       </a>
 
                       <ul class="dropdown-menu">
-                        {/* ✅ 二级：房产售卖资讯 */}
+                        {/* ✅ 二级：房产售卖资讯（可点击跳 /real-estate/sale） */}
                         <li class="dropdown-submenu">
                           <a href="/real-estate/sale" class="submenu-toggle">房产售卖资讯</a>
                           <ul class="dropdown-menu">
@@ -328,7 +328,7 @@ function isRealEstateActive() {
                           </ul>
                         </li>
 
-                        {/* ✅ 二级：房产出租资讯 */}
+                        {/* ✅ 二级：房产出租资讯（可点击跳 /real-estate/rent） */}
                         <li class="dropdown-submenu">
                           <a href="/real-estate/rent" class="submenu-toggle">房产出租资讯</a>
                           <ul class="dropdown-menu">
@@ -338,8 +338,7 @@ function isRealEstateActive() {
                           </ul>
                         </li>
 
-                        <li role="separator" class="divider"></li>
-                        <li><a href="/real-estate">最新资讯</a></li>
+                        {/* ✅ 已按你要求：删除“最新资讯” */}
                       </ul>
                     </li>
                   );
@@ -409,17 +408,18 @@ function isRealEstateActive() {
     <!-- ✅ 关键：移动端点击展开二级 submenu（否则手机点不开） -->
     <script is:inline>
       (function () {
-        // 只在移动端启用点击展开
         function isMobile() {
           return window.matchMedia && window.matchMedia("(max-width: 768px)").matches;
         }
 
+        // 点击二级标题：展开/收起它自己的 submenu（不跳转）
         document.addEventListener("click", function (e) {
           if (!isMobile()) return;
 
           var a = e.target && e.target.closest && e.target.closest(".dropdown-submenu > a");
           if (!a) return;
 
+          // ✅ 阻止跳转（移动端点“房产售卖资讯”会展开，而不是立刻跳走）
           e.preventDefault();
           e.stopPropagation();
 
@@ -428,17 +428,25 @@ function isRealEstateActive() {
 
           // 关掉其他已打开的二级菜单
           document.querySelectorAll(".dropdown-submenu > .dropdown-menu").forEach(function (m) {
-            if (m !== submenu) m.style.display = "none";
+            if (m !== submenu) (m as any).style.display = "none";
           });
 
-          submenu.style.display = submenu.style.display === "block" ? "none" : "block";
+          (submenu as any).style.display = (submenu as any).style.display === "block" ? "none" : "block";
         });
 
-        // 点击空白收起二级菜单
-        document.addEventListener("click", function () {
+        // ✅ 点击菜单外部才收起二级（修复你原来“马上关掉”的问题）
+        document.addEventListener("click", function (e) {
           if (!isMobile()) return;
+
+          var drop = document.querySelector(".navbar-nav li.dropdown.open");
+          if (!drop) return;
+
+          var target = e.target as any;
+          var inside = target && target.closest && target.closest(".navbar-nav li.dropdown");
+          if (inside) return; // 点在菜单内部，不关
+
           document.querySelectorAll(".dropdown-submenu > .dropdown-menu").forEach(function (m) {
-            m.style.display = "none";
+            (m as any).style.display = "none";
           });
         });
       })();
