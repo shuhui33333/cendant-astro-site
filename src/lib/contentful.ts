@@ -97,12 +97,45 @@ function toPost(item: any, includes: any): RealEstatePost {
   };
 }
 
-export async function getRealEstatePosts(limit = 50): Promise<RealEstatePost[]> {
+export async function getRealEstatePosts(limit = 20) {
   try {
     const data = await cfFetch(
-      `/entries?content_type=${CONTENT_TYPE}&order=-fields.publishDate&limit=${limit}&include=2`
+      `/entries?content_type=realEstatePost&order=-fields.publishDate&limit=${limit}&include=2`
     );
-    return (data?.items ?? []).map((it: any) => toPost(it, data?.includes));
+
+    const items = Array.isArray(data?.items) ? data.items : [];
+    const includes = data?.includes;
+
+    // 把 Asset id -> url 做成字典
+    const assetMap = new Map<string, string>();
+    for (const a of includes?.Asset ?? []) {
+      const u = a?.fields?.file?.url;
+      const url = u ? (u.startsWith("//") ? `https:${u}` : u) : "";
+      if (a?.sys?.id && url) assetMap.set(a.sys.id, url);
+    }
+
+    function resolveImageUrls(entry: any): string[] {
+      const links = entry?.fields?.image; // many files
+      if (!Array.isArray(links)) return [];
+      return links
+        .map((l) => assetMap.get(l?.sys?.id))
+        .filter(Boolean) as string[];
+    }
+
+    return items.map((it: any) => {
+      const imageUrls = resolveImageUrls(it);
+
+      return {
+        title: it.fields?.title ?? "",
+        slug: it.fields?.slug ?? "",
+        publishDate: it.fields?.publishDate ?? "",
+        category: it.fields?.category ?? "",
+        dealType: it.fields?.dealType ?? "",
+        summary: it.fields?.summary ?? "",
+        imageUrls,
+        image: imageUrls[0] ?? null, // ✅ 封面图：第一张真实图
+      };
+    });
   } catch (err) {
     console.error("[Contentful] getRealEstatePosts failed:", err);
     return [];
