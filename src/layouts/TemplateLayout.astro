@@ -79,6 +79,7 @@ function isRealEstateActive() {
     <link rel="stylesheet" href="/template15/css/mainStyles.css" />
 
     <style is:global>
+
       html, body { margin: 0; padding: 0; }
       html, body { visibility: visible !important; }
       body { display: block !important; }
@@ -470,7 +471,133 @@ function isRealEstateActive() {
         }, true);
       })();
     </script>
+    <!-- ✅ Language Switch (place it just before </body>) -->
+    <div id="lang-switch" class="lang-switch">
+      <button id="btn-zh" type="button" class="btn btn-default btn-sm">中文</button>
+      <button id="btn-en" type="button" class="btn btn-primary btn-sm">EN</button>
+    </div>
 
+    <style is:global>
+      /* 强制显示 + 防止被模板盖住 */
+      #lang-switch.lang-switch{
+        position: fixed !important;
+        right: 14px !important;
+        bottom: 14px !important;
+        z-index: 2147483647 !important; /* 超大，基本不可能被盖 */
+        display: flex !important;
+        gap: 8px !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+      }
+      #lang-switch button{
+        display: inline-block !important;
+      }
+    </style>
+
+    <script is:inline>
+    (function () {
+      var LANG_KEY = "site_lang";
+      var lang = localStorage.getItem(LANG_KEY) || "zh";
+
+      var btnZh = document.getElementById("btn-zh");
+      var btnEn = document.getElementById("btn-en");
+
+      function paint() {
+        if (!btnZh || !btnEn) return;
+        if (lang === "en") {
+          btnEn.className = "btn btn-primary btn-sm";
+          btnZh.className = "btn btn-default btn-sm";
+        } else {
+          btnZh.className = "btn btn-primary btn-sm";
+          btnEn.className = "btn btn-default btn-sm";
+        }
+      }
+
+      function setLang(next) {
+        lang = next;
+        localStorage.setItem(LANG_KEY, next);
+        paint();
+        if (next === "zh") { location.reload(); return; }
+        translatePageToEnglish();
+      }
+
+      btnZh && btnZh.addEventListener("click", function(){ setLang("zh"); });
+      btnEn && btnEn.addEventListener("click", function(){ setLang("en"); });
+
+      paint();
+      if (lang === "en") translatePageToEnglish();
+
+      async function translatePageToEnglish() {
+        var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null);
+        var nodes = [];
+        var texts = [];
+        var seen = new Map();
+
+        while (walker.nextNode()) {
+          var n = walker.currentNode;
+          if (!n || !n.nodeValue) continue;
+
+          var t = n.nodeValue.trim();
+          if (!t) continue;
+
+          var p = n.parentElement;
+          if (!p) continue;
+
+          var tag = p.tagName;
+          if (tag === "SCRIPT" || tag === "STYLE" || tag === "NOSCRIPT") continue;
+          if (p.closest("script,style,noscript,textarea,input,select,option,code,pre")) continue;
+
+          // 已经是英文/数字为主就跳过，省钱
+          if (/^[\x00-\x7F\s0-9.,:;!?'"()\-\+\/]+$/.test(t)) continue;
+
+          if (!seen.has(t)) {
+            seen.set(t, { trans: "" });
+            texts.push(t);
+          }
+          nodes.push({ node: n, key: t });
+        }
+
+        if (!texts.length) return;
+
+        async function batchTranslate(batch) {
+          var res = await fetch("/api/translate", {
+            method: "POST",
+            headers: {"Content-Type":"application/json"},
+            body: JSON.stringify({ target: "en", texts: batch })
+          });
+          var json = await res.json();
+          if (!res.ok) throw new Error(json && json.error ? json.error : "translate failed");
+          return json.data || [];
+        }
+
+        var BATCH = 60;
+        for (var i = 0; i < texts.length; i += BATCH) {
+          var part = texts.slice(i, i + BATCH);
+          var out = await batchTranslate(part);
+          for (var j = 0; j < part.length; j++) {
+            var original = part[j];
+            var translated = out[j] || "";
+            if (seen.has(original)) seen.get(original).trans = translated;
+          }
+        }
+
+        for (var k = 0; k < nodes.length; k++) {
+          var item = nodes[k];
+          var info = seen.get(item.key);
+          if (info && info.trans) {
+            item.node.nodeValue = item.node.nodeValue.replace(item.key, decodeHtml(info.trans));
+          }
+        }
+      }
+
+      function decodeHtml(s) {
+        var d = document.createElement("textarea");
+        d.innerHTML = s;
+        return d.value;
+      }
+    })();
+    </script>
     <!-- ===== template15 JS ===== -->
     <script is:inline src="/template15/js/jquery-2.1.4.min.js"></script>
     <script is:inline src="/template15/js/bootstrap.js"></script>
