@@ -2,17 +2,13 @@
 import TemplateLayout from "../layouts/TemplateLayout.astro";
 import { getRealEstatePosts } from "../lib/contentful";
 
-const posts = await getRealEstatePosts(8);
+const posts = await getRealEstatePosts(9);
 
-function pickImage(p: any) {
-  const img =
-    p.coverImage?.url ||
-    p.featuredImage?.url ||
-    p.image?.url ||
-    p.heroImage?.url ||
-    p.thumbnail?.url ||
-    "";
-  return img || "/template15/images/about.jpg";
+function coverOf(p: any) {
+  // 优先 image（封面=第一张真实图），兜底 imageUrls[0]
+  const u = p?.image || (Array.isArray(p?.imageUrls) ? p.imageUrls[0] : "");
+  if (!u) return "";
+  return u.startsWith("//") ? `https:${u}` : u;
 }
 ---
 
