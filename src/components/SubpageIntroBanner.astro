@@ -1,9 +1,15 @@
 ---
 type Item = { title?: string; desc?: string; icon?: string };
 
-const { titleZh, titleEn, items = [] } = Astro.props as {
+const {
+  titleZh,
+  titleEn,
+  subtitle,
+  items = [],
+} = Astro.props as {
   titleZh: string;
   titleEn?: string;
+  subtitle?: string;
   items?: Item[];
 };
 
@@ -11,45 +17,63 @@ const isSingle = items.length === 1;
 ---
 
 <section
-  class:list={["count-agileits", "subpage-intro", isSingle ? "subpage-intro--single" : ""]}
+  class:list={[
+    "count-agileits",
+    "subpage-intro",
+    isSingle ? "subpage-intro--single" : "",
+    subtitle ? "subpage-intro--with-subtitle" : "",
+  ]}
   aria-label={`${titleZh} 简介`}
 >
   <div class="container">
-    <h3 class="heading">
-      <span>{titleZh}</span>
-      {titleEn ? <small class="subpage-intro-en">{titleEn}</small> : null}
-    </h3>
 
-    <div class="count-grids">
-      <div class="count-bgcolor-w3ls">
-        {items.map((it) => (
-          <div class="col-md-3 count-grid">
-            <div class="count hvr-bounce-to-bottom intro-card">
-              {it.icon ? (
-                <div class="intro-icon">
-                  <img src={it.icon} alt={it.title ?? "icon"} loading="lazy" />
-                </div>
-              ) : null}
+    <!-- ===== 标题区 ===== -->
+    <div class="subpage-intro-header">
+      <h3 class="heading">
+        <span>{titleZh}</span>
+        {titleEn ? <small class="subpage-intro-en">{titleEn}</small> : null}
+      </h3>
 
-              {it.title ? <h4 class="intro-title">{it.title}</h4> : null}
-              {it.desc ? <p class="intro-desc">{it.desc}</p> : null}
-            </div>
-          </div>
-        ))}
-
-        <div class="clearfix"></div>
-      </div>
+      {subtitle ? (
+        <p class="subpage-intro-subtitle">{subtitle}</p>
+      ) : null}
     </div>
+
+    <!-- ===== 卡片区（有 items 才显示） ===== -->
+    {items.length > 0 && (
+      <div class="count-grids">
+        <div class="count-bgcolor-w3ls">
+          {items.map((it) => (
+            <div class="col-md-3 count-grid">
+              <div class="count hvr-bounce-to-bottom intro-card">
+                {it.icon ? (
+                  <div class="intro-icon">
+                    <img src={it.icon} alt={it.title ?? "icon"} />
+                  </div>
+                ) : null}
+
+                {it.title ? <h4 class="intro-title">{it.title}</h4> : null}
+                {it.desc ? <p class="intro-desc">{it.desc}</p> : null}
+              </div>
+            </div>
+          ))}
+          <div class="clearfix"></div>
+        </div>
+      </div>
+    )}
   </div>
 </section>
 
 <style>
-/* ===== 0) 整体白字（TopBanner） ===== */
-.subpage-intro { color: #fff; }
-.subpage-intro .heading span,
-.subpage-intro .heading small { color:#fff !important; }
+/* ===== 基础白字 ===== */
+.subpage-intro { color:#fff; }
 
-.subpage-intro .subpage-intro-en{
+.subpage-intro .heading span,
+.subpage-intro .heading small {
+  color:#fff !important;
+}
+
+.subpage-intro-en{
   display:block;
   font-size:12px;
   opacity:.75;
@@ -57,100 +81,76 @@ const isSingle = items.length === 1;
   letter-spacing:2px;
 }
 
-/* ===== 1) 让卡片区域“整体居中 + 自适应个数” ===== */
-.subpage-intro .count-bgcolor-w3ls{
+/* ===== 标题 + 简介：严格居中 ===== */
+.subpage-intro-header{
+  text-align:center;
+  max-width: 960px;
+  margin: 0 auto 28px;
+}
+
+.subpage-intro-subtitle{
+  margin-top:16px;
+  font-size:14px;
+  line-height:1.6;
+  color:rgba(255,255,255,.9);
+  white-space:nowrap;        /* 桌面端强制一行 */
+}
+
+/* ===== 卡片区域布局（原逻辑保留） ===== */
+.count-bgcolor-w3ls{
   display:flex !important;
   justify-content:center !important;
-  align-items:stretch;
   flex-wrap:wrap;
   gap:32px;
 }
 
-/* 覆盖 bootstrap 的 col-md-3（不靠 float 排版） */
-.subpage-intro .count-grid{
+.count-grid{
   float:none !important;
-  display:flex;
-  justify-content:center;
   width:22%;
   min-width:220px;
 }
 
-/* 1/2/3 个时调宽度，仍保持居中 */
-.subpage-intro .count-grid:only-child{ width:46% !important; }
+.count-grid:only-child{ width:46%; }
 
-.subpage-intro .count-grid:nth-last-child(2):first-child,
-.subpage-intro .count-grid:nth-last-child(2):first-child ~ .count-grid{
-  width:36% !important;
+.count-grid:nth-last-child(2):first-child,
+.count-grid:nth-last-child(2):first-child ~ .count-grid{
+  width:36%;
 }
 
-.subpage-intro .count-grid:nth-last-child(3):first-child,
-.subpage-intro .count-grid:nth-last-child(3):first-child ~ .count-grid{
-  width:28% !important;
+.count-grid:nth-last-child(3):first-child,
+.count-grid:nth-last-child(3):first-child ~ .count-grid{
+  width:28%;
 }
 
-/* ===== 2) 卡片内容 ===== */
-.subpage-intro .intro-card{
+/* ===== 卡片内容 ===== */
+.intro-card{
   padding:18px 16px;
-  min-height:140px;
   display:flex;
   flex-direction:column;
   justify-content:center;
-  text-align:left;
-  width:100%;
 }
 
-.subpage-intro .intro-icon{
-  display:flex;
-  align-items:center;
-  justify-content:flex-start;
-  margin-bottom:12px;
-}
-.subpage-intro .intro-icon img{
-  width:48px;
-  height:48px;
-  object-fit:contain;
-  display:block;
-}
-
-.subpage-intro .intro-title{
+.intro-title{
   margin:0 0 8px;
-  color:#fff;
   font-size:18px;
   font-weight:700;
-  line-height:1.25;
 }
 
-.subpage-intro .intro-desc{
+.intro-desc{
   margin:0;
-  color:rgba(255,255,255,.85);
   font-size:14px;
-  line-height:1.6;
-  opacity:.95;
+  opacity:.9;
 }
 
-/* ===== 3) ✅ 关键：只有 1 个块时，desc 强制一行（桌面端） ===== */
-/* 这里用“组件专用 class + 更强选择器 + !important”，避免部署被覆盖 */
-@media (min-width: 992px){
-  .subpage-intro.subpage-intro--single .intro-card{
-    align-items:center !important;
-    text-align:center !important;
+/* ===== 移动端 ===== */
+@media (max-width: 768px){
+  .subpage-intro-subtitle{
+    white-space:normal;   /* 手机允许换行 */
+    font-size:13px;
   }
 
-  .subpage-intro.subpage-intro--single .intro-desc{
-    white-space:nowrap !important;
-    overflow:hidden !important;
-    text-overflow:ellipsis !important; /* 不要省略号就删掉这一行 */
-    max-width: 980px;
-    margin-left:auto !important;
-    margin-right:auto !important;
-    text-align:center !important;
+  .count-grid{
+    width:100% !important;
   }
-}
-
-/* ===== 4) 移动端：一列（允许换行，不然会溢出） ===== */
-@media (max-width: 992px){
-  .subpage-intro .count-grid{ width:100% !important; min-width:0; }
-  .subpage-intro .intro-card{ min-height:auto; text-align:left; align-items:flex-start; }
-  .subpage-intro .intro-icon img{ width:42px; height:42px; }
 }
 </style>
