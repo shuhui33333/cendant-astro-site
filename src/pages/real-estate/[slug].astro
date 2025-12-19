@@ -4,40 +4,31 @@ import * as contentful from "../../lib/contentful";
 
 export const prerender = true;
 
-// ✅ 兼容不同导出命名（你现在最少要保证 contentful.ts 里“有一个”能取到所有 slug）
-async function getAllSlugsSafe(): Promise<string[]> {
-  // 你可能存在的函数名（按你日志和你之前贴的代码做兼容）
-  const fn =
+export async function getStaticPaths() {
+  // ✅ 兼容你 contentful.ts 里不同的导出命名
+  const getSlugsFn =
     (contentful as any).getAllRealEstateSlugs ||
     (contentful as any).getAllRealEstateSlugs ||
     (contentful as any).getAllRealEstateSlugs;
 
-  if (typeof fn !== "function") return [];
-  const slugs = await fn();
-  return Array.isArray(slugs) ? slugs.filter(Boolean) : [];
-}
+  const slugs = typeof getSlugsFn === "function" ? await getSlugsFn() : [];
+  const safeSlugs = Array.isArray(slugs) ? slugs.filter(Boolean) : [];
 
-// ✅ 兼容不同导出命名（按 slug 拉详情）
-async function getPostBySlugSafe(slug: string) {
-  const fn =
-    (contentful as any).getRealEstatePostBySlug ||
-    (contentful as any).getRealEstatePostBySlug ||
-    (contentful as any).getRealEstatePostBySlug;
-
-  if (typeof fn !== "function") return null;
-  return await fn(slug);
-}
-
-export async function getStaticPaths() {
-  const slugs = await getAllSlugsSafe();
-  return slugs.map((slug) => ({
+  return safeSlugs.map((slug) => ({
     params: { slug },
     props: { slug },
   }));
 }
 
 const { slug } = Astro.props as { slug: string };
-const post = await getPostBySlugSafe(slug);
+
+// ✅ 兼容详情函数命名
+const getPostFn =
+  (contentful as any).getRealEstatePostBySlug ||
+  (contentful as any).getRealEstatePostBySlug ||
+  (contentful as any).getRealEstatePostBySlug;
+
+const post = typeof getPostFn === "function" ? await getPostFn(slug) : null;
 
 if (!post) {
   return new Response("Not found", { status: 404 });
@@ -52,18 +43,14 @@ function richTextToPlainText(node: any): string {
   if (node.content) return node.content.map(richTextToPlainText).join("");
   return "";
 }
-
 const bodyText = richTextToPlainText((post as any).body);
 
-// ✅ 兼容：你可能返回 image(单张) / imageUrls(多张) / images(多张)
-const imageUrlsA =
-  Array.isArray((post as any).imageUrls) ? (post as any).imageUrls : [];
-const imageUrlsB =
-  Array.isArray((post as any).images) ? (post as any).images : [];
-const imageSingle =
-  (post as any).image ? [(post as any).image] : [];
+// ✅ 多图兼容：imageUrls / images / image(单张)
+const urlsA = Array.isArray((post as any).imageUrls) ? (post as any).imageUrls : [];
+const urlsB = Array.isArray((post as any).images) ? (post as any).images : [];
+const url1 = (post as any).image ? [(post as any).image] : [];
 
-const images = [...imageUrlsA, ...imageUrlsB, ...imageSingle]
+const images = [...urlsA, ...urlsB, ...url1]
   .filter(Boolean)
   .map((u: string) => (u.startsWith("//") ? `https:${u}` : u));
 
@@ -84,13 +71,15 @@ const cover = images[0] ?? "";
 
       <h1 class="h1">{(post as any).title ?? ""}</h1>
 
-      {cover ? <img class="cover" src={cover} alt={(post as any).title ?? "cover"} loading="lazy" /> : null}
+      {cover ? (
+        <img class="cover" src={cover} alt={(post as any).title ?? "cover"} loading="lazy" />
+      ) : null}
 
       {images.length > 1 ? (
         <div class="gallery">
           {images.map((u, idx) => (
             <a class="g-item" href={u} target="_blank" rel="noreferrer">
-              <img src={u} alt={`${(post as any).title ?? "img"} - ${idx + 1}`} loading="lazy" />
+              <img src={u} alt={`${(post as any).title ?? "img"}-${idx + 1}`} loading="lazy" />
             </a>
           ))}
         </div>
