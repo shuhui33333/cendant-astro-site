@@ -1,40 +1,19 @@
 ---
 import TemplateLayout from "../../layouts/TemplateLayout.astro";
-import * as contentful from "../../lib/contentful";
+import { getAllRealEstateSlugs, getRealEstatePostBySlug } from "../../lib/contentful";
 
 export const prerender = true;
 
 export async function getStaticPaths() {
-  // ✅ 兼容你 contentful.ts 里不同的导出命名
-  const getSlugsFn =
-    (contentful as any).getAllRealEstateSlugs ||
-    (contentful as any).getAllRealEstateSlugs ||
-    (contentful as any).getAllRealEstateSlugs;
-
-  const slugs = typeof getSlugsFn === "function" ? await getSlugsFn() : [];
-  const safeSlugs = Array.isArray(slugs) ? slugs.filter(Boolean) : [];
-
-  return safeSlugs.map((slug) => ({
-    params: { slug },
-    props: { slug },
-  }));
+  const slugs = await getAllRealEstateSlugs();
+  return slugs.map((slug) => ({ params: { slug }, props: { slug } }));
 }
 
 const { slug } = Astro.props as { slug: string };
+const post = await getRealEstatePostBySlug(slug);
 
-// ✅ 兼容详情函数命名
-const getPostFn =
-  (contentful as any).getRealEstatePostBySlug ||
-  (contentful as any).getRealEstatePostBySlug ||
-  (contentful as any).getRealEstatePostBySlug;
+if (!post) return new Response("Not found", { status: 404 });
 
-const post = typeof getPostFn === "function" ? await getPostFn(slug) : null;
-
-if (!post) {
-  return new Response("Not found", { status: 404 });
-}
-
-// RichText -> 纯文本（不依赖 npm）
 function richTextToPlainText(node: any): string {
   if (!node) return "";
   if (typeof node === "string") return node;
@@ -43,50 +22,38 @@ function richTextToPlainText(node: any): string {
   if (node.content) return node.content.map(richTextToPlainText).join("");
   return "";
 }
-const bodyText = richTextToPlainText((post as any).body);
+const bodyText = richTextToPlainText(post.body);
 
-// ✅ 多图兼容：imageUrls / images / image(单张)
-const urlsA = Array.isArray((post as any).imageUrls) ? (post as any).imageUrls : [];
-const urlsB = Array.isArray((post as any).images) ? (post as any).images : [];
-const url1 = (post as any).image ? [(post as any).image] : [];
-
-const images = [...urlsA, ...urlsB, ...url1]
-  .filter(Boolean)
-  .map((u: string) => (u.startsWith("//") ? `https:${u}` : u));
-
-const cover = images[0] ?? "";
+const images = Array.isArray(post.imageUrls) ? post.imageUrls : [];
+const cover = post.image ?? images[0] ?? "";
 ---
 
-<TemplateLayout title={(post as any).title ?? "地产资讯"}>
+<TemplateLayout title={post.title}>
   <section class="tpl-page">
     <div class="tpl-card">
       <div class="meta">
-        <span class="tag">{(post as any).category ?? "资讯"}</span>
+        <span class="tag">{post.category ?? "资讯"}</span>
         <span class="date">
-          {(post as any).publishDate
-            ? new Date((post as any).publishDate).toLocaleDateString("zh-CN")
-            : ""}
+          {post.publishDate ? new Date(post.publishDate).toLocaleDateString("zh-CN") : ""}
         </span>
       </div>
 
-      <h1 class="h1">{(post as any).title ?? ""}</h1>
+      <h1 class="h1">{post.title}</h1>
 
-      {cover ? (
-        <img class="cover" src={cover} alt={(post as any).title ?? "cover"} loading="lazy" />
-      ) : null}
+      {cover ? <img class="cover" src={cover} alt={post.title} loading="lazy" /> : null}
 
       {images.length > 1 ? (
-        <div class="gallery">
+        <div class="gallery" aria-label="房源图片">
           {images.map((u, idx) => (
             <a class="g-item" href={u} target="_blank" rel="noreferrer">
-              <img src={u} alt={`${(post as any).title ?? "img"}-${idx + 1}`} loading="lazy" />
+              <img src={u} alt={`${post.title}-${idx + 1}`} loading="lazy" />
             </a>
           ))}
         </div>
       ) : null}
 
       <div class="body">
-        {(post as any).summary ? <p class="summary">{(post as any).summary}</p> : null}
+        {post.summary ? <p class="summary">{post.summary}</p> : null}
         {bodyText ? <p class="content" style="white-space:pre-wrap">{bodyText}</p> : null}
       </div>
 
@@ -109,8 +76,8 @@ const cover = images[0] ?? "";
     .g-item { display:block; border-radius:12px; overflow:hidden; background:#f3f5fb; border:1px solid rgba(0,0,0,.06); text-decoration:none; }
     .g-item img { width:100%; height:210px; object-fit:cover; display:block; transition:transform .25s ease; }
     .g-item:hover img { transform:scale(1.03); }
-    @media (max-width:992px) { .gallery{ grid-template-columns:repeat(2, minmax(0,1fr)); } .g-item img{ height:200px; } }
-    @media (max-width:576px) { .gallery{ grid-template-columns:1fr; } .g-item img{ height:220px; } }
+    @media (max-width:992px){ .gallery{ grid-template-columns:repeat(2, minmax(0,1fr)); } .g-item img{ height:200px; } }
+    @media (max-width:576px){ .gallery{ grid-template-columns:1fr; } .g-item img{ height:220px; } }
 
     .summary { font-weight:600; opacity:.9; margin:0 0 10px; }
     .body { line-height:1.9; opacity:.95; }

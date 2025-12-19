@@ -1,5 +1,6 @@
 // src/lib/contentful.ts
-type CfLink = { sys: { id: string } };
+
+type CfLink = { sys: { type: "Link"; linkType: "Asset"; id: string } };
 
 export type RealEstatePost = {
   id: string;
@@ -9,7 +10,8 @@ export type RealEstatePost = {
   summary?: string;
   dealType?: string;
   category?: string;
-  imageUrls: string[]; // ✅ 多图
+  imageUrls: string[];      // ✅ 多图
+  image: string | null;     // ✅ 兼容旧代码：封面=第一张
 };
 
 export type RealEstatePostDetail = RealEstatePost & {
@@ -36,39 +38,62 @@ async function cfFetch(path: string) {
 
 function toAssetUrl(u?: string) {
   if (!u) return "";
-  if (u.startsWith("//")) return `https:${u}`;
-  return u;
+  return u.startsWith("//") ? `https:${u}` : u;
 }
 
-function pickCategory(fields: any): string {
-  return fields?.category ?? fields?.catagory ?? "";
-}
-
-/** ✅ 把 entry.fields.image (Link数组) 解析成图片 URL 数组 */
+/**
+ * ✅ 从 entry.fields.image (many files) 里取出所有图片 URL
+ * 兼容 2 种情况：
+ * 1) REST 常见：fields.image = [ {sys:{id}} ... ] 需要从 includes.Asset 映射
+ * 2) 已展开：fields.image = [ {fields:{file:{url}}} ... ]
+ */
 function resolveImageUrls(entry: any, includes: any): string[] {
-  const links: CfLink[] = entry?.fields?.image ?? [];
-  if (!Array.isArray(links) || !includes?.Asset) return [];
+  const field = entry?.fields?.image;
 
-  const idToUrl = new Map<string, string>();
-  for (const a of includes.Asset) {
-    const url = toAssetUrl(a?.fields?.file?.url);
-    if (a?.sys?.id && url) idToUrl.set(a.sys.id, url);
+  if (!field) return [];
+
+  // 情况2：已展开 asset
+  if (Array.isArray(field) && field?.[0]?.fields?.file?.url) {
+    return field
+      .map((a: any) => toAssetUrl(a?.fields?.file?.url))
+      .filter(Boolean);
   }
 
-  return links.map((l) => idToUrl.get(l?.sys?.id) || "").filter(Boolean);
+  // 情况1：Link -> includes.Asset
+  const links: CfLink[] = Array.isArray(field) ? field : [field];
+  const assets = includes?.Asset ?? [];
+  if (!Array.isArray(assets) || assets.length === 0) return [];
+
+  const idToUrl = new Map<string, string>();
+  for (const a of assets) {
+    const id = a?.sys?.id;
+    const url = toAssetUrl(a?.fields?.file?.url);
+    if (id && url) idToUrl.set(id, url);
+  }
+
+  return links
+    .map((l: any) => idToUrl.get(l?.sys?.id))
+    .filter(Boolean) as string[];
+}
+
+function pickCategory(fields: any): string | undefined {
+  // ✅ 兼容你可能拼成 Catagory
+  return fields?.category ?? fields?.catagory;
 }
 
 function toPost(item: any, includes: any): RealEstatePost {
   const fields = item?.fields ?? {};
+  const imageUrls = resolveImageUrls(item, includes);
   return {
     id: item?.sys?.id ?? "",
-    title: fields?.title ?? "",
+    title: fields?.title ?? "Untitled",
     slug: fields?.slug ?? "",
-    publishDate: fields?.publishDate ?? "",
-    summary: fields?.summary ?? "",
-    dealType: fields?.dealType ?? "",
+    publishDate: fields?.publishDate,
+    summary: fields?.summary,
+    dealType: fields?.dealType,
     category: pickCategory(fields),
-    imageUrls: resolveImageUrls(item, includes),
+    imageUrls,
+    image: imageUrls[0] ?? null,
   };
 }
 
@@ -77,8 +102,7 @@ export async function getRealEstatePosts(limit = 50): Promise<RealEstatePost[]> 
     const data = await cfFetch(
       `/entries?content_type=${CONTENT_TYPE}&order=-fields.publishDate&limit=${limit}&include=2`
     );
-    const items = Array.isArray(data?.items) ? data.items : [];
-    return items.map((it: any) => toPost(it, data?.includes));
+    return (data?.items ?? []).map((it: any) => toPost(it, data?.includes));
   } catch (err) {
     console.error("[Contentful] getRealEstatePosts failed:", err);
     return [];
@@ -100,4 +124,10 @@ export async function getRealEstatePostBySlug(slug: string): Promise<RealEstateP
     ...base,
     body: fields?.body,
   };
+}
+
+export async function getAllRealEstateSlugs(): Promise<string[]> {
+  const data = await cfFetch(`/entries?content_type=${CONTENT_TYPE}&select=fields.slug&limit=1000`);
+  const items = Array.isArray(data?.items) ? data.items : [];
+  return items.map((it: any) => it?.fields?.slug).filter(Boolean);
 }
