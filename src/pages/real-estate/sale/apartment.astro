@@ -1,0 +1,36 @@
+---
+import TemplateLayout from "../../../layouts/TemplateLayout.astro";
+import { getRealEstatePosts } from "../../../lib/contentful";
+
+const dealType = "sale";
+const category = "apartment";
+
+const allPosts = await getRealEstatePosts();
+
+const posts = allPosts.filter(
+  (p) =>
+    p.dealType === dealType &&
+    p.category === category
+);
+---
+
+<TemplateLayout title="公寓出售">
+  <section class="section-padding">
+    <div class="container">
+      {posts.length === 0 && <p>暂无相关房源</p>}
+
+      <div class="blog-grid">
+        {posts.map((p) => (
+          <a class="blog-card" href={`/real-estate/${p.slug}`}>
+            <h4>{p.title}</h4>
+            {p.publishDate && (
+              <p class="date">
+                {new Date(p.publishDate).toLocaleDateString("zh-CN")}
+              </p>
+            )}
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+</TemplateLayout>
