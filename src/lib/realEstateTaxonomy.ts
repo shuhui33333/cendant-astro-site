@@ -32,52 +32,34 @@ export const CATEGORY_ZH_MAP: Record<string, string> = {
   hotel: "酒店",
 };
 
-/** ✅ 归一化：中文/英文/卖房/SELL/出租…全部转成标准 slug */
+// ✅ 归一化：中文/英文/混写/带符号都能匹配
 export function normalizeKey(s: any): string {
-  const t = String(s ?? "").trim().toLowerCase();
+  const raw = String(s ?? "").trim();
+  const t = raw.toLowerCase();
 
-  const slug = t
+  // --- dealType：只要“包含”关键词就认 ---
+  if (/(sale|sell|selling|出售|售卖|售房|卖房)/i.test(raw)) return "sale";
+  if (/(rent|rental|lease|出租|租赁|租房)/i.test(raw)) return "rent";
+
+  // --- category：只要“包含”关键词就认 ---
+  const catRules: Array<[RegExp, string]> = [
+    [/公寓|apartment/i, "apartment"],
+    [/二手房|second[-\s_]?hand/i, "second-hand"],
+    [/联排|联排别墅|townhouse/i, "townhouse"],
+    [/土地别墅|land[-\s_]?villa/i, "land-villa"],
+    [/商业|办公|commercial/i, "commercial"],
+    [/土地开发|土地|land/i, "land"],
+    [/农场|farm/i, "farm"],
+    [/酒店|hotel/i, "hotel"],
+  ];
+  for (const [re, slug] of catRules) {
+    if (re.test(raw)) return slug;
+  }
+
+  // --- 兜底：转 slug（保留中文，但最后仍会变成 slug） ---
+  return t
     .replace(/&/g, "and")
     .replace(/[\s_]+/g, "-")
     .replace(/[^\w\u4e00-\u9fa5-]+/g, "")
     .replace(/-+/g, "-");
-
-  // dealType
-  if (
-    slug === "sale" ||
-    slug === "sell" ||
-    slug === "selling" ||
-    slug === "出售" ||
-    slug === "售卖" ||
-    slug === "售房" ||
-    slug === "卖房"
-  ) return "sale";
-
-  if (
-    slug === "rent" ||
-    slug === "rental" ||
-    slug === "lease" ||
-    slug === "出租" ||
-    slug === "租赁" ||
-    slug === "租房"
-  ) return "rent";
-
-  // category 中文 -> slug
-  const catCnToSlug: Record<string, string> = {
-    公寓: "apartment",
-    二手房: "second-hand",
-    联排别墅: "townhouse",
-    土地别墅: "land-villa",
-    商业办公: "commercial",
-    商业办公楼: "commercial",
-    商业办公室: "commercial",
-    土地开发: "land",
-    土地: "land",
-    农场: "farm",
-    酒店: "hotel",
-  };
-
-  if (catCnToSlug[slug]) return catCnToSlug[slug];
-
-  return slug;
-}
+} 
