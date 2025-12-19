@@ -29,9 +29,27 @@ function normalize(s: string) {
     .replace(/[^\w\u4e00-\u9fa5-]+/g, "")
     .replace(/-+/g, "-");
 
-  if (slug === "出售" || slug === "售卖" || slug === "售房" || slug === "sale") return "sale";
-  if (slug === "出租" || slug === "租赁" || slug === "租房" || slug === "rent") return "rent";
+  // ✅ dealType: sale/rent 多语言、多写法都兼容
+  if (
+    slug === "sale" ||
+    slug === "sell" ||
+    slug === "selling" ||
+    slug === "出售" ||
+    slug === "售卖" ||
+    slug === "售房" ||
+    slug === "卖房"
+  ) return "sale";
 
+  if (
+    slug === "rent" ||
+    slug === "rental" ||
+    slug === "lease" ||
+    slug === "出租" ||
+    slug === "租赁" ||
+    slug === "租房"
+  ) return "rent";
+
+  // ✅ category: 中文 -> URL slug
   const catCnToSlug: Record<string, string> = {
     公寓: "apartment",
     二手房: "second-hand",
@@ -39,11 +57,13 @@ function normalize(s: string) {
     土地别墅: "land-villa",
     商业办公: "commercial",
     商业办公楼: "commercial",
+    商业办公室: "commercial",
     土地开发: "land",
     土地: "land",
     农场: "farm",
     酒店: "hotel",
   };
+
   if (catCnToSlug[slug]) return catCnToSlug[slug];
 
   return slug;
