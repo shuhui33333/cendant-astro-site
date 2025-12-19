@@ -96,6 +96,21 @@ const { titleZh, titleEn, items = [] } = Astro.props as {
   .subpage-intro .count-grid:nth-last-child(3):first-child ~ .count-grid {
     width: 28%;
   }
+  /* ===== 只有 1 个块时：描述强制一行居中 ===== */
+  .subpage-intro .count-grid:only-child .intro-desc {
+    white-space: nowrap;        /* 不换行 */
+    overflow: hidden;           /* 超出隐藏 */
+    text-overflow: ellipsis;    /* 超出显示 …（可删） */
+    max-width: 900px;           /* 控制一行最大宽度 */
+    margin: 0 auto;             /* 水平居中 */
+    text-align: center;         /* 文本居中 */
+  }
+
+  /* 同时让整个卡片内容居中一点 */
+  .subpage-intro .count-grid:only-child .intro-card {
+    align-items: center;
+    text-align: center;
+  }
 
   /* ===== 卡片排版 ===== */
   .subpage-intro .intro-card {
