@@ -4,11 +4,31 @@ import { getRealEstatePosts } from "../lib/contentful";
 
 const posts = await getRealEstatePosts(9);
 
-function coverOf(p: any) {
-  // 优先 image（封面=第一张真实图），兜底 imageUrls[0]
-  const u = p?.image || (Array.isArray(p?.imageUrls) ? p.imageUrls[0] : "");
-  if (!u) return "";
-  return u.startsWith("//") ? `https:${u}` : u;
+/** ✅ 统一获取封面（优先 p.image，其次 p.imageUrls[0]，都没有就用占位图） */
+function pickImage(p: any) {
+  const u =
+    p?.image ||
+    (Array.isArray(p?.imageUrls) ? p.imageUrls[0] : "") ||
+    "";
+
+  if (!u) return "/template15/images/banner.jpg"; // ✅ 兜底占位（你也可换成自己的一张）
+  return String(u).startsWith("//") ? `https:${u}` : String(u);
+}
+
+/** ✅ 类别显示：如果 Contentful 里是 slug，就映射成中文；如果本来是中文就直接显示 */
+const categoryMap: Record<string, string> = {
+  apartment: "公寓",
+  "second-hand": "二手房",
+  townhouse: "联排别墅",
+  "land-villa": "土地别墅",
+  commercial: "商业办公",
+  land: "土地开发",
+  farm: "农场",
+  hotel: "酒店",
+};
+function displayCategory(v: any) {
+  const s = String(v ?? "").trim();
+  return categoryMap[s] ?? s ?? "资讯";
 }
 ---
 
@@ -39,10 +59,9 @@ function coverOf(p: any) {
     </div>
   </div>
 
-  <!-- 公司概况（标题回到模板 heading 样式 + 英文小标题） -->
+  <!-- 公司概况 -->
   <div class="about" id="about">
     <h3 class="heading"><span>公司概况</span></h3>
-   
 
     <div class="container">
       <div class="services-grids">
@@ -81,10 +100,9 @@ function coverOf(p: any) {
     </div>
   </div>
 
-  <!-- 服务项目（标题回到模板 heading 样式 + 英文小标题） -->
+  <!-- 服务项目 -->
   <div class="services" id="services">
     <h3 class="heading"><span>服务项目</span></h3>
-    
 
     <div class="container">
       <div class="col-md-8 servicesleft">
@@ -164,10 +182,10 @@ function coverOf(p: any) {
     </div>
   </div>
 
-  <!-- 数据概览（标题回到模板 heading 样式 + 英文小标题） -->
+  <!-- 数据概览 -->
   <div class="count-agileits" id="stats">
     <h3 class="heading"><span>数据概览</span></h3>
-   
+
     <div class="container">
       <div class="count-grids">
         <div class="count-bgcolor-w3ls">
@@ -208,10 +226,10 @@ function coverOf(p: any) {
     </div>
   </div>
 
-  <!-- 地产资讯：用 owl-carousel 图片滚动（来自 Contentful） -->
+  <!-- ✅ 地产资讯：用 owl-carousel 图片滚动（来自 Contentful 真实图片） -->
   <div class="special" id="offers">
     <h3 class="heading"><span>地产资讯</span></h3>
-   
+
     <div class="container">
       <div class="agileits-special-grids">
         <div id="owl-demo" class="owl-carousel owl-theme">
@@ -219,9 +237,12 @@ function coverOf(p: any) {
             posts.map((p: any) => (
               <div class="item">
                 <a href={`/real-estate/${p.slug}`} style="text-decoration:none;">
-                  <div class="re-prop-card" style={`background-image:url('${pickImage(p)}')`}>
+                  <div
+                    class="re-prop-card"
+                    style={`background-image:url('${pickImage(p)}')`}
+                  >
                     <div class="re-prop-overlay">
-                      <span class="re-prop-tag">{p.category ?? "资讯"}</span>
+                      <span class="re-prop-tag">{displayCategory(p.category)}</span>
                       <h4 class="re-prop-title">{p.title}</h4>
                       {p.publishDate && (
                         <p class="re-prop-date">
@@ -248,7 +269,7 @@ function coverOf(p: any) {
     </div>
   </div>
 
-  <!-- 联系我们：3列占满整行 + 英文小标题一定显示 -->
+  <!-- 联系我们 -->
   <div class="contact" id="contact">
     <h3 class="heading"><span>联系我们</span></h3>
     <p class="heading-en heading-en-on-dark">CONTACT US</p>
@@ -364,11 +385,9 @@ function coverOf(p: any) {
   </script>
 
   <style is:global>
-    /* 首页贴顶兜底 */
     .home-hero,
     #exampleSlider { margin-top: 0 !important; padding-top: 0 !important; }
 
-    /* 英文小标题：强制显示，不被模板吃掉 */
     .heading-en{
       display:block !important;
       text-align:center !important;
@@ -381,10 +400,8 @@ function coverOf(p: any) {
       line-height:1.4 !important;
       color:#0b1b54 !important;
     }
-    .heading-en-dark{ color:#0b1b54 !important; }
     .heading-en-on-dark{ color:#fff !important; }
 
-    /* 地产资讯轮播卡片 */
     .re-prop-card{
       border-radius:10px;
       overflow:hidden;
