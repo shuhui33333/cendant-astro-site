@@ -4,12 +4,21 @@ import { getRealEstatePosts } from "../../../lib/contentful";
 
 export const prerender = true;
 
-/** ===== 中英文兼容：把任意字符串清理一下 ===== */
-function normalizeText(s: string) {
-  return String(s ?? "").trim();
-}
+/** ✅ URL 里允许的分类（必须和你首页链接一致） */
+const saleCats = [
+  "apartment",
+  "second-hand",
+  "townhouse",
+  "land-villa",
+  "commercial",
+  "land",
+  "farm",
+  "hotel",
+];
 
-/** ===== Category 映射：URL slug -> 中文 ===== */
+const rentCats = ["apartment", "townhouse", "land-villa", "commercial"];
+
+/** ✅ 显示用中文名称 */
 const categoryNameMap: Record<string, string> = {
   apartment: "公寓",
   "second-hand": "二手房",
@@ -21,75 +30,60 @@ const categoryNameMap: Record<string, string> = {
   hotel: "酒店",
 };
 
-/** ===== 反向映射：中文 -> slug ===== */
-const categoryZhToSlug: Record<string, string> = Object.fromEntries(
-  Object.entries(categoryNameMap).map(([slug, zh]) => [zh, slug])
-);
+function labelDealType(d: string) {
+  return d === "sale" ? "房产售卖资讯" : "房产出租资讯";
+}
 
-/** 把任意 category（中文/英文）都归一成 slug，用于比较 */
-function normalizeCategoryToSlug(input: string) {
-  const raw = normalizeText(input);
+/** ✅ 把中文/英文 dealType 统一成 sale/rent */
+function normalizeDealType(input: string) {
+  const s = String(input || "").trim().toLowerCase();
+  if (!s) return "";
 
-  // 1) 直接中文命中
-  if (categoryZhToSlug[raw]) return categoryZhToSlug[raw];
+  // 英文
+  if (s === "sale" || s === "sell" || s === "forsale") return "sale";
+  if (s === "rent" || s === "rental" || s === "lease") return "rent";
 
-  // 2) 常见中文别名兜底
-  const alias: Record<string, string> = {
-    "商业办公楼": "commercial",
-    "商业办公": "commercial",
-    "土地别墅": "land-villa",
-    "联排别墅": "townhouse",
-    "二手房": "second-hand",
-    "土地开发": "land",
+  // 中文（你现在 Contentful 里就是“出租”）
+  if (s.includes("出租") || s.includes("租赁") || s.includes("租房")) return "rent";
+  if (s.includes("出售") || s.includes("售卖") || s.includes("卖房")) return "sale";
+
+  return s; // 兜底
+}
+
+/** ✅ 把中文/英文 category 统一成 URL slug */
+function normalizeCategory(input: string) {
+  const s = String(input || "").trim().toLowerCase();
+  if (!s) return "";
+
+  // 如果本身就是 slug
+  if (saleCats.includes(s) || rentCats.includes(s)) return s;
+
+  // 中文映射（Contentful 里写“公寓/联排别墅/土地别墅...”也能匹配）
+  const cnMap: Record<string, string> = {
     "公寓": "apartment",
+    "二手房": "second-hand",
+    "联排别墅": "townhouse",
+    "土地别墅": "land-villa",
+    "商业办公": "commercial",
+    "商业办公楼": "commercial",
+    "商业办公楼宇": "commercial",
+    "土地开发": "land",
     "农场": "farm",
     "酒店": "hotel",
   };
-  if (alias[raw]) return alias[raw];
+  for (const k of Object.keys(cnMap)) {
+    if (s.includes(k)) return cnMap[k];
+  }
 
-  // 3) 英文 slug 化兜底
-  return raw
-    .toLowerCase()
+  // 英文文本转 slug（例如 "Land Villa" -> "land-villa"）
+  return s
     .replace(/&/g, "and")
     .replace(/[\s_]+/g, "-")
     .replace(/[^\w-]+/g, "")
     .replace(/-+/g, "-");
 }
 
-/** dealType 也支持中文：出售/售卖/出租/租赁 */
-function normalizeDealType(input: string) {
-  const raw = normalizeText(input).toLowerCase();
-
-  // 中文判断
-  if (raw.includes("售") || raw.includes("卖") || raw.includes("出")) return "sale";
-  if (raw.includes("租")) return "rent";
-
-  // 英文判断
-  if (raw === "sale") return "sale";
-  if (raw === "rent") return "rent";
-
-  return raw;
-}
-
-function labelDealType(d: string) {
-  return normalizeDealType(d) === "sale" ? "房产售卖资讯" : "房产出租资讯";
-}
-
-/** ✅ 关键修复：把所有路径数组放到 getStaticPaths 里面，避免 saleCats not defined */
 export async function getStaticPaths() {
-  const saleCats = [
-    "apartment",
-    "second-hand",
-    "townhouse",
-    "land-villa",
-    "commercial",
-    "land",
-    "farm",
-    "hotel",
-  ];
-
-  const rentCats = ["apartment", "townhouse", "land-villa", "commercial"];
-
   const paths: { params: { dealType: string; category: string } }[] = [];
 
   for (const c of saleCats) paths.push({ params: { dealType: "sale", category: c } });
@@ -100,54 +94,99 @@ export async function getStaticPaths() {
 
 const { dealType, category } = Astro.params as { dealType: string; category: string };
 
-const dealSlug = normalizeDealType(dealType);
-const categorySlug = normalizeCategoryToSlug(category);
+const dealKey = normalizeDealType(dealType);         // sale / rent
+const categoryKey = normalizeCategory(category);     // apartment / ...
+const dealZh = labelDealType(dealKey);
+const categoryZh = categoryNameMap[categoryKey] ?? categoryKey;
 
-const dealZh = labelDealType(dealSlug);
-const categoryZh = categoryNameMap[categorySlug] ?? category;
-
-/** 拉取内容（你文章多就把 200 调大） */
+/** ✅ 拉取内容（多一点，防止过滤后为空） */
 const allPosts = await getRealEstatePosts(200);
 
-/** ✅ 过滤：中英文都能匹配 */
+/** ✅ 过滤：允许 Contentful 用中文填 dealType/category */
 const posts =
-  allPosts?.filter((p) => {
+  allPosts?.filter((p: any) => {
     const pDeal = normalizeDealType(p.dealType ?? "");
-    const pCatSlug = normalizeCategoryToSlug(p.category ?? "");
-    return pDeal === dealSlug && pCatSlug === categorySlug;
+    const pCat = normalizeCategory(p.category ?? "");
+    return pDeal === dealKey && pCat === categoryKey;
   }) ?? [];
+
+/** ✅ 顶部 tabs（根据 dealType 切换） */
+const tabs = (dealKey === "sale" ? saleCats : rentCats).map((slug) => ({
+  slug,
+  label: categoryNameMap[slug] ?? slug,
+  href: `/real-estate/${dealKey}/${slug}`,
+}));
+
+/** ✅ 封面图：取 Contentful image 的第一张 */
+function getCoverUrl(p: any) {
+  const img = p?.image?.[0] ?? p?.images?.[0] ?? p?.coverImage;
+  // 兼容不同返回结构
+  return (
+    img?.url ||
+    img?.fields?.file?.url ||
+    img?.fields?.file?.details?.image?.url ||
+    ""
+  );
+}
 ---
 
 <TemplateLayout title={`${dealZh} - ${categoryZh}`} subtitle="REAL ESTATE">
-  <section class="section-padding">
+  <section class="re-wrap section-padding">
     <div class="container">
-      <div class="section-title re-title">
-        <h2>{dealZh} · {categoryZh}</h2>
+      <!-- 标题 -->
+      <div class="re-head">
+        <h2 class="re-h2">{dealZh} · {categoryZh}</h2>
+        <div class="re-line"></div>
       </div>
 
+      <!-- Tabs -->
+      <div class="re-tabs">
+        <a class={`re-tab ${categoryKey ? "" : "is-active"}`} href="/real-estate">全部</a>
+        {tabs.map((t) => (
+          <a class={`re-tab ${t.slug === categoryKey ? "is-active" : ""}`} href={t.href}>
+            {t.label}
+          </a>
+        ))}
+      </div>
+
+      <!-- Grid -->
       {posts.length ? (
-        <div class="blog-grid">
-          {posts.map((p) => (
-            <a class="blog-card" href={`/real-estate/${p.slug}`}>
-              <div class="blog-content">
-                <span class="blog-tag">{p.category ?? "资讯"}</span>
-                <h4>{p.title}</h4>
-                {p.publishDate && (
-                  <p class="blog-date">
-                    {new Date(p.publishDate).toLocaleDateString("zh-CN")}
-                  </p>
-                )}
-              </div>
-            </a>
-          ))}
+        <div class="prop-grid">
+          {posts.map((p: any) => {
+            const cover = getCoverUrl(p);
+            return (
+              <a class="prop-card" href={`/real-estate/${p.slug}`}>
+                <div class="prop-img">
+                  {cover ? (
+                    <img src={cover} alt={p.title ?? "property"} loading="lazy" />
+                  ) : (
+                    <div class="prop-img--placeholder">No Image</div>
+                  )}
+                </div>
+
+                <div class="prop-body">
+                  <div class="prop-title">{p.title}</div>
+
+                  <div class="prop-meta">
+                    <span class="prop-cat">{p.category ?? categoryZh}</span>
+                    {p.publishDate ? (
+                      <span class="prop-date">
+                        {new Date(p.publishDate).toLocaleDateString("zh-CN")}
+                      </span>
+                    ) : null}
+                  </div>
+                </div>
+              </a>
+            );
+          })}
         </div>
       ) : (
         <div class="empty">
           <p><strong>当前分类暂无内容</strong></p>
-          <p style="margin-top:8px;">
-            请在 Contentful 发布文章，并确保：
-            <code>dealType</code> 为 <code>sale/rent</code> 或中文（如“出售/出租”），
-            <code>category</code> 可填中文（如“公寓”）或英文 slug（如 <code>{categorySlug}</code>）。
+          <p style="margin-top:10px;">
+            请在 Contentful 发布对应文章，并确保字段：
+            <code>dealType</code> 填 <code>出租</code>/<code>rent</code> 或 <code>出售</code>/<code>sale</code>，
+            <code>category</code> 填中文（如 <code>公寓</code>）或 slug（如 <code>apartment</code>）。
           </p>
         </div>
       )}
@@ -156,47 +195,137 @@ const posts =
 </TemplateLayout>
 
 <style>
-  .blog-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 22px;
-  }
-  .blog-card {
-    display: block;
-    padding: 20px;
-    background: #fff;
-    border-radius: 12px;
-    border: 1px solid rgba(0,0,0,.06);
-    text-decoration: none;
-    transition: all .25s ease;
-  }
-  .blog-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 26px rgba(0,0,0,.08);
-  }
-  .blog-tag {
-    font-size: 12px;
-    color: #5b6474;
-    display: inline-block;
-    margin-bottom: 8px;
-  }
-  .blog-card h4 {
-    margin: 0;
-    font-size: 16px;
-    font-weight: 800;
-    line-height: 1.35;
-    color: #0b1b54;
-  }
-  .blog-date {
-    font-size: 12px;
-    color: #8a93a3;
-    margin-top: 8px;
-  }
-  .empty {
-    padding: 34px;
-    text-align: center;
-    background: #fff;
-    border-radius: 12px;
-    border: 1px dashed rgba(11,27,84,.25);
-  }
+/* ===== 顶部标题 ===== */
+.re-wrap { background: #fff; }
+.re-head { margin-bottom: 10px; }
+.re-h2{
+  margin: 0;
+  font-size: 26px;
+  font-weight: 900;
+  color: #0b1b54;
+  letter-spacing: .5px;
+}
+.re-line{
+  width: 70px;
+  height: 3px;
+  background: #f2a23a;
+  border-radius: 999px;
+  margin-top: 12px;
+}
+
+/* ===== Tabs ===== */
+.re-tabs{
+  display:flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 14px 0 22px;
+  border-bottom: 1px solid rgba(11,27,84,.10);
+  margin-bottom: 22px;
+}
+.re-tab{
+  display:inline-block;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(11,27,84,.18);
+  color: #0b1b54;
+  text-decoration:none;
+  font-weight: 700;
+  font-size: 13px;
+  background:#fff;
+  transition: all .2s ease;
+}
+.re-tab:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 10px 18px rgba(0,0,0,.06);
+}
+.re-tab.is-active{
+  background:#0b1b54;
+  border-color:#0b1b54;
+  color:#fff;
+}
+
+/* ===== 卡片网格（参考你最后一张图的感觉：大图 + 文字） ===== */
+.prop-grid{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 26px;
+}
+.prop-card{
+  display:block;
+  text-decoration:none;
+  background:#fff;
+  border-radius: 14px;
+  overflow:hidden;
+  border: 1px solid rgba(0,0,0,.07);
+  transition: all .25s ease;
+}
+.prop-card:hover{
+  transform: translateY(-4px);
+  box-shadow: 0 16px 30px rgba(0,0,0,.10);
+}
+.prop-img{
+  width:100%;
+  aspect-ratio: 16 / 9;
+  background:#f3f5f8;
+  overflow:hidden;
+}
+.prop-img img{
+  width:100%;
+  height:100%;
+  object-fit: cover;
+  display:block;
+}
+.prop-img--placeholder{
+  width:100%;
+  height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#8a93a3;
+  font-weight:700;
+}
+
+.prop-body{ padding: 16px 16px 18px; }
+.prop-title{
+  font-size: 18px;
+  font-weight: 900;
+  color:#0b1b54;
+  line-height: 1.25;
+  margin: 2px 0 10px;
+}
+.prop-meta{
+  display:flex;
+  justify-content: space-between;
+  align-items:center;
+  gap: 12px;
+  color:#5b6474;
+  font-size: 12px;
+}
+.prop-cat{
+  display:inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(11,27,84,.06);
+  color:#0b1b54;
+  font-weight:800;
+}
+
+/* 空状态 */
+.empty{
+  padding: 34px;
+  text-align: center;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px dashed rgba(11,27,84,.25);
+  margin-top: 10px;
+}
+
+/* 响应式 */
+@media (max-width: 1200px){
+  .prop-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 768px){
+  .prop-grid{ grid-template-columns: 1fr; }
+  .re-h2{ font-size: 22px; }
+}
 </style>
