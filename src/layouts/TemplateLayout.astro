@@ -37,7 +37,6 @@ function isActive(href: string) {
   return pathname === href || pathname.startsWith(href + "/");
 }
 
-// ✅ 房产资讯的二级/三级菜单配置
 const saleCats = [
   { href: "/real-estate/sale/apartment", label: "公寓" },
   { href: "/real-estate/sale/second-hand", label: "二手房" },
@@ -80,35 +79,21 @@ function isRealEstateActive() {
     <link rel="stylesheet" href="/template15/css/mainStyles.css" />
 
     <style is:global>
-      /* =========================================================
-         0) 防空白兜底（关键）
-      ========================================================= */
       html, body { margin: 0; padding: 0; }
       html, body { visibility: visible !important; }
       body { display: block !important; }
       html:not([data-lang]) [data-lang] { display: revert !important; }
 
-      /* =========================================================
-         1) 子页不被顶部遮挡：用 CSS 变量控制 padding-top
-      ========================================================= */
       body.tpl-body:not(.tpl-has-hero) { padding-top: var(--nav-h, 96px); }
       body.tpl-body.tpl-has-hero { padding-top: 0; }
 
-      /* =========================================================
-         2) Navbar：首页叠在 hero 上；子页固定顶部
-      ========================================================= */
       .banner#home { z-index: 9999; width: 100%; }
 
       body.tpl-body.tpl-has-hero .banner#home {
-        position: absolute;
-        left: 0; top: 0;
-        background: transparent;
+        position: absolute; left: 0; top: 0; background: transparent;
       }
-
       body.tpl-body:not(.tpl-has-hero) .banner#home {
-        position: fixed;
-        left: 0; top: 0;
-        background: #fff;
+        position: fixed; left: 0; top: 0; background: #fff;
       }
 
       .banner#home .navbar {
@@ -126,49 +111,14 @@ function isRealEstateActive() {
         box-shadow: 0 6px 18px rgba(0,0,0,0.08);
       }
 
-      /* =========================================================
-         3) 清掉模板叠加的多层框，只保留 brand-badge 一个框
-      ========================================================= */
-      .navbar-header h1 {
-        margin: 0 !important;
-        padding: 0 !important;
-        border: none !important;
-        outline: none !important;
-        box-shadow: none !important;
-      }
+      .navbar-header h1 { margin: 0 !important; padding: 0 !important; border: none !important; box-shadow: none !important; }
+      a.navbar-brand.brand-with-logo, a.navbar-brand.brand-with-logo * { border: none !important; box-shadow: none !important; background: transparent !important; }
+      a.navbar-brand.brand-with-logo::before, a.navbar-brand.brand-with-logo::after,
+      .brand-badge::before, .brand-badge::after { content: none !important; }
 
-      a.navbar-brand.brand-with-logo,
-      a.navbar-brand.brand-with-logo * {
-        border: none !important;
-        outline: none !important;
-        box-shadow: none !important;
-        background: transparent !important;
-      }
-      a.navbar-brand.brand-with-logo::before,
-      a.navbar-brand.brand-with-logo::after,
-      .brand-badge::before,
-      .brand-badge::after {
-        content: none !important;
-      }
-
-      .brand-with-logo {
-        display: flex !important;
-        align-items: center !important;
-        gap: 14px !important;
-        height: auto !important;
-        line-height: normal !important;
-        padding: 6px 0 !important;
-      }
-
-      .brand-logo {
-        height: 64px !important;
-        width: auto !important;
-        display: block !important;
-        max-height: none !important;
-      }
-      @media (max-width: 768px) {
-        .brand-logo { height: 44px !important; }
-      }
+      .brand-with-logo { display: flex !important; align-items: center !important; gap: 14px !important; padding: 6px 0 !important; }
+      .brand-logo { height: 64px !important; width: auto !important; display: block !important; }
+      @media (max-width: 768px) { .brand-logo { height: 44px !important; } }
 
       .brand-badge {
         display: inline-flex;
@@ -177,101 +127,96 @@ function isRealEstateActive() {
         border: 2px solid rgba(255,255,255,0.8) !important;
         border-radius: 10px !important;
         padding: 6px 10px !important;
-        box-shadow: none !important;
-        outline: none !important;
       }
-      body.tpl-body:not(.tpl-has-hero) .brand-badge {
-        border-color: rgba(9,26,93,0.35) !important;
-      }
+      body.tpl-body:not(.tpl-has-hero) .brand-badge { border-color: rgba(9,26,93,0.35) !important; }
 
-      .brand-main {
-        font-size: 20px;
-        font-weight: 800;
-        white-space: nowrap;
-        line-height: 1.1;
-      }
-      .brand-sub {
-        font-size: 11px;
-        opacity: 0.75;
-        letter-spacing: 2px;
-        margin-top: 3px;
-        white-space: nowrap;
-      }
+      .brand-main { font-size: 20px; font-weight: 800; white-space: nowrap; }
+      .brand-sub { font-size: 11px; opacity: 0.75; letter-spacing: 2px; margin-top: 3px; white-space: nowrap; }
       @media (max-width: 768px) {
         .brand-main { font-size: 16px; }
         .brand-sub { font-size: 10px; letter-spacing: 1.5px; }
       }
 
-      /* =========================================================
-         4) 导航颜色：首页白字；子页深蓝字
-      ========================================================= */
       body.tpl-body.tpl-has-hero .navbar-default .navbar-brand,
       body.tpl-body.tpl-has-hero .navbar-default .navbar-brand span,
       body.tpl-body.tpl-has-hero .navbar-default .navbar-nav > li > a,
-      body.tpl-body.tpl-has-hero .navbar-default .navbar-nav > li > a span {
-        color: #fff !important;
-      }
+      body.tpl-body.tpl-has-hero .navbar-default .navbar-nav > li > a span { color: #fff !important; }
 
       body.tpl-body:not(.tpl-has-hero) .navbar-default .navbar-brand,
       body.tpl-body:not(.tpl-has-hero) .navbar-default .navbar-brand span,
       body.tpl-body:not(.tpl-has-hero) .navbar-default .navbar-nav > li > a,
-      body.tpl-body:not(.tpl-has-hero) .navbar-default .navbar-nav > li > a span {
-        color: #091a5d !important;
-      }
+      body.tpl-body:not(.tpl-has-hero) .navbar-default .navbar-nav > li > a span { color: #091a5d !important; }
 
-      body.tpl-body.tpl-has-hero .navbar-default .navbar-toggle .icon-bar {
-        background: #fff !important;
-      }
-      body.tpl-body:not(.tpl-has-hero) .navbar-default .navbar-toggle .icon-bar {
-        background: #091a5d !important;
-      }
+      body.tpl-body.tpl-has-hero .navbar-default .navbar-toggle .icon-bar { background: #fff !important; }
+      body.tpl-body:not(.tpl-has-hero) .navbar-default .navbar-toggle .icon-bar { background: #091a5d !important; }
 
       .navbar-nav > li.active > a span,
       .navbar-nav > li.active > a span:hover { font-weight: 800; }
 
       main.tpl-main { padding-top: 0; }
 
-      /* =========================================================
-         ✅ 5) 房产资讯：下拉菜单 + 二级 submenu（关键）
-      ========================================================= */
-      /* 让 dropdown-menu 不被 link-effect 的样式影响 */
+      /* ✅ dropdown 里不要被 link-effect-2 影响 */
       .navbar-nav li.dropdown .dropdown-menu a span { display: inline !important; }
 
-      /* 二级菜单位置 */
+      /* ✅ 二级 submenu（我们用 JS 控制显示，不再依赖 hover） */
       .dropdown-submenu { position: relative; }
       .dropdown-submenu > .dropdown-menu {
-        top: 0;
-        left: 100%;
-        margin-top: -6px;
-        border-radius: 6px;
+        display: none;
+        padding: 6px 0;
       }
 
-      /* 小箭头 */
-      .dropdown-submenu > a:after{
-        content:"›";
-        float:right;
-        margin-top: 2px;
-        opacity:.7;
-      }
-
-      /* 桌面端 hover 打开二级 */
+      /* 桌面端：让二级菜单弹到右侧更像传统 submenu */
       @media (min-width: 768px) {
-        .dropdown-submenu:hover > .dropdown-menu { display:block; }
+        .dropdown-submenu > .dropdown-menu {
+          position: absolute;
+          top: 0;
+          left: 100%;
+          margin-top: -6px;
+          border-radius: 6px;
+        }
       }
 
-      /* 移动端：submenu 更好点 */
+      /* 手机端：二级菜单缩进在下面 */
       @media (max-width: 768px) {
         .dropdown-submenu > .dropdown-menu {
-          left: 0;
+          position: static;
           margin-left: 12px;
           margin-top: 6px;
         }
+      }
+
+      /* ✅ “可跳转 + 可展开”：同一行布局 */
+      .submenu-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding-right: 6px;
+      }
+      .submenu-row a.submenu-link {
+        flex: 1;
+        padding: 8px 14px;
+        display: block;
+      }
+      .submenu-row button.submenu-toggle-btn {
+        width: 34px;
+        height: 34px;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        border-radius: 6px;
+        line-height: 34px;
+        text-align: center;
+        opacity: .8;
+      }
+      .submenu-row button.submenu-toggle-btn:hover {
+        background: rgba(0,0,0,.06);
+        opacity: 1;
       }
     </style>
   </head>
 
   <body class:list={["tpl-body", hasHero ? "tpl-has-hero" : ""]}>
-    <!-- ===== 顶部 Navbar ===== -->
     <div class="banner" id="home">
       <nav class="navbar navbar-default" id="site-navbar">
         <div class="navbar-header navbar-left">
@@ -302,7 +247,6 @@ function isRealEstateActive() {
           <nav class="link-effect-2" id="link-effect-2">
             <ul class="nav navbar-nav">
               {nav.map((i) => {
-                // ✅ 只有“房产资讯”这一项替换为 dropdown
                 if (i.href === "/real-estate") {
                   return (
                     <li class={`dropdown ${isRealEstateActive() ? "active" : ""}`}>
@@ -318,20 +262,30 @@ function isRealEstateActive() {
                       </a>
 
                       <ul class="dropdown-menu">
-                        {/* ✅ 二级：房产售卖资讯（可点击跳 /real-estate/sale） */}
-                        <li class="dropdown-submenu">
-                          <a href="/real-estate/sale" class="submenu-toggle">房产售卖资讯</a>
-                          <ul class="dropdown-menu">
+                        {/* ✅ 房产售卖资讯：文字可跳转；右侧按钮展开 */}
+                        <li class="dropdown-submenu" data-submenu="sale">
+                          <div class="submenu-row">
+                            <a class="submenu-link" href="/real-estate/sale">房产售卖资讯</a>
+                            <button class="submenu-toggle-btn" type="button" aria-label="展开售卖分类" data-toggle-submenu="sale">
+                              ▶
+                            </button>
+                          </div>
+                          <ul class="dropdown-menu" data-submenu-panel="sale">
                             {saleCats.map((c) => (
                               <li><a href={c.href}>{c.label}</a></li>
                             ))}
                           </ul>
                         </li>
 
-                        {/* ✅ 二级：房产出租资讯（可点击跳 /real-estate/rent） */}
-                        <li class="dropdown-submenu">
-                          <a href="/real-estate/rent" class="submenu-toggle">房产出租资讯</a>
-                          <ul class="dropdown-menu">
+                        {/* ✅ 房产出租资讯：文字可跳转；右侧按钮展开 */}
+                        <li class="dropdown-submenu" data-submenu="rent">
+                          <div class="submenu-row">
+                            <a class="submenu-link" href="/real-estate/rent">房产出租资讯</a>
+                            <button class="submenu-toggle-btn" type="button" aria-label="展开出租分类" data-toggle-submenu="rent">
+                              ▶
+                            </button>
+                          </div>
+                          <ul class="dropdown-menu" data-submenu-panel="rent">
                             {rentCats.map((c) => (
                               <li><a href={c.href}>{c.label}</a></li>
                             ))}
@@ -344,7 +298,6 @@ function isRealEstateActive() {
                   );
                 }
 
-                // ✅ 其他菜单保持不变
                 return (
                   <li class={isActive(i.href) ? "active" : ""}>
                     <a href={i.href}>
@@ -359,12 +312,10 @@ function isRealEstateActive() {
       </nav>
     </div>
 
-    <!-- ===== 页面内容 ===== -->
     <main class="tpl-main">
       <slot />
     </main>
 
-    <!-- ===== Footer：底部黑色“联系我们”模块 ===== -->
     {showFooter && (
       <div class="footer">
         <div class="col-md-6 subscribe">
@@ -388,7 +339,6 @@ function isRealEstateActive() {
       </div>
     )}
 
-    <!-- ✅ 子页不被遮挡：动态测量 navbar 高度，写入 --nav-h -->
     <script is:inline>
       (function () {
         function setNavHeight() {
@@ -405,54 +355,47 @@ function isRealEstateActive() {
       })();
     </script>
 
-    <!-- ✅ 关键：移动端点击展开二级 submenu（否则手机点不开） -->
+    <!-- ✅ 核心：二级 submenu 展开/收起（桌面+手机都能用；文字仍然可跳转） -->
     <script is:inline>
       (function () {
-        function isMobile() {
-          return window.matchMedia && window.matchMedia("(max-width: 768px)").matches;
+        function closeAllSubmenus(exceptKey) {
+          document.querySelectorAll("[data-submenu-panel]").forEach(function (panel) {
+            var key = panel.getAttribute("data-submenu-panel");
+            if (exceptKey && key === exceptKey) return;
+            panel.style.display = "none";
+          });
         }
 
-        // 点击二级标题：展开/收起它自己的 submenu（不跳转）
         document.addEventListener("click", function (e) {
-          if (!isMobile()) return;
+          var btn = e.target && e.target.closest && e.target.closest("[data-toggle-submenu]");
+          if (!btn) return;
 
-          var a = e.target && e.target.closest && e.target.closest(".dropdown-submenu > a");
-          if (!a) return;
-
-          // ✅ 阻止跳转（移动端点“房产售卖资讯”会展开，而不是立刻跳走）
           e.preventDefault();
           e.stopPropagation();
 
-          var submenu = a.parentElement && a.parentElement.querySelector(":scope > .dropdown-menu");
-          if (!submenu) return;
+          var key = btn.getAttribute("data-toggle-submenu");
+          var panel = document.querySelector('[data-submenu-panel="' + key + '"]');
+          if (!panel) return;
 
-          // 关掉其他已打开的二级菜单
-          document.querySelectorAll(".dropdown-submenu > .dropdown-menu").forEach(function (m) {
-            if (m !== submenu) (m as any).style.display = "none";
-          });
-
-          (submenu as any).style.display = (submenu as any).style.display === "block" ? "none" : "block";
+          var isOpen = panel.style.display === "block";
+          closeAllSubmenus(key);
+          panel.style.display = isOpen ? "none" : "block";
         });
 
-        // ✅ 点击菜单外部才收起二级（修复你原来“马上关掉”的问题）
+        // 点击 dropdown 外部：关掉二级
         document.addEventListener("click", function (e) {
-          if (!isMobile()) return;
-
-          var drop = document.querySelector(".navbar-nav li.dropdown.open");
-          if (!drop) return;
-
-          var target = e.target as any;
-          var inside = target && target.closest && target.closest(".navbar-nav li.dropdown");
-          if (inside) return; // 点在菜单内部，不关
-
-          document.querySelectorAll(".dropdown-submenu > .dropdown-menu").forEach(function (m) {
-            (m as any).style.display = "none";
-          });
+          var inside = e.target && e.target.closest && e.target.closest(".navbar-nav li.dropdown");
+          if (inside) return;
+          closeAllSubmenus(null);
         });
+
+        // 打开/关闭主 dropdown 时也把二级收起，避免残留
+        document.addEventListener("shown.bs.dropdown", function () { closeAllSubmenus(null); });
+        document.addEventListener("hidden.bs.dropdown", function () { closeAllSubmenus(null); });
       })();
     </script>
 
-    <!-- ===== template15 JS（Cloudflare/Astro 构建必须 is:inline）===== -->
+    <!-- ===== template15 JS ===== -->
     <script is:inline src="/template15/js/jquery-2.1.4.min.js"></script>
     <script is:inline src="/template15/js/bootstrap.js"></script>
     <script is:inline src="/template15/js/numscroller-1.0.js"></script>

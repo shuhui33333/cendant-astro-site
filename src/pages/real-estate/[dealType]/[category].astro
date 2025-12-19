@@ -86,7 +86,7 @@ const posts =
       {posts.length ? (
         <div class="re-prop-grid">
           {posts.map((p: any) => {
-            const cover = toHttps(p.image); // ✅ 你 contentful.ts 已返回 image
+            const cover = toHttps(p.image); // ✅ contentful.ts 已返回 image
             return (
               <a class="re-prop" href={`/real-estate/${p.slug}`}>
                 <div class="re-prop-img">
@@ -99,7 +99,7 @@ const posts =
                 </div>
 
                 <div class="re-prop-content">
-                  <div class="re-prop-stars">★★★★★</div>
+                  
 
                   <div class="re-prop-title">
                     {(p.title ?? "").toString().toUpperCase()}
