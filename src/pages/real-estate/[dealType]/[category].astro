@@ -4,31 +4,12 @@ import { getRealEstatePosts } from "../../../lib/contentful";
 
 export const prerender = true;
 
-/** ✅ 你的 URL 分类（要和你首页链接一致） */
-const saleCats = [
-  "apartment",
-  "second-hand",
-  "townhouse",
-  "land-villa",
-  "commercial",
-  "land",
-  "farm",
-  "hotel",
-];
-
-const rentCats = [
-  "apartment",
-  "townhouse",
-  "land-villa",
-  "commercial",
-];
-
-const dealTypes = ["sale", "rent"] as const;
-
-function labelDealType(d: string) {
-  return d === "sale" ? "房产售卖资讯" : "房产出租资讯";
+/** ===== 中英文兼容：把任意字符串清理一下 ===== */
+function normalizeText(s: string) {
+  return String(s ?? "").trim();
 }
 
+/** ===== Category 映射：URL slug -> 中文 ===== */
 const categoryNameMap: Record<string, string> = {
   apartment: "公寓",
   "second-hand": "二手房",
@@ -40,10 +21,34 @@ const categoryNameMap: Record<string, string> = {
   hotel: "酒店",
 };
 
-/** 把 Contentful 里的 category 文本转成和 URL 一样的 slug（更稳） */
-function normalizeToSlug(s: string) {
-  return String(s || "")
-    .trim()
+/** ===== 反向映射：中文 -> slug ===== */
+const categoryZhToSlug: Record<string, string> = Object.fromEntries(
+  Object.entries(categoryNameMap).map(([slug, zh]) => [zh, slug])
+);
+
+/** 把任意 category（中文/英文）都归一成 slug，用于比较 */
+function normalizeCategoryToSlug(input: string) {
+  const raw = normalizeText(input);
+
+  // 1) 直接中文命中
+  if (categoryZhToSlug[raw]) return categoryZhToSlug[raw];
+
+  // 2) 常见中文别名兜底
+  const alias: Record<string, string> = {
+    "商业办公楼": "commercial",
+    "商业办公": "commercial",
+    "土地别墅": "land-villa",
+    "联排别墅": "townhouse",
+    "二手房": "second-hand",
+    "土地开发": "land",
+    "公寓": "apartment",
+    "农场": "farm",
+    "酒店": "hotel",
+  };
+  if (alias[raw]) return alias[raw];
+
+  // 3) 英文 slug 化兜底
+  return raw
     .toLowerCase()
     .replace(/&/g, "and")
     .replace(/[\s_]+/g, "-")
@@ -51,42 +56,65 @@ function normalizeToSlug(s: string) {
     .replace(/-+/g, "-");
 }
 
+/** dealType 也支持中文：出售/售卖/出租/租赁 */
+function normalizeDealType(input: string) {
+  const raw = normalizeText(input).toLowerCase();
+
+  // 中文判断
+  if (raw.includes("售") || raw.includes("卖") || raw.includes("出")) return "sale";
+  if (raw.includes("租")) return "rent";
+
+  // 英文判断
+  if (raw === "sale") return "sale";
+  if (raw === "rent") return "rent";
+
+  return raw;
+}
+
+function labelDealType(d: string) {
+  return normalizeDealType(d) === "sale" ? "房产售卖资讯" : "房产出租资讯";
+}
+
+/** ✅ 关键修复：把所有路径数组放到 getStaticPaths 里面，避免 saleCats not defined */
 export async function getStaticPaths() {
+  const saleCats = [
+    "apartment",
+    "second-hand",
+    "townhouse",
+    "land-villa",
+    "commercial",
+    "land",
+    "farm",
+    "hotel",
+  ];
+
+  const rentCats = ["apartment", "townhouse", "land-villa", "commercial"];
+
   const paths: { params: { dealType: string; category: string } }[] = [];
 
-  // sale
-  for (const c of saleCats) {
-    paths.push({ params: { dealType: "sale", category: c } });
-  }
-  // rent
-  for (const c of rentCats) {
-    paths.push({ params: { dealType: "rent", category: c } });
-  }
+  for (const c of saleCats) paths.push({ params: { dealType: "sale", category: c } });
+  for (const c of rentCats) paths.push({ params: { dealType: "rent", category: c } });
 
   return paths;
 }
 
-const { dealType, category } = Astro.params as {
-  dealType: string;
-  category: string;
-};
+const { dealType, category } = Astro.params as { dealType: string; category: string };
 
-const dealZh = labelDealType(dealType);
-const categoryZh = categoryNameMap[category] ?? category;
+const dealSlug = normalizeDealType(dealType);
+const categorySlug = normalizeCategoryToSlug(category);
 
-/** ✅ 拉内容（如果你文章很多，可以把 200 改大一些） */
+const dealZh = labelDealType(dealSlug);
+const categoryZh = categoryNameMap[categorySlug] ?? category;
+
+/** 拉取内容（你文章多就把 200 调大） */
 const allPosts = await getRealEstatePosts(200);
 
-/**
- * ✅ 过滤规则：
- * 1) dealType 字段匹配（sale/rent）
- * 2) category 字段匹配（允许 Contentful 存中文/英文，都会尽量转成 slug 比较）
- */
+/** ✅ 过滤：中英文都能匹配 */
 const posts =
   allPosts?.filter((p) => {
-    const pDeal = normalizeToSlug(p.dealType ?? "");
-    const pCat = normalizeToSlug(p.category ?? "");
-    return pDeal === normalizeToSlug(dealType) && pCat === normalizeToSlug(category);
+    const pDeal = normalizeDealType(p.dealType ?? "");
+    const pCatSlug = normalizeCategoryToSlug(p.category ?? "");
+    return pDeal === dealSlug && pCatSlug === categorySlug;
   }) ?? [];
 ---
 
@@ -116,10 +144,10 @@ const posts =
       ) : (
         <div class="empty">
           <p><strong>当前分类暂无内容</strong></p>
-          <p>
-            请在 Contentful 发布对应文章，并确保字段：
-            <code>dealType</code> = <code>{dealType}</code>，
-            <code>category</code> = <code>{category}</code>
+          <p style="margin-top:8px;">
+            请在 Contentful 发布文章，并确保：
+            <code>dealType</code> 为 <code>sale/rent</code> 或中文（如“出售/出租”），
+            <code>category</code> 可填中文（如“公寓”）或英文 slug（如 <code>{categorySlug}</code>）。
           </p>
         </div>
       )}
