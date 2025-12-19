@@ -1,24 +1,49 @@
 ---
 import TemplateLayout from "../../layouts/TemplateLayout.astro";
-import { getAllRealEstateSlugs, getRealEstatePostBySlug } from "../../lib/contentful";
+import * as contentful from "../../lib/contentful";
 
 export const prerender = true;
 
+// ✅ 兼容不同导出命名（你现在最少要保证 contentful.ts 里“有一个”能取到所有 slug）
+async function getAllSlugsSafe(): Promise<string[]> {
+  // 你可能存在的函数名（按你日志和你之前贴的代码做兼容）
+  const fn =
+    (contentful as any).getAllRealEstateSlugs ||
+    (contentful as any).getAllRealEstateSlugs ||
+    (contentful as any).getAllRealEstateSlugs;
+
+  if (typeof fn !== "function") return [];
+  const slugs = await fn();
+  return Array.isArray(slugs) ? slugs.filter(Boolean) : [];
+}
+
+// ✅ 兼容不同导出命名（按 slug 拉详情）
+async function getPostBySlugSafe(slug: string) {
+  const fn =
+    (contentful as any).getRealEstatePostBySlug ||
+    (contentful as any).getRealEstatePostBySlug ||
+    (contentful as any).getRealEstatePostBySlug;
+
+  if (typeof fn !== "function") return null;
+  return await fn(slug);
+}
+
 export async function getStaticPaths() {
-  const slugs = await getAllRealEstateSlugs();
-  return (slugs ?? []).map((slug) => ({
+  const slugs = await getAllSlugsSafe();
+  return slugs.map((slug) => ({
     params: { slug },
     props: { slug },
   }));
 }
 
 const { slug } = Astro.props as { slug: string };
-const post = await getRealEstatePostBySlug(slug);
+const post = await getPostBySlugSafe(slug);
 
 if (!post) {
   return new Response("Not found", { status: 404 });
 }
 
+// RichText -> 纯文本（不依赖 npm）
 function richTextToPlainText(node: any): string {
   if (!node) return "";
   if (typeof node === "string") return node;
@@ -30,37 +55,42 @@ function richTextToPlainText(node: any): string {
 
 const bodyText = richTextToPlainText((post as any).body);
 
-// 兼容：你 contentful.ts 可能返回 image（单张）或 imageUrls（多张）
-const imageFromList =
-  Array.isArray((post as any).imageUrls) && (post as any).imageUrls.length
-    ? (post as any).imageUrls
-    : [];
+// ✅ 兼容：你可能返回 image(单张) / imageUrls(多张) / images(多张)
+const imageUrlsA =
+  Array.isArray((post as any).imageUrls) ? (post as any).imageUrls : [];
+const imageUrlsB =
+  Array.isArray((post as any).images) ? (post as any).images : [];
+const imageSingle =
+  (post as any).image ? [(post as any).image] : [];
 
-const imageFromSingle = (post as any).image ? [(post as any).image] : [];
+const images = [...imageUrlsA, ...imageUrlsB, ...imageSingle]
+  .filter(Boolean)
+  .map((u: string) => (u.startsWith("//") ? `https:${u}` : u));
 
-const images = [...imageFromList, ...imageFromSingle].filter(Boolean) as string[];
 const cover = images[0] ?? "";
 ---
 
-<TemplateLayout title={post.title}>
+<TemplateLayout title={(post as any).title ?? "地产资讯"}>
   <section class="tpl-page">
     <div class="tpl-card">
       <div class="meta">
         <span class="tag">{(post as any).category ?? "资讯"}</span>
         <span class="date">
-          {(post as any).publishDate ? new Date((post as any).publishDate).toLocaleDateString("zh-CN") : ""}
+          {(post as any).publishDate
+            ? new Date((post as any).publishDate).toLocaleDateString("zh-CN")
+            : ""}
         </span>
       </div>
 
-      <h1 class="h1">{post.title}</h1>
+      <h1 class="h1">{(post as any).title ?? ""}</h1>
 
-      {cover ? <img class="cover" src={cover} alt={post.title} loading="lazy" /> : null}
+      {cover ? <img class="cover" src={cover} alt={(post as any).title ?? "cover"} loading="lazy" /> : null}
 
       {images.length > 1 ? (
         <div class="gallery">
           {images.map((u, idx) => (
             <a class="g-item" href={u} target="_blank" rel="noreferrer">
-              <img src={u} alt={`${post.title} - ${idx + 1}`} loading="lazy" />
+              <img src={u} alt={`${(post as any).title ?? "img"} - ${idx + 1}`} loading="lazy" />
             </a>
           ))}
         </div>
@@ -84,7 +114,6 @@ const cover = images[0] ?? "";
     .tag { font-size:12px; padding:6px 10px; border-radius:999px; background:rgba(0,0,0,.05); }
     .date { font-size:12px; opacity:.7; }
     .h1 { margin:10px 0 12px; font-size:28px; line-height:1.25; }
-
     .cover { width:100%; height:auto; border-radius:14px; margin:10px 0 14px; display:block; }
 
     .gallery { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:14px; margin:10px 0 18px; }
