@@ -77,7 +77,126 @@ function isRealEstateActive() {
     <link rel="stylesheet" href="/template15/css/easy-responsive-tabs.css" />
     <link rel="stylesheet" href="/template15/css/style.css" />
     <link rel="stylesheet" href="/template15/css/mainStyles.css" />
+    <!-- ===== 语言切换按钮（放在右上角，简单版） ===== -->
+    <div id="lang-switch" style="position:fixed;right:14px;bottom:14px;z-index:99999;">
+      <button id="btn-zh" class="btn btn-default btn-sm" type="button">中文</button>
+      <button id="btn-en" class="btn btn-primary btn-sm" type="button">EN</button>
+    </div>
 
+    <script is:inline>
+    (function () {
+      var LANG_KEY = "site_lang";
+      var lang = localStorage.getItem(LANG_KEY) || "zh";
+
+      var btnZh = document.getElementById("btn-zh");
+      var btnEn = document.getElementById("btn-en");
+
+      function setLang(next) {
+        localStorage.setItem(LANG_KEY, next);
+        // 中文：直接刷新恢复原文
+        if (next === "zh") { location.reload(); return; }
+        // 英文：执行翻译
+        translatePageToEnglish();
+      }
+
+      btnZh && btnZh.addEventListener("click", function(){ setLang("zh"); });
+      btnEn && btnEn.addEventListener("click", function(){ setLang("en"); });
+
+      // 初始化按钮样式
+      function paint() {
+        if (!btnZh || !btnEn) return;
+        if (lang === "en") {
+          btnEn.className = "btn btn-primary btn-sm";
+          btnZh.className = "btn btn-default btn-sm";
+        } else {
+          btnZh.className = "btn btn-primary btn-sm";
+          btnEn.className = "btn btn-default btn-sm";
+        }
+      }
+      paint();
+
+      // 如果用户之前选了 EN，自动翻译
+      if (lang === "en") translatePageToEnglish();
+
+      // ===== 核心：扫描文本节点并批量翻译 =====
+      async function translatePageToEnglish() {
+        paint();
+
+        // 1) 收集可翻译文本（排除脚本/样式/输入框等）
+        var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null);
+        var nodes = [];
+        var texts = [];
+        var seen = new Map(); // 去重：同一句只翻译一次
+
+        while (walker.nextNode()) {
+          var n = walker.currentNode;
+          if (!n || !n.nodeValue) continue;
+
+          var t = n.nodeValue.trim();
+          if (!t) continue;
+
+          var p = n.parentElement;
+          if (!p) continue;
+
+          var tag = p.tagName;
+          if (tag === "SCRIPT" || tag === "STYLE" || tag === "NOSCRIPT") continue;
+          if (p.closest("script,style,noscript,textarea,input,select,option,code,pre")) continue;
+
+          // 如果已经是英文/数字为主，就跳过（减少成本）
+          if (/^[\x00-\x7F\s0-9.,:;!?'"()\-\+\/]+$/.test(t)) continue;
+
+          // 去重
+          if (!seen.has(t)) {
+            seen.set(t, { idx: texts.length, trans: "" });
+            texts.push(t);
+          }
+          nodes.push({ node: n, key: t });
+        }
+
+        if (!texts.length) return;
+
+        // 2) 分批请求，避免一次太大
+        async function batchTranslate(batch) {
+          var res = await fetch("/api/translate.json", {
+            method: "POST",
+            headers: {"Content-Type":"application/json"},
+            body: JSON.stringify({ target: "en", texts: batch })
+          });
+          var json = await res.json();
+          if (!res.ok) throw new Error(json && json.error ? json.error : "translate failed");
+          return json.data || [];
+        }
+
+        // 3) 分批翻译 + 写回 map
+        var BATCH = 60;
+        for (var i = 0; i < texts.length; i += BATCH) {
+          var part = texts.slice(i, i + BATCH);
+          var out = await batchTranslate(part);
+          for (var j = 0; j < part.length; j++) {
+            var original = part[j];
+            var translated = out[j] || "";
+            if (seen.has(original)) seen.get(original).trans = translated;
+          }
+        }
+
+        // 4) 替换页面文本
+        for (var k = 0; k < nodes.length; k++) {
+          var item = nodes[k];
+          var info = seen.get(item.key);
+          if (info && info.trans) {
+            item.node.nodeValue = item.node.nodeValue.replace(item.key, decodeHtml(info.trans));
+          }
+        }
+      }
+
+      // Google 返回可能含有 HTML 实体（&amp; 等），解码一下
+      function decodeHtml(s) {
+        var d = document.createElement("textarea");
+        d.innerHTML = s;
+        return d.value;
+      }
+    })();
+    </script>
     <style is:global>
       html, body { margin: 0; padding: 0; }
       html, body { visibility: visible !important; }
