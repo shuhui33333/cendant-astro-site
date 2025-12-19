@@ -1,14 +1,19 @@
 ---
-type Item = { title: string; desc: string; icon?: string };
+type Item = { title?: string; desc?: string; icon?: string };
 
 const { titleZh, titleEn, items = [] } = Astro.props as {
   titleZh: string;
   titleEn?: string;
   items?: Item[];
 };
+
+const isSingle = items.length === 1;
 ---
 
-<section class="count-agileits subpage-intro" aria-label={`${titleZh} 简介`}>
+<section
+  class:list={["count-agileits", "subpage-intro", isSingle ? "subpage-intro--single" : ""]}
+  aria-label={`${titleZh} 简介`}
+>
   <div class="container">
     <h3 class="heading">
       <span>{titleZh}</span>
@@ -20,14 +25,12 @@ const { titleZh, titleEn, items = [] } = Astro.props as {
         {items.map((it) => (
           <div class="col-md-3 count-grid">
             <div class="count hvr-bounce-to-bottom intro-card">
-              {/* ✅ icon：有就显示，没有就不显示 */}
               {it.icon ? (
                 <div class="intro-icon">
-                  <img src={it.icon} alt={it.title || "icon"} loading="lazy" />
+                  <img src={it.icon} alt={it.title ?? "icon"} loading="lazy" />
                 </div>
               ) : null}
 
-              {/* ✅ title/desc 为空就不渲染（支持只显示图标） */}
               {it.title ? <h4 class="intro-title">{it.title}</h4> : null}
               {it.desc ? <p class="intro-desc">{it.desc}</p> : null}
             </div>
@@ -41,142 +44,113 @@ const { titleZh, titleEn, items = [] } = Astro.props as {
 </section>
 
 <style>
-  /* ===== 子页面 TopBanner 统一白色字体 ===== */
-  .subpage-intro {
-    color: #fff;
-  }
-  .subpage-intro .heading span,
-  .subpage-intro .heading small {
-    color: #fff !important;
+/* ===== 0) 整体白字（TopBanner） ===== */
+.subpage-intro { color: #fff; }
+.subpage-intro .heading span,
+.subpage-intro .heading small { color:#fff !important; }
+
+.subpage-intro .subpage-intro-en{
+  display:block;
+  font-size:12px;
+  opacity:.75;
+  margin-top:8px;
+  letter-spacing:2px;
+}
+
+/* ===== 1) 让卡片区域“整体居中 + 自适应个数” ===== */
+.subpage-intro .count-bgcolor-w3ls{
+  display:flex !important;
+  justify-content:center !important;
+  align-items:stretch;
+  flex-wrap:wrap;
+  gap:32px;
+}
+
+/* 覆盖 bootstrap 的 col-md-3（不靠 float 排版） */
+.subpage-intro .count-grid{
+  float:none !important;
+  display:flex;
+  justify-content:center;
+  width:22%;
+  min-width:220px;
+}
+
+/* 1/2/3 个时调宽度，仍保持居中 */
+.subpage-intro .count-grid:only-child{ width:46% !important; }
+
+.subpage-intro .count-grid:nth-last-child(2):first-child,
+.subpage-intro .count-grid:nth-last-child(2):first-child ~ .count-grid{
+  width:36% !important;
+}
+
+.subpage-intro .count-grid:nth-last-child(3):first-child,
+.subpage-intro .count-grid:nth-last-child(3):first-child ~ .count-grid{
+  width:28% !important;
+}
+
+/* ===== 2) 卡片内容 ===== */
+.subpage-intro .intro-card{
+  padding:18px 16px;
+  min-height:140px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  text-align:left;
+  width:100%;
+}
+
+.subpage-intro .intro-icon{
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  margin-bottom:12px;
+}
+.subpage-intro .intro-icon img{
+  width:48px;
+  height:48px;
+  object-fit:contain;
+  display:block;
+}
+
+.subpage-intro .intro-title{
+  margin:0 0 8px;
+  color:#fff;
+  font-size:18px;
+  font-weight:700;
+  line-height:1.25;
+}
+
+.subpage-intro .intro-desc{
+  margin:0;
+  color:rgba(255,255,255,.85);
+  font-size:14px;
+  line-height:1.6;
+  opacity:.95;
+}
+
+/* ===== 3) ✅ 关键：只有 1 个块时，desc 强制一行（桌面端） ===== */
+/* 这里用“组件专用 class + 更强选择器 + !important”，避免部署被覆盖 */
+@media (min-width: 992px){
+  .subpage-intro.subpage-intro--single .intro-card{
+    align-items:center !important;
+    text-align:center !important;
   }
 
-  /* 标题英文小字 */
-  .subpage-intro .subpage-intro-en {
-    display: block;
-    font-size: 12px;
-    opacity: 0.75;
-    margin-top: 8px;
-    letter-spacing: 2px;
+  .subpage-intro.subpage-intro--single .intro-desc{
+    white-space:nowrap !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important; /* 不要省略号就删掉这一行 */
+    max-width: 980px;
+    margin-left:auto !important;
+    margin-right:auto !important;
+    text-align:center !important;
   }
+}
 
-  /* ===============================
-     ✅ 核心：让 1/2/3/4 个块都居中
-     不改 HTML，只覆盖 bootstrap col-md-3
-  =============================== */
-  .subpage-intro .count-bgcolor-w3ls {
-    display: flex;
-    justify-content: center; /* 核心：整体居中 */
-    align-items: stretch;
-    flex-wrap: wrap;
-    gap: 32px;
-  }
-
-  /* 覆盖 bootstrap 的浮动 */
-  .subpage-intro .count-grid {
-    float: none !important;
-    display: flex;
-    justify-content: center;
-    width: 22%;
-    min-width: 220px;
-  }
-
-  /* 只有 1 个 */
- 
-
-  /* 只有 2 个 */
-  .subpage-intro .count-grid:nth-last-child(2):first-child,
-  .subpage-intro .count-grid:nth-last-child(2):first-child ~ .count-grid {
-    width: 36%;
-  }
-
-  /* 只有 3 个 */
-  .subpage-intro .count-grid:nth-last-child(3):first-child,
-  .subpage-intro .count-grid:nth-last-child(3):first-child ~ .count-grid {
-    width: 28%;
-  }
-  /* ===== 只有 1 个块时：描述强制一行居中 ===== */
-  .subpage-intro .count-grid:only-child .intro-desc {
-    white-space: nowrap;        /* 不换行 */
-    overflow: hidden;           /* 超出隐藏 */
-    text-overflow: ellipsis;    /* 超出显示 …（可删） */
-    max-width: 900px;           /* 控制一行最大宽度 */
-    margin: 0 auto;             /* 水平居中 */
-    text-align: center;         /* 文本居中 */
-  }
-
-  /* 同时让整个卡片内容居中一点 */
-  .subpage-intro .count-grid:only-child .intro-card {
-    align-items: center;
-    text-align: center;
-  }
-
-  /* ===== 卡片排版 ===== */
-  .subpage-intro .intro-card {
-    padding: 18px 16px;
-    min-height: 140px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    text-align: left;
-    width: 100%;
-  }
-
-  /* ✅ 图标 */
-  .subpage-intro .intro-icon {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    margin-bottom: 12px;
-  }
-  .subpage-intro .intro-icon img {
-    width: 48px;
-    height: 48px;
-    object-fit: contain;
-    display: block;
-  }
-
-  /* 卡片文字 */
-  .subpage-intro .intro-title {
-    margin: 0 0 8px;
-    color: #fff;
-    font-size: 18px;
-    font-weight: 700;
-    line-height: 1.25;
-  }
-  .subpage-intro .intro-desc {
-    margin: 0;
-    color: rgba(255, 255, 255, 0.85);
-    font-size: 14px;
-    line-height: 1.6;
-    opacity: 0.95;
-  }
-
-  /* 覆盖模板里数字/线条的颜色（保险） */
-  .subpage-intro .count span,
-  .subpage-intro .count h5 {
-    color: #fff;
-  }
-
-  /* ===== 平板/手机：改成一列 ===== */
-  @media (max-width: 992px) {
-    .subpage-intro .count-grid {
-      width: 100% !important;
-      min-width: 0;
-    }
-    .subpage-intro .intro-card {
-      min-height: auto;
-      text-align: center;
-    }
-    .subpage-intro .intro-icon {
-      justify-content: center;
-    }
-  }
-
-  /* 小屏图标缩小一点 */
-  @media (max-width: 768px) {
-    .subpage-intro .intro-icon img {
-      width: 42px;
-      height: 42px;
-    }
-  }
+/* ===== 4) 移动端：一列（允许换行，不然会溢出） ===== */
+@media (max-width: 992px){
+  .subpage-intro .count-grid{ width:100% !important; min-width:0; }
+  .subpage-intro .intro-card{ min-height:auto; text-align:left; align-items:flex-start; }
+  .subpage-intro .intro-icon img{ width:42px; height:42px; }
+}
 </style>
