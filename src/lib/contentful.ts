@@ -1,28 +1,25 @@
 // src/lib/contentful.ts
-type CfSys = { id: string };
 type CfLink = { sys: { type: "Link"; linkType: string; id: string } };
 
-export type realEstatePost = {
+export type RealEstatePost = {
   id: string;
   title: string;
   slug: string;
   publishDate?: string;
   summary?: string;
-  dealType?: string; // sale / rent
-  category?: string; // apartment / townhouse ...
-  image?: string | null;
+  dealType?: string; // sale / rent / 出售 / 出租...
+  category?: string; // apartment / 公寓 ...
+  image?: string | null; // ✅ 只取第一张封面图 URL（你页面用这个最稳）
 };
 
-export type RealEstatePostDetail = realEstatePost & {
+export type RealEstatePostDetail = RealEstatePost & {
   body?: any; // Rich text JSON
-  bodyZh?: string; // 如果你有 Body (ZH) 字段
+  bodyZh?: string;
 };
 
 const SPACE = import.meta.env.CONTENTFUL_SPACE_ID;
 const TOKEN = import.meta.env.CONTENTFUL_DELIVERY_TOKEN;
 const ENV = import.meta.env.CONTENTFUL_ENVIRONMENT ?? "master";
-
-// ✅ 固定 content type，避免被环境变量污染成 DOESNOTEXIST
 const CONTENT_TYPE = "realEstatePost";
 
 if (!SPACE) throw new Error("Missing env: CONTENTFUL_SPACE_ID");
@@ -33,14 +30,11 @@ const BASE = `https://cdn.contentful.com/spaces/${SPACE}/environments/${ENV}`;
 async function cfFetch(path: string) {
   const url = `${BASE}${path}`;
   const res = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${TOKEN}`,
-    },
+    headers: { Authorization: `Bearer ${TOKEN}` },
   });
 
   const text = await res.text();
   if (!res.ok) {
-    // 把 URL 和返回内容一起抛出来，方便你定位
     throw new Error(`Contentful error ${res.status}\nURL: ${url}\nBody: ${text}`);
   }
   return JSON.parse(text);
@@ -51,7 +45,13 @@ function toAssetUrl(u?: string) {
   return u.startsWith("//") ? `https:${u}` : u;
 }
 
-function resolveAssetsFromIncludes(entry: any, includes: any): string[] {
+function pickCategory(fields: any): string | undefined {
+  // ✅ 兼容你可能写成 Catagory 的情况
+  return fields?.category ?? fields?.catagory;
+}
+
+/** ✅ 从 includes.Asset 里，把 entry.fields.image (links) 解析成真实图片 URL 列表 */
+function resolveImageUrls(entry: any, includes: any): string[] {
   const links: CfLink[] = entry?.fields?.image ?? []; // Image (many files)
   if (!Array.isArray(links) || !includes?.Asset) return [];
 
@@ -66,13 +66,10 @@ function resolveAssetsFromIncludes(entry: any, includes: any): string[] {
     .filter(Boolean) as string[];
 }
 
-function pickCategory(fields: any): string | undefined {
-  // 兼容你 Contentful 里可能叫 Catagory（拼写）
-  return fields?.category ?? fields?.catagory;
-}
-
+/** ✅ 把 Contentful entry 转成你页面需要的结构 */
 function toPost(item: any, includes: any): RealEstatePost {
   const fields = item?.fields ?? {};
+  const imgs = resolveImageUrls(item, includes);
   return {
     id: item?.sys?.id ?? "",
     title: fields?.title ?? "Untitled",
@@ -81,33 +78,24 @@ function toPost(item: any, includes: any): RealEstatePost {
     summary: fields?.summary,
     dealType: fields?.dealType,
     category: pickCategory(fields),
-    imageUrls: resolveAssetsFromIncludes(item, includes),
+    image: imgs[0] ?? null, // ✅ 封面图取第一张
   };
 }
-
 
 export async function getRealEstatePosts(limit = 20) {
   try {
     const data = await cfFetch(
-      `/entries?content_type=realEstatePost&order=-fields.publishDate&limit=${limit}&include=2`
+      `/entries?content_type=${CONTENT_TYPE}&order=-fields.publishDate&limit=${limit}&include=2`
     );
 
-    return (data.items ?? []).map((it: any) => ({
-      title: it.fields?.title ?? "",
-      slug: it.fields?.slug ?? "",
-      publishDate: it.fields?.publishDate ?? "",
-      category: it.fields?.category ?? "",
-      dealType: it.fields?.dealType ?? "",
-      summary: it.fields?.summary ?? "",
-      image: it.fields?.image?.[0]?.fields?.file?.url
-        ? `https:${it.fields.image[0].fields.file.url}`
-        : null,
-    }));
+    const items = Array.isArray(data?.items) ? data.items : [];
+    return items.map((it: any) => toPost(it, data?.includes));
   } catch (err) {
     console.error("[Contentful] getRealEstatePosts failed:", err);
-    return []; // ✅ 兜底：不让构建失败
+    return []; // ✅ 不让构建失败
   }
 }
+
 export async function getRealEstatePostBySlug(slug: string) {
   const data = await cfFetch(
     `/entries?content_type=${CONTENT_TYPE}&fields.slug=${encodeURIComponent(slug)}&limit=1&include=2`
@@ -121,8 +109,8 @@ export async function getRealEstatePostBySlug(slug: string) {
 
   return {
     ...base,
-    body: fields?.body, // Rich text
-    bodyZh: fields?.["bodyZh"] ?? fields?.["bodyZh"] ?? fields?.["body (zh)"] ?? fields?.["bodyZh"], // 兜底（你可删）
+    body: fields?.body,
+    bodyZh: fields?.bodyZh,
   } as RealEstatePostDetail;
 }
 
