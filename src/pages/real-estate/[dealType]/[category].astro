@@ -86,10 +86,24 @@ function getCoverUrl(p: any): string {
 }
 
 export async function getStaticPaths() {
-  const paths: { params: { dealType: string; category: string } }[] = [];
-  for (const c of saleCats) paths.push({ params: { dealType: "sale", category: c } });
-  for (const c of rentCats) paths.push({ params: { dealType: "rent", category: c } });
-  return paths;
+  /** ✅ URL 分类（要和你首页链接一致） */
+  const saleCats = [
+    "apartment",
+    "second-hand",
+    "townhouse",
+    "land-villa",
+    "commercial",
+    "land",
+    "farm",
+    "hotel",
+  ];
+
+  const rentCats = ["apartment", "townhouse", "land-villa", "commercial"];
+
+  return [
+    ...saleCats.map((c) => ({ params: { dealType: "sale", category: c } })),
+    ...rentCats.map((c) => ({ params: { dealType: "rent", category: c } })),
+  ];
 }
 
 const { dealType, category } = Astro.params as { dealType: string; category: string };
