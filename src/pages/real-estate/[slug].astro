@@ -6,14 +6,17 @@ export const prerender = true;
 
 export async function getStaticPaths() {
   const slugs = await getAllRealEstateSlugs();
-  return slugs.map((slug) => ({ params: { slug }, props: { slug } }));
+  return (slugs ?? []).map((slug) => ({ params: { slug } }));
 }
 
-const { slug } = Astro.props as { slug: string };
+const { slug } = Astro.params as { slug: string };
 const post = await getRealEstatePostBySlug(slug);
 
-if (!post) return new Response("Not found", { status: 404 });
+if (!post) {
+  return new Response("Not found", { status: 404 });
+}
 
+// 把 Contentful RichText 简单转成纯文本（不依赖额外 npm 包）
 function richTextToPlainText(node: any): string {
   if (!node) return "";
   if (typeof node === "string") return node;
@@ -22,10 +25,35 @@ function richTextToPlainText(node: any): string {
   if (node.content) return node.content.map(richTextToPlainText).join("");
   return "";
 }
-const bodyText = richTextToPlainText(post.body);
 
-const images = Array.isArray(post.imageUrls) ? post.imageUrls : [];
-const cover = post.image ?? images[0] ?? "";
+// 兼容 Contentful 的 //images.ctfassets.net/...
+function normalizeUrl(u?: string) {
+  if (!u) return "";
+  return u.startsWith("//") ? `https:${u}` : u;
+}
+
+// 你现在 lib 里可能给的是 imageUrls（多图）+ image（单图兜底）
+const imageUrlsRaw: string[] = Array.isArray((post as any).imageUrls) ? (post as any).imageUrls : [];
+const imageUrls = imageUrlsRaw.map(normalizeUrl).filter(Boolean);
+
+// 单图兜底（老逻辑）
+const legacyCover = normalizeUrl((post as any).image ?? "");
+
+// 最终用于页面展示的图片数组
+const images = imageUrls.length ? imageUrls : (legacyCover ? [legacyCover] : []);
+
+// 默认大图 = 第一张
+const heroImage = images[0] ?? "";
+
+// ✅ 你是否希望“缩略图列表里包含第一张图”？
+// - true  = 缩略图包含第一张（默认选中，不会重复显示的问题，因为大图本来就应该等于选中项）
+// - false = 缩略图从第二张开始（避免你觉得第一张“重复”）
+const SHOW_FIRST_THUMB = true;
+
+const thumbs = SHOW_FIRST_THUMB ? images : images.slice(1);
+
+// 文本
+const bodyText = richTextToPlainText((post as any).body);
 ---
 
 <TemplateLayout title={post.title}>
@@ -40,21 +68,45 @@ const cover = post.image ?? images[0] ?? "";
 
       <h1 class="h1">{post.title}</h1>
 
-      {cover ? <img class="cover" src={cover} alt={post.title} loading="lazy" /> : null}
+      {/* ======= 大图（可切换） ======= */}
+      {heroImage ? (
+        <div class="hero-wrap" data-gallery>
+          <img
+            class="hero"
+            src={heroImage}
+            alt={post.title}
+            loading="eager"
+            decoding="async"
+            data-hero
+          />
 
-      {images.length > 1 ? (
-        <div class="gallery" aria-label="房源图片">
-          {images.map((u, idx) => (
-            <a class="g-item" href={u} target="_blank" rel="noreferrer">
-              <img src={u} alt={`${post.title}-${idx + 1}`} loading="lazy" />
-            </a>
-          ))}
+          {/* ======= 缩略图（点击切换大图） ======= */}
+          {thumbs.length > 1 ? (
+            <div class="thumbs" data-thumbs>
+              {thumbs.map((url, idx) => (
+                <button
+                  type="button"
+                  class={`thumb ${idx === 0 ? "is-active" : ""}`}
+                  data-thumb
+                  data-src={url}
+                  aria-label={`查看图片 ${idx + 1}`}
+                >
+                  <img src={url} alt={`${post.title} - ${idx + 1}`} loading="lazy" decoding="async" />
+                </button>
+              ))}
+            </div>
+          ) : null}
         </div>
       ) : null}
 
       <div class="body">
         {post.summary ? <p class="summary">{post.summary}</p> : null}
-        {bodyText ? <p class="content" style="white-space:pre-wrap">{bodyText}</p> : null}
+
+        {bodyText ? (
+          <p class="richtext" style="white-space:pre-wrap">{bodyText}</p>
+        ) : (
+          <p class="richtext" style="opacity:.7">（暂无详细内容）</p>
+        )}
       </div>
 
       <div class="back">
@@ -63,26 +115,96 @@ const cover = post.image ?? images[0] ?? "";
     </div>
   </section>
 
+  {/* ======= 点击缩略图切换大图（原生 JS） ======= */}
+  <script type="module">
+    const gallery = document.querySelector("[data-gallery]");
+    if (!gallery) {}
+
+    const hero = gallery?.querySelector("[data-hero]");
+    const thumbWrap = gallery?.querySelector("[data-thumbs]");
+
+    if (hero && thumbWrap) {
+      thumbWrap.addEventListener("click", (e) => {
+        const btn = e.target?.closest?.("[data-thumb]");
+        if (!btn) return;
+
+        const src = btn.getAttribute("data-src");
+        if (!src) return;
+
+        // 切换大图
+        hero.setAttribute("src", src);
+
+        // 高亮当前缩略图
+        thumbWrap.querySelectorAll("[data-thumb]").forEach((el) => el.classList.remove("is-active"));
+        btn.classList.add("is-active");
+      });
+    }
+  </script>
+
   <style>
     .tpl-page { max-width:1100px; margin:0 auto; padding:32px 20px 80px; }
     .tpl-card { background:#fff; border:1px solid rgba(0,0,0,.08); border-radius:18px; padding:22px; }
+
     .meta { display:flex; gap:10px; align-items:center; justify-content:space-between; margin-bottom:10px; }
     .tag { font-size:12px; padding:6px 10px; border-radius:999px; background:rgba(0,0,0,.05); }
     .date { font-size:12px; opacity:.7; }
-    .h1 { margin:10px 0 12px; font-size:28px; line-height:1.25; }
-    .cover { width:100%; height:auto; border-radius:14px; margin:10px 0 14px; display:block; }
 
-    .gallery { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:14px; margin:10px 0 18px; }
-    .g-item { display:block; border-radius:12px; overflow:hidden; background:#f3f5fb; border:1px solid rgba(0,0,0,.06); text-decoration:none; }
-    .g-item img { width:100%; height:210px; object-fit:cover; display:block; transition:transform .25s ease; }
-    .g-item:hover img { transform:scale(1.03); }
-    @media (max-width:992px){ .gallery{ grid-template-columns:repeat(2, minmax(0,1fr)); } .g-item img{ height:200px; } }
-    @media (max-width:576px){ .gallery{ grid-template-columns:1fr; } .g-item img{ height:220px; } }
+    .h1 { margin:10px 0 16px; font-size:28px; line-height:1.25; }
 
-    .summary { font-weight:600; opacity:.9; margin:0 0 10px; }
+    /* ======= 大图 ======= */
+    .hero-wrap { margin: 10px 0 18px; }
+    .hero {
+      width: 100%;
+      height: auto;
+      max-height: 560px;
+      object-fit: cover;
+      border-radius: 14px;
+      display: block;
+      background: #f2f3f5;
+    }
+
+    /* ======= 缩略图 ======= */
+    .thumbs{
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 12px;
+    }
+    .thumb{
+      padding: 0;
+      border: 2px solid transparent;
+      border-radius: 12px;
+      overflow: hidden;
+      background: transparent;
+      cursor: pointer;
+      transition: all .2s ease;
+    }
+    .thumb img{
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      display: block;
+      background: #f2f3f5;
+    }
+    .thumb:hover{
+      transform: translateY(-2px);
+    }
+    .thumb.is-active{
+      border-color: rgba(11, 27, 84, .55);
+      box-shadow: 0 10px 26px rgba(0,0,0,.08);
+    }
+
+    .summary { font-weight:600; opacity:.9; margin: 10px 0 10px; }
     .body { line-height:1.9; opacity:.95; }
-    .content { margin:0; }
+    .richtext { margin: 0; }
+
     .back { margin-top:18px; }
-    .back a { text-decoration:none; }
+    .back a { text-decoration:none; color:#0b1b54; font-weight:700; }
+
+    @media (max-width: 576px){
+      .thumbs{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .thumb img{ height: 96px; }
+      .h1{ font-size: 24px; }
+    }
   </style>
 </TemplateLayout>
