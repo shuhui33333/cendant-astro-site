@@ -27,7 +27,7 @@ const { titleZh, titleEn, items = [] } = Astro.props as {
                 </div>
               ) : null}
 
-              {/* ✅ 兼容：title/desc 为空时不渲染（方便你只显示图标） */}
+              {/* ✅ title/desc 为空就不渲染（支持只显示图标） */}
               {it.title ? <h4 class="intro-title">{it.title}</h4> : null}
               {it.desc ? <p class="intro-desc">{it.desc}</p> : null}
             </div>
@@ -41,52 +41,16 @@ const { titleZh, titleEn, items = [] } = Astro.props as {
 </section>
 
 <style>
-  .subpage-intro .count-bgcolor-w3ls {
-  display: flex;
-  justify-content: center;   /* 核心：整体居中 */
-  align-items: stretch;
-  flex-wrap: wrap;
-  gap: 32px;                 /* 卡片之间的间距 */
-}
+  /* ===== 子页面 TopBanner 统一白色字体 ===== */
+  .subpage-intro {
+    color: #fff;
+  }
+  .subpage-intro .heading span,
+  .subpage-intro .heading small {
+    color: #fff !important;
+  }
 
-/* 覆盖 bootstrap 的 col-md-3 */
-.subpage-intro .count-grid {
-  float: none !important;
-  display: flex;
-  justify-content: center;
-}
-
-/* 默认：4 个时接近原模板效果 */
-.subpage-intro .count-grid {
-  width: 22%;
-  min-width: 220px;
-}
-
-/* ===== 不同数量时的智能居中 ===== */
-
-/* 只有 1 个 */
-.subpage-intro .count-grid:only-child {
-  width: 40%;
-}
-
-/* 只有 2 个 */
-.subpage-intro .count-grid:nth-last-child(2):first-child,
-.subpage-intro .count-grid:nth-last-child(2):first-child ~ .count-grid {
-  width: 36%;
-}
-
-/* 只有 3 个 */
-.subpage-intro .count-grid:nth-last-child(3):first-child,
-.subpage-intro .count-grid:nth-last-child(3):first-child ~ .count-grid {
-  width: 28%;
-}
-
-/* ===== 移动端 ===== */
-@media (max-width: 992px) {
-  .subpage-intro .count-grid {
-    width: 100% !important;
-    
-  /* 标题更精致一点（不改模板全局，只影响本组件） */
+  /* 标题英文小字 */
   .subpage-intro .subpage-intro-en {
     display: block;
     font-size: 12px;
@@ -95,7 +59,45 @@ const { titleZh, titleEn, items = [] } = Astro.props as {
     letter-spacing: 2px;
   }
 
-  /* 把“数字块”改成简介卡片排版 */
+  /* ===============================
+     ✅ 核心：让 1/2/3/4 个块都居中
+     不改 HTML，只覆盖 bootstrap col-md-3
+  =============================== */
+  .subpage-intro .count-bgcolor-w3ls {
+    display: flex;
+    justify-content: center; /* 核心：整体居中 */
+    align-items: stretch;
+    flex-wrap: wrap;
+    gap: 32px;
+  }
+
+  /* 覆盖 bootstrap 的浮动 */
+  .subpage-intro .count-grid {
+    float: none !important;
+    display: flex;
+    justify-content: center;
+    width: 22%;
+    min-width: 220px;
+  }
+
+  /* 只有 1 个 */
+  .subpage-intro .count-grid:only-child {
+    width: 40%;
+  }
+
+  /* 只有 2 个 */
+  .subpage-intro .count-grid:nth-last-child(2):first-child,
+  .subpage-intro .count-grid:nth-last-child(2):first-child ~ .count-grid {
+    width: 36%;
+  }
+
+  /* 只有 3 个 */
+  .subpage-intro .count-grid:nth-last-child(3):first-child,
+  .subpage-intro .count-grid:nth-last-child(3):first-child ~ .count-grid {
+    width: 28%;
+  }
+
+  /* ===== 卡片排版 ===== */
   .subpage-intro .intro-card {
     padding: 18px 16px;
     min-height: 140px;
@@ -103,16 +105,16 @@ const { titleZh, titleEn, items = [] } = Astro.props as {
     flex-direction: column;
     justify-content: center;
     text-align: left;
+    width: 100%;
   }
 
-  /* ✅ 新增：图标样式（不影响没icon的页面） */
+  /* ✅ 图标 */
   .subpage-intro .intro-icon {
     display: flex;
     align-items: center;
     justify-content: flex-start;
     margin-bottom: 12px;
   }
-
   .subpage-intro .intro-icon img {
     width: 48px;
     height: 48px;
@@ -120,63 +122,48 @@ const { titleZh, titleEn, items = [] } = Astro.props as {
     display: block;
   }
 
+  /* 卡片文字 */
   .subpage-intro .intro-title {
     margin: 0 0 8px;
-    font-size: 16px;
-    font-weight: 800;
+    color: #fff;
+    font-size: 18px;
+    font-weight: 700;
     line-height: 1.25;
   }
-
   .subpage-intro .intro-desc {
     margin: 0;
-    font-size: 13px;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 14px;
     line-height: 1.6;
     opacity: 0.95;
   }
 
-  @media (max-width: 768px) {
-    .subpage-intro .intro-card {
-      min-height: auto;
-    }
-    .subpage-intro .intro-icon img {
-      width: 42px;
-      height: 42px;
-    }
-  }
-
-  /* ===== 子页面 TopBanner 统一白色字体 ===== */
-  .subpage-intro {
-    color: #fff;
-  }
-
-  .subpage-intro .heading span,
-  .subpage-intro .heading small {
-    color: #fff !important;
-  }
-
-  /* 每个卡片里的文字 */
-  .subpage-intro .intro-title {
-    color: #fff;
-    font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 8px;
-  }
-
-  .subpage-intro .intro-desc {
-    color: rgba(255, 255, 255, 0.85);
-    font-size: 14px;
-    line-height: 1.6;
-  }
-
-  /* 覆盖模板里数字/线条的颜色 */
+  /* 覆盖模板里数字/线条的颜色（保险） */
   .subpage-intro .count span,
   .subpage-intro .count h5 {
     color: #fff;
   }
 
-  /* 如需强制深蓝背景，可取消注释
-  .subpage-intro .count-bgcolor-w3ls {
-    background: #0b1f3a;
+  /* ===== 平板/手机：改成一列 ===== */
+  @media (max-width: 992px) {
+    .subpage-intro .count-grid {
+      width: 100% !important;
+      min-width: 0;
+    }
+    .subpage-intro .intro-card {
+      min-height: auto;
+      text-align: center;
+    }
+    .subpage-intro .intro-icon {
+      justify-content: center;
+    }
   }
-  */
+
+  /* 小屏图标缩小一点 */
+  @media (max-width: 768px) {
+    .subpage-intro .intro-icon img {
+      width: 42px;
+      height: 42px;
+    }
+  }
 </style>
