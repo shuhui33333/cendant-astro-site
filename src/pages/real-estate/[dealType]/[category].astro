@@ -2,15 +2,10 @@
 import TemplateLayout from "../../../layouts/TemplateLayout.astro";
 import { getRealEstatePosts } from "../../../lib/contentful";
 
-// URL 参数：/real-estate/:dealType/:category
-const { dealType, category } = Astro.params as {
-  dealType: string;
-  category: string;
-};
+export const prerender = true;
 
-// 允许的值（避免用户乱输入导致页面报错/SEO重复）
-const DEALS = ["sale", "rent"] as const;
-const CATEGORIES = [
+/** ✅ 你的 URL 分类（要和你首页链接一致） */
+const saleCats = [
   "apartment",
   "second-hand",
   "townhouse",
@@ -19,20 +14,22 @@ const CATEGORIES = [
   "land",
   "farm",
   "hotel",
-] as const;
+];
 
-const dealOk = (DEALS as readonly string[]).includes(dealType);
-const catOk = (CATEGORIES as readonly string[]).includes(category);
+const rentCats = [
+  "apartment",
+  "townhouse",
+  "land-villa",
+  "commercial",
+];
 
-if (!dealOk || !catOk) {
-  // 不合法就返回 404（Astro 推荐抛出 Response）
-  throw new Response("Not found", { status: 404 });
+const dealTypes = ["sale", "rent"] as const;
+
+function labelDealType(d: string) {
+  return d === "sale" ? "房产售卖资讯" : "房产出租资讯";
 }
 
-// 友好显示名
-const dealZh = dealType === "sale" ? "售卖" : "出租";
-
-const categoryZhMap: Record<string, string> = {
+const categoryNameMap: Record<string, string> = {
   apartment: "公寓",
   "second-hand": "二手房",
   townhouse: "联排别墅",
@@ -43,150 +40,135 @@ const categoryZhMap: Record<string, string> = {
   hotel: "酒店",
 };
 
-const pageTitle = `${categoryZhMap[category] ?? category} · ${dealZh}`;
+/** 把 Contentful 里的 category 文本转成和 URL 一样的 slug（更稳） */
+function normalizeToSlug(s: string) {
+  return String(s || "")
+    .trim()
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[\s_]+/g, "-")
+    .replace(/[^\w-]+/g, "")
+    .replace(/-+/g, "-");
+}
 
-// 拉全部，再前端过滤（你现在的 contentful.ts 大概率就是这种取法）
+export async function getStaticPaths() {
+  const paths: { params: { dealType: string; category: string } }[] = [];
+
+  // sale
+  for (const c of saleCats) {
+    paths.push({ params: { dealType: "sale", category: c } });
+  }
+  // rent
+  for (const c of rentCats) {
+    paths.push({ params: { dealType: "rent", category: c } });
+  }
+
+  return paths;
+}
+
+const { dealType, category } = Astro.params as {
+  dealType: string;
+  category: string;
+};
+
+const dealZh = labelDealType(dealType);
+const categoryZh = categoryNameMap[category] ?? category;
+
+/** ✅ 拉内容（如果你文章很多，可以把 200 改大一些） */
 const allPosts = await getRealEstatePosts(200);
 
-// 兼容：有些人可能在 Contentful 填了 Sale / Rent 或中文
-function normalizeDeal(v: any) {
-  const s = String(v ?? "").trim().toLowerCase();
-  if (s === "sale" || s === "出售") return "sale";
-  if (s === "rent" || s === "出租") return "rent";
-  return s;
-}
-
-function normalizeCat(v: any) {
-  return String(v ?? "").trim().toLowerCase();
-}
-
-const posts = (allPosts ?? []).filter((p: any) => {
-  return normalizeDeal(p.dealType) === dealType && normalizeCat(p.category) === category;
-});
+/**
+ * ✅ 过滤规则：
+ * 1) dealType 字段匹配（sale/rent）
+ * 2) category 字段匹配（允许 Contentful 存中文/英文，都会尽量转成 slug 比较）
+ */
+const posts =
+  allPosts?.filter((p) => {
+    const pDeal = normalizeToSlug(p.dealType ?? "");
+    const pCat = normalizeToSlug(p.category ?? "");
+    return pDeal === normalizeToSlug(dealType) && pCat === normalizeToSlug(category);
+  }) ?? [];
 ---
 
-<TemplateLayout title={pageTitle} subtitle="REAL ESTATE">
+<TemplateLayout title={`${dealZh} - ${categoryZh}`} subtitle="REAL ESTATE">
   <section class="section-padding">
     <div class="container">
-      <div class="re-head">
-        <h2 class="re-title">{pageTitle}</h2>
-        <p class="re-sub">
-          {dealType === "sale"
-            ? "精选售卖资讯与成交参考，助您更稳健做出决策。"
-            : "出租资讯与租赁管理建议，帮助您提升出租效率与回报。"}
-        </p>
+      <div class="section-title re-title">
+        <h2>{dealZh} · {categoryZh}</h2>
       </div>
 
-      {posts.length > 0 ? (
-        <div class="re-grid">
-          {posts.map((p: any) => (
-            <a class="re-card" href={`/real-estate/${p.slug}`}>
-              <div class="re-card__top">
-                <span class="re-tag">{p.category ?? "资讯"}</span>
-                {p.publishDate ? (
-                  <span class="re-date">
+      {posts.length ? (
+        <div class="blog-grid">
+          {posts.map((p) => (
+            <a class="blog-card" href={`/real-estate/${p.slug}`}>
+              <div class="blog-content">
+                <span class="blog-tag">{p.category ?? "资讯"}</span>
+                <h4>{p.title}</h4>
+                {p.publishDate && (
+                  <p class="blog-date">
                     {new Date(p.publishDate).toLocaleDateString("zh-CN")}
-                  </span>
-                ) : null}
+                  </p>
+                )}
               </div>
-              <h3 class="re-card__title">{p.title}</h3>
-              <p class="re-card__cta">查看详情 →</p>
             </a>
           ))}
         </div>
       ) : (
-        <div class="re-empty">
-          <p><strong>暂无内容</strong></p>
-          <p>请在 Contentful 创建并发布对应分类的内容。</p>
-          <p class="re-empty__hint">
-            需要满足：dealType = <code>{dealType}</code>，category = <code>{category}</code>
+        <div class="empty">
+          <p><strong>当前分类暂无内容</strong></p>
+          <p>
+            请在 Contentful 发布对应文章，并确保字段：
+            <code>dealType</code> = <code>{dealType}</code>，
+            <code>category</code> = <code>{category}</code>
           </p>
         </div>
       )}
     </div>
   </section>
-
-  <style>
-    .re-head { margin-bottom: 22px; }
-    .re-title {
-      margin: 0;
-      font-size: 24px;
-      font-weight: 900;
-      color: #0b1b54;
-      letter-spacing: .5px;
-    }
-    .re-sub {
-      margin: 10px 0 0;
-      color: #5b6474;
-      font-size: 14px;
-      line-height: 1.8;
-    }
-
-    .re-grid{
-      display:grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 18px;
-    }
-    .re-card{
-      display:block;
-      padding: 18px 18px 16px;
-      border: 1px solid rgba(11,27,84,.10);
-      border-radius: 14px;
-      background:#fff;
-      text-decoration:none;
-      transition: all .25s ease;
-    }
-    .re-card:hover{
-      transform: translateY(-3px);
-      box-shadow: 0 10px 26px rgba(0,0,0,.08);
-      border-color: rgba(11,27,84,.18);
-    }
-    .re-card__top{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      margin-bottom: 10px;
-    }
-    .re-tag{
-      font-size: 12px;
-      color:#0b1b54;
-      background: rgba(242,162,58,.15);
-      border-radius: 999px;
-      padding: 4px 10px;
-      font-weight: 700;
-    }
-    .re-date{
-      font-size: 12px;
-      color:#8a93a3;
-    }
-    .re-card__title{
-      margin:0;
-      font-size: 16px;
-      font-weight: 900;
-      color:#0b1b54;
-      line-height: 1.45;
-    }
-    .re-card__cta{
-      margin: 10px 0 0;
-      font-size: 13px;
-      color:#0b1b54;
-      opacity:.9;
-      font-weight: 700;
-    }
-
-    .re-empty{
-      padding: 28px;
-      border: 1px dashed rgba(11,27,84,.25);
-      border-radius: 14px;
-      background: #fff;
-      text-align:center;
-    }
-    .re-empty__hint{
-      margin-top: 10px;
-      color:#6b7280;
-      font-size: 13px;
-    }
-    code{ background: rgba(0,0,0,.06); padding: 2px 6px; border-radius: 6px; }
-  </style>
 </TemplateLayout>
+
+<style>
+  .blog-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 22px;
+  }
+  .blog-card {
+    display: block;
+    padding: 20px;
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid rgba(0,0,0,.06);
+    text-decoration: none;
+    transition: all .25s ease;
+  }
+  .blog-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 26px rgba(0,0,0,.08);
+  }
+  .blog-tag {
+    font-size: 12px;
+    color: #5b6474;
+    display: inline-block;
+    margin-bottom: 8px;
+  }
+  .blog-card h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 800;
+    line-height: 1.35;
+    color: #0b1b54;
+  }
+  .blog-date {
+    font-size: 12px;
+    color: #8a93a3;
+    margin-top: 8px;
+  }
+  .empty {
+    padding: 34px;
+    text-align: center;
+    background: #fff;
+    border-radius: 12px;
+    border: 1px dashed rgba(11,27,84,.25);
+  }
+</style>
