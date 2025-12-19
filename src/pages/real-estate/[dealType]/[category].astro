@@ -4,8 +4,8 @@ import { getRealEstatePosts } from "../../../lib/contentful";
 
 export const prerender = true;
 
-/** ✅ URL 分类（要和你首页链接一致） */
-const saleCats = [
+/** ✅ URL 分类（要和首页链接一致） */
+const SALE_CATS = [
   "apartment",
   "second-hand",
   "townhouse",
@@ -14,9 +14,9 @@ const saleCats = [
   "land",
   "farm",
   "hotel",
-];
+] as const;
 
-const rentCats = ["apartment", "townhouse", "land-villa", "commercial"];
+const RENT_CATS = ["apartment", "townhouse", "land-villa", "commercial"] as const;
 
 function labelDealType(d: string) {
   return d === "sale" ? "房产售卖资讯" : "房产出租资讯";
@@ -43,13 +43,11 @@ function normalize(s: string) {
     .replace(/[^\w\u4e00-\u9fa5-]+/g, "") // 保留中文
     .replace(/-+/g, "-");
 
-  // dealType: 出售/售卖 => sale；出租/租赁 => rent
-  if (slug === "出售" || slug === "售卖" || slug === "售房" || slug === "sale")
-    return "sale";
-  if (slug === "出租" || slug === "租赁" || slug === "租房" || slug === "rent")
-    return "rent";
+  // dealType（中文 -> 英文）
+  if (slug === "出售" || slug === "售卖" || slug === "售房" || slug === "sale") return "sale";
+  if (slug === "出租" || slug === "租赁" || slug === "租房" || slug === "rent") return "rent";
 
-  // category: 中文 -> URL slug
+  // category（中文 -> URL slug）
   const catCnToSlug: Record<string, string> = {
     公寓: "apartment",
     二手房: "second-hand",
@@ -57,7 +55,6 @@ function normalize(s: string) {
     土地别墅: "land-villa",
     商业办公: "commercial",
     商业办公楼: "commercial",
-    商业办公室: "commercial",
     土地开发: "land",
     土地: "land",
     农场: "farm",
@@ -68,35 +65,35 @@ function normalize(s: string) {
   return slug;
 }
 
-/** ✅ 取 Contentful 图片 URL（最容易出错的地方） */
-function getCoverUrl(p: any): string {
-  const img = Array.isArray(p.image) ? p.image[0] : p.image;
-
-  // 兼容多种 Contentful 返回形态
-  const url =
-    img?.url ||
-    img?.fields?.file?.url ||
-    img?.file?.url ||
-    img?.src ||
-    (typeof img === "string" ? img : "") ||
-    "";
-
-  if (!url) return "";
-  if (url.startsWith("//")) return `https:${url}`;
-  return url;
+/** ✅ 取图片 URL（兼容 string / //xxx / imageUrls / imageUrl） */
+function toHttps(u?: string | null) {
+  if (!u) return "";
+  if (u.startsWith("//")) return `https:${u}`;
+  return u;
 }
 
+function getCoverUrl(p: any): string {
+  // ✅ 你在 contentful.ts 里最终应该返回 imageUrls: string[]
+  if (Array.isArray(p?.imageUrls) && p.imageUrls.length) return toHttps(p.imageUrls[0]);
+
+  // 兼容旧字段 image（你以前返回的是 string|null）
+  if (typeof p?.image === "string" && p.image) return toHttps(p.image);
+
+  // 兜底：一些人会叫 imageUrl
+  if (typeof p?.imageUrl === "string" && p.imageUrl) return toHttps(p.imageUrl);
+
+  return "";
+}
+
+/** ✅ 必须有 getStaticPaths 才能 prerender 动态路由（否则 Cloudflare Pages 会报错） */
 export async function getStaticPaths() {
   return [
-    ...saleCats.map((c) => ({ params: { dealType: "sale", category: c } })),
-    ...rentCats.map((c) => ({ params: { dealType: "rent", category: c } })),
+    ...SALE_CATS.map((c) => ({ params: { dealType: "sale", category: c } })),
+    ...RENT_CATS.map((c) => ({ params: { dealType: "rent", category: c } })),
   ];
 }
 
-const { dealType, category } = Astro.params as {
-  dealType: string;
-  category: string;
-};
+const { dealType, category } = Astro.params as { dealType: string; category: string };
 
 const dealZh = labelDealType(dealType);
 const categoryZh = categoryNameMap[category] ?? category;
@@ -114,7 +111,6 @@ const posts =
 ---
 
 <TemplateLayout title={`${dealZh} - ${categoryZh}`} subtitle="REAL ESTATE">
-  <!-- ✅ 增加 listing-section：和底部黑色 footer 拉开距离 -->
   <section class="section-padding re-wrap listing-section">
     <div class="container">
       <!-- 顶部页面标题（你现有风格） -->
@@ -122,7 +118,7 @@ const posts =
         <h2>{dealZh} · {categoryZh}</h2>
       </div>
 
-      <!-- 模板风格标题：Properties For Sale/Rent（黑色） -->
+      <!-- 模板风格标题：Properties For Sale/Rent -->
       <div class="re-list-head">
         <h2 class="re-list-title">
           {dealType === "sale" ? "Properties For Sale" : "Properties For Rent"}
@@ -133,6 +129,8 @@ const posts =
         <div class="re-prop-grid">
           {posts.map((p: any) => {
             const cover = getCoverUrl(p);
+            const titleUpper = (p.title ?? "").toString().toUpperCase();
+
             return (
               <a class="re-prop" href={`/real-estate/${p.slug}`}>
                 <div class="re-prop-img">
@@ -147,23 +145,19 @@ const posts =
                 <div class="re-prop-content">
                   <div class="re-prop-stars">★★★★★</div>
 
-                  <div class="re-prop-title">
-                    {(p.title ?? "").toString().toUpperCase()}
-                  </div>
+                  <div class="re-prop-title">{titleUpper}</div>
 
                   <div class="re-prop-meta">
                     <span class="re-prop-meta-strong">{categoryZh}</span>
                     <span class="re-prop-meta-sep">|</span>
                     <span class="re-prop-meta-light">
-                      {p.publishDate
-                        ? new Date(p.publishDate).toLocaleDateString("zh-CN")
-                        : ""}
+                      {p.publishDate ? new Date(p.publishDate).toLocaleDateString("zh-CN") : ""}
                     </span>
                   </div>
 
-                  {(p.excerpt || p.summary) ? (
+                  {(p.summary || p.excerpt) ? (
                     <div class="re-prop-desc">
-                      {(p.excerpt || p.summary).toString().slice(0, 70)}…
+                      {(p.summary || p.excerpt).toString().slice(0, 70)}…
                     </div>
                   ) : null}
                 </div>
@@ -172,13 +166,12 @@ const posts =
           })}
         </div>
       ) : (
-        <!-- ✅ 没内容也显示模板，不是空白 -->
-        <div class="empty-state">
-          <h3>
-            {dealType === "sale" ? "Properties For Sale" : "Properties For Rent"}
-          </h3>
-          <p>当前分类暂无房源。你可以先在 Contentful 发布一条该分类内容。</p>
-          <p style="margin-top: 10px; opacity: 0.85">
+        <div class="empty">
+          <p><strong>当前分类暂无内容</strong></p>
+          <p style="margin-top:10px;">
+            你仍然会看到这个页面（不是空白页）。
+          </p>
+          <p style="margin-top:10px; opacity:.85;">
             当前路径：<code>{dealType}/{category}</code>
           </p>
         </div>
@@ -188,7 +181,7 @@ const posts =
 </TemplateLayout>
 
 <style>
-/* ===== 顶部“房产售卖资讯 · 公寓”这种标题 ===== */
+/* ===== 顶部“房产售卖资讯 · 公寓”标题 ===== */
 .section-title.re-title { margin: 0 0 18px; }
 .section-title.re-title h2 {
   font-size: 22px !important;
@@ -208,16 +201,16 @@ const posts =
   margin-top:10px;
 }
 
-/* ===== 模板风格标题：Properties For Sale / Rent（✅黑色） ===== */
+/* ===== 模板风格标题：Properties For Sale / Rent（你要黑色） ===== */
 .re-list-head{
   text-align:center;
-  margin: 12px 0 28px;
+  margin: 12px 0 34px;
 }
 .re-list-title{
   margin:0;
   font-size: 44px;
   font-weight: 900;
-  color:#111 !important; /* ✅ 改黑 */
+  color:#111;            /* ✅ 黑色 */
   line-height:1.05;
   position:relative;
   display:inline-block;
@@ -229,14 +222,14 @@ const posts =
   width: 320px;
   max-width: 78vw;
   height: 2px;
-  background:#111; /* ✅ 改黑 */
+  background:#111;
   margin: 14px auto 0;
 }
 .re-list-title::before{
   content:"";
   width: 16px;
   height: 16px;
-  border: 2px solid #111; /* ✅ 改黑 */
+  border: 2px solid #111;
   transform: rotate(45deg);
   position:absolute;
   left:50%;
@@ -245,26 +238,22 @@ const posts =
   background:#fff;
 }
 
-/* ===== 3 列网格（你要的：一行 3 个） ===== */
+/* ===== 3 列网格（你要：一行 3 个，多的下一行） ===== */
 .re-prop-grid{
   display:grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 26px;
 }
-
-/* 平板 2 列 */
 @media (max-width: 992px){
   .re-prop-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .re-list-title{ font-size: 34px; }
 }
-
-/* 手机 1 列 */
 @media (max-width: 576px){
   .re-prop-grid{ grid-template-columns: 1fr; }
   .re-list-title{ font-size: 30px; }
 }
 
-/* ===== 卡片（图片 + 叠字） ===== */
+/* ===== 卡片：图片 + 黑色遮罩叠字（接近模板 Properties For Sale） ===== */
 .re-prop{
   position: relative;
   display:block;
@@ -292,7 +281,6 @@ const posts =
   font-weight:800;
 }
 
-/* 遮罩 */
 .re-prop-overlay{
   position:absolute;
   inset:0;
@@ -300,7 +288,6 @@ const posts =
   transition: background .2s ease;
 }
 
-/* 内容叠层 */
 .re-prop-content{
   position:relative;
   z-index:2;
@@ -346,24 +333,17 @@ const posts =
 .re-prop:hover .re-prop-overlay{ background: rgba(0,0,0,.50); }
 .re-prop:hover{ transform: translateY(-3px); transition: transform .25s ease; }
 
-/* ✅ 空状态（没房源时也好看，不是空白） */
-.empty-state{
-  background:#fff;
-  border:1px dashed rgba(11,27,84,.25);
-  border-radius:12px;
-  padding:30px;
-  text-align:center;
-  margin-top:24px;
+/* 空状态 */
+.empty {
+  padding: 34px;
+  text-align: center;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px dashed rgba(11,27,84,.25);
 }
-.empty-state h3{
-  margin:0 0 8px;
-  color:#0b1b54;
-  font-weight:900;
-}
-.empty-state p{ margin:0; color:#5b6474; }
 
-/* ✅ 和底部黑色 footer 拉开距离 */
+/* ✅ 房源列表与底部“联系我们黑条”拉开距离 */
 .listing-section{
-  padding-bottom: 70px;
+  padding-bottom: 90px; /* 想更大就 110px */
 }
 </style>
