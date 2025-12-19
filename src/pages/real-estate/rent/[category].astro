@@ -1,0 +1,167 @@
+---
+import TemplateLayout from "../../../layouts/TemplateLayout.astro";
+import SubpageIntroBanner from "../../../components/SubpageIntroBanner.astro";
+import { getRealEstatePosts } from "../../../lib/contentful";
+
+const { category } = Astro.params;
+
+const RENT_CATS: Record<string, { zh: string; en: string; intro: string }> = {
+  "apartment": { zh: "公寓", en: "APARTMENT", intro: "租赁流程、租客筛选、租金策略与维护建议。" },
+  "townhouse": { zh: "联排别墅", en: "TOWNHOUSE", intro: "出租定价、租约条款、交接清单与管理要点。" },
+  "land-villa": { zh: "土地别墅", en: "LAND VILLA", intro: "高端租赁管理、租客沟通、维护与保险建议。" },
+  "commercial": { zh: "商业办公", en: "COMMERCIAL", intro: "商业租约、回报结构、租客资质与合规提示。" },
+};
+
+const catMeta = RENT_CATS[category ?? ""] ?? {
+  zh: "分类",
+  en: (category ?? "CATEGORY").toUpperCase(),
+  intro: "查看该分类下的出租资讯与最新发布内容。",
+};
+
+const all = await getRealEstatePosts(200);
+
+const rentPosts = (all ?? []).filter((p: any) => {
+  const type = String(p.type ?? p.kind ?? p.purpose ?? "").toLowerCase();
+  const c1 = String(p.category ?? p.subCategory ?? "").toLowerCase();
+  const c2 = String(p.categoryZh ?? p.categoryCn ?? "").toLowerCase();
+  const slug = String(p.categorySlug ?? "").toLowerCase();
+
+  const isRent = type.includes("rent") || type.includes("lease") || type.includes("出租");
+  const isCat =
+    c1.includes(String(category).toLowerCase()) ||
+    slug === String(category).toLowerCase() ||
+    c2.includes(catMeta.zh.toLowerCase());
+
+  return (isRent || type === "") && isCat;
+});
+---
+
+<TemplateLayout title={`房产出租资讯 · ${catMeta.zh}`}>
+  <SubpageIntroBanner
+    titleZh={`房产出租资讯 · ${catMeta.zh}`}
+    titleEn={`FOR RENT · ${catMeta.en}`}
+    subtitle={catMeta.intro}
+    items={[]}
+  />
+
+  <section class="re-wrap section-padding">
+    <div class="container">
+
+      <div class="re-breadcrumb">
+        <a href="/real-estate">房产资讯</a>
+        <span class="sep">/</span>
+        <a href="/real-estate">出租资讯</a>
+        <span class="sep">/</span>
+        <span class="current">{catMeta.zh}</span>
+      </div>
+
+      <div class="section-title re-title">
+        <h2>最新内容</h2>
+      </div>
+
+      {rentPosts.length > 0 ? (
+        <div class="blog-grid">
+          {rentPosts.map((p: any) => (
+            <a class="blog-card" href={`/real-estate/${p.slug}`}>
+              <div class="blog-content">
+                <span class="blog-tag">{p.category ?? catMeta.zh}</span>
+                <h4>{p.title}</h4>
+                {p.publishDate && (
+                  <p class="blog-date">
+                    {new Date(p.publishDate).toLocaleDateString("zh-CN")}
+                  </p>
+                )}
+              </div>
+            </a>
+          ))}
+        </div>
+      ) : (
+        <div class="empty">
+          <p><strong>该分类暂时还没有发布内容。</strong></p>
+          <p>你可以在 Contentful 发布该分类文章后，这里会自动显示。</p>
+        </div>
+      )}
+
+    </div>
+  </section>
+</TemplateLayout>
+
+<style>
+/* 与 sale 页面同样样式，保持统一 */
+.re-wrap { padding-top: 10px; }
+
+.re-breadcrumb{
+  font-size: 13px;
+  color: #7b8494;
+  margin: 8px 0 18px;
+}
+.re-breadcrumb a{ color:#0b1b54; text-decoration:none; }
+.re-breadcrumb .sep{ margin: 0 8px; opacity:.6; }
+.re-breadcrumb .current{ color:#0b1b54; font-weight:700; }
+
+.section-title.re-title{ margin: 0 0 16px; }
+.section-title.re-title h2{
+  font-size: 22px !important;
+  line-height: 1.25 !important;
+  font-weight: 800;
+  letter-spacing: .5px;
+  color: #0b1b54;
+  margin: 0;
+}
+.section-title.re-title h2::after{
+  content:"";
+  display:block;
+  width:56px;
+  height:3px;
+  background:#f2a23a;
+  border-radius:999px;
+  margin-top:10px;
+}
+
+.blog-grid{
+  display:grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap:22px;
+}
+.blog-card{
+  display:block;
+  padding:20px;
+  background:#fff;
+  border-radius:12px;
+  border:1px solid rgba(0,0,0,.06);
+  text-decoration:none;
+  transition: all .25s ease;
+}
+.blog-card:hover{
+  transform: translateY(-3px);
+  box-shadow: 0 10px 26px rgba(0,0,0,.08);
+}
+.blog-tag{
+  font-size:12px;
+  color:#5b6474;
+  display:inline-block;
+  margin-bottom:8px;
+}
+.blog-card h4{
+  margin:0;
+  font-size:16px;
+  font-weight:800;
+  line-height:1.35;
+  color:#0b1b54;
+}
+.blog-date{
+  font-size:12px;
+  color:#8a93a3;
+  margin-top:8px;
+}
+.empty{
+  padding:34px;
+  text-align:center;
+  background:#fff;
+  border-radius:12px;
+  border:1px dashed rgba(11,27,84,.25);
+}
+@media (max-width:768px){
+  .section-title.re-title h2{ font-size:18px !important; }
+}
+</style>
