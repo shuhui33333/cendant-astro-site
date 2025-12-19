@@ -41,6 +41,51 @@ const { titleZh, titleEn, items = [] } = Astro.props as {
 </section>
 
 <style>
+  .subpage-intro .count-bgcolor-w3ls {
+  display: flex;
+  justify-content: center;   /* 核心：整体居中 */
+  align-items: stretch;
+  flex-wrap: wrap;
+  gap: 32px;                 /* 卡片之间的间距 */
+}
+
+/* 覆盖 bootstrap 的 col-md-3 */
+.subpage-intro .count-grid {
+  float: none !important;
+  display: flex;
+  justify-content: center;
+}
+
+/* 默认：4 个时接近原模板效果 */
+.subpage-intro .count-grid {
+  width: 22%;
+  min-width: 220px;
+}
+
+/* ===== 不同数量时的智能居中 ===== */
+
+/* 只有 1 个 */
+.subpage-intro .count-grid:only-child {
+  width: 40%;
+}
+
+/* 只有 2 个 */
+.subpage-intro .count-grid:nth-last-child(2):first-child,
+.subpage-intro .count-grid:nth-last-child(2):first-child ~ .count-grid {
+  width: 36%;
+}
+
+/* 只有 3 个 */
+.subpage-intro .count-grid:nth-last-child(3):first-child,
+.subpage-intro .count-grid:nth-last-child(3):first-child ~ .count-grid {
+  width: 28%;
+}
+
+/* ===== 移动端 ===== */
+@media (max-width: 992px) {
+  .subpage-intro .count-grid {
+    width: 100% !important;
+    
   /* 标题更精致一点（不改模板全局，只影响本组件） */
   .subpage-intro .subpage-intro-en {
     display: block;
