@@ -1,9 +1,9 @@
-// src/pages/api/translate.ts
 export const prerender = false;
 
-type TranslateReq = {
-  target: string;           // "en" | "zh-TW" | "zh-HK" | ...
-  texts: string[];          // 批量文本
+type Body = {
+  target: "en" | "zh-CN" | "zh-TW" | "zh-HK";
+  texts: string[];
+  source?: string; // 可选
 };
 
 function json(data: any, status = 200) {
@@ -16,64 +16,101 @@ function json(data: any, status = 200) {
   });
 }
 
-export async function POST({ request, locals }: any) {
+export async function POST({ request }: { request: Request }) {
   try {
-    const body = (await request.json()) as TranslateReq;
+    const key =
+      // Astro/Cloudflare 通常是 import.meta.env
+      (import.meta as any).env?.GOOGLE_TRANSLATE_API_KEY ??
+      // 兜底
+      (globalThis as any)?.process?.env?.GOOGLE_TRANSLATE_API_KEY;
 
-    if (!body || !Array.isArray(body.texts) || !body.texts.length) {
-      return json({ error: "Missing texts[]" }, 400);
-    }
-    if (!body.target) return json({ error: "Missing target" }, 400);
-
-    // ✅ 从 Cloudflare 环境变量读取 Google 翻译 Key
-    // 你在 Cloudflare 里设置的变量名如果不是 GOOGLE_TRANSLATE_API_KEY，请把这里改成你的
-    const env = locals?.runtime?.env;
-    const apiKey =
-      env?.GOOGLE_TRANSLATE_API_KEY ||
-      env?.GOOGLE_API_KEY ||
-      env?.TRANSLATE_API_KEY;
-
-    if (!apiKey) {
-      return json({ error: "Missing GOOGLE_TRANSLATE_API_KEY in environment" }, 500);
+    if (!key) {
+      return json(
+        {
+          error: "Missing GOOGLE_TRANSLATE_API_KEY in environment variables.",
+        },
+        500
+      );
     }
 
-    // Google Translate v2
-    const url = `https://translation.googleapis.com/language/translate/v2?key=${encodeURIComponent(apiKey)}`;
+    const ct = request.headers.get("content-type") || "";
+    if (!ct.includes("application/json")) {
+      return json(
+        { error: "Content-Type must be application/json" },
+        415
+      );
+    }
 
-    // ✅ q 支持数组，一次请求翻译多句
-    const googleRes = await fetch(url, {
+    const body = (await request.json()) as Body;
+
+    if (!body?.target || !Array.isArray(body.texts)) {
+      return json(
+        { error: "Bad request: need { target, texts[] }" },
+        400
+      );
+    }
+
+    // 过滤空字符串，避免 Google 报错/浪费
+    const texts = body.texts
+      .map((s) => (typeof s === "string" ? s : ""))
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+    if (texts.length === 0) return json({ data: [] });
+
+    // Google Translate v2 REST
+    const url = new URL("https://translation.googleapis.com/language/translate/v2");
+    url.searchParams.set("key", key);
+
+    const payload: any = {
+      q: texts,              // 注意：这里是数组
+      target: body.target,   // en / zh-CN / zh-TW / zh-HK
+      format: "text",
+    };
+    if (body.source) payload.source = body.source;
+
+    const resp = await fetch(url.toString(), {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        q: body.texts,
-        target: body.target,
-        format: "text",
-      }),
+      headers: { "Content-Type": "application/json; charset=utf-8" },
+      body: JSON.stringify(payload),
     });
 
-    const gJson: any = await googleRes.json().catch(() => ({}));
+    const raw = await resp.text();
+    let parsed: any = null;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      parsed = { raw };
+    }
 
-    if (!googleRes.ok) {
+    if (!resp.ok) {
       return json(
         {
           error: "Google translate failed",
-          status: googleRes.status,
-          details: gJson,
+          status: resp.status,
+          details: parsed,
         },
         502
       );
     }
 
-    const translated: string[] =
-      gJson?.data?.translations?.map((t: any) => t.translatedText) ?? [];
+    const out: string[] =
+      parsed?.data?.translations?.map((x: any) => x?.translatedText ?? "") ?? [];
 
-    return json({ data: translated });
-  } catch (e: any) {
-    return json({ error: e?.message || "Server error" }, 500);
+    return json({ data: out });
+  } catch (err: any) {
+    // 关键：永远返回 JSON（避免你现在看到的 502 空对象）
+    return json(
+      {
+        error: "Worker crashed in /api/translate",
+        message: String(err?.message ?? err),
+        stack: err?.stack ?? null,
+      },
+      500
+    );
   }
 }
 
-// （可选）如果有人 GET 访问，明确返回 405，方便你排查
 export async function GET() {
-  return json({ error: "Method Not Allowed. Use POST /api/translate" }, 405);
+  return json({ error: "Method Not Allowed" }, 405);
 }
