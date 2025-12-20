@@ -1,4 +1,5 @@
 // src/lib/contentful.ts
+
 type CfLink = { sys: { type: "Link"; linkType: "Asset"; id: string } };
 
 export type RealEstatePost = {
@@ -25,7 +26,7 @@ export type CfEnv = {
 
 const CONTENT_TYPE = "realEstatePost";
 
-/* ------------------ helpers ------------------ */
+/* ------------------ utils ------------------ */
 
 function toAssetUrl(u?: string) {
   if (!u) return "";
@@ -38,19 +39,19 @@ function pickCategory(fields: any): string | undefined {
 
 /**
  * 支持：
- * 1) fields.image = [Asset] 已展开
+ * 1) fields.image = [Asset 已展开]
  * 2) fields.image = [Link] + includes.Asset
  */
 function resolveImageUrls(entry: any, includes: any): string[] {
   const field = entry?.fields?.image;
   if (!field) return [];
 
-  // 已展开 asset
+  // 已展开
   if (Array.isArray(field) && field?.[0]?.fields?.file?.url) {
     return field.map((a: any) => toAssetUrl(a?.fields?.file?.url)).filter(Boolean);
   }
 
-  // Link -> includes.Asset
+  // Link → includes.Asset
   const links: CfLink[] = Array.isArray(field) ? field : [field];
   const assets = includes?.Asset ?? [];
   if (!Array.isArray(assets) || assets.length === 0) return [];
@@ -65,29 +66,34 @@ function resolveImageUrls(entry: any, includes: any): string[] {
   return links.map((l: any) => idToUrl.get(l?.sys?.id)).filter(Boolean) as string[];
 }
 
-/**
- * ✅ 兼容：如果你不传 env，就尝试从 import.meta.env 读取（本地/构建期）
- */
-function normalizeEnv(env?: CfEnv): CfEnv {
-  if (env) return env;
-  const b = (import.meta as any)?.env ?? {};
+/* ------------------ env / client ------------------ */
+
+/** ✅ 允许不传 env：默认从 import.meta.env 读（build 期可用） */
+function getDefaultEnv(): CfEnv {
+  const e = (import.meta as any)?.env ?? {};
   return {
-    CONTENTFUL_SPACE_ID: b.CONTENTFUL_SPACE_ID,
-    CONTENTFUL_DELIVERY_TOKEN: b.CONTENTFUL_DELIVERY_TOKEN,
-    CONTENTFUL_ENVIRONMENT: b.CONTENTFUL_ENVIRONMENT,
+    CONTENTFUL_SPACE_ID: e.CONTENTFUL_SPACE_ID,
+    CONTENTFUL_DELIVERY_TOKEN: e.CONTENTFUL_DELIVERY_TOKEN,
+    CONTENTFUL_ENVIRONMENT: e.CONTENTFUL_ENVIRONMENT ?? "master",
   };
 }
 
+/** ✅ 合并：传入 env 优先（运行期），否则用 import.meta.env（构建期） */
+function mergeEnv(env?: CfEnv): CfEnv {
+  const base = getDefaultEnv();
+  return { ...base, ...(env ?? {}) };
+}
+
 function makeClient(env?: CfEnv) {
-  const e = normalizeEnv(env);
-  const SPACE = e.CONTENTFUL_SPACE_ID;
-  const TOKEN = e.CONTENTFUL_DELIVERY_TOKEN;
-  const ENV = e.CONTENTFUL_ENVIRONMENT ?? "master";
+  const merged = mergeEnv(env);
+  const SPACE = merged.CONTENTFUL_SPACE_ID;
+  const TOKEN = merged.CONTENTFUL_DELIVERY_TOKEN;
+  const ENV = merged.CONTENTFUL_ENVIRONMENT ?? "master";
 
   if (!SPACE || !TOKEN) {
     console.error("[Contentful] Missing env:", {
-      hasSpace: !!SPACE,
-      hasToken: !!TOKEN,
+      hasSpace: Boolean(SPACE),
+      hasToken: Boolean(TOKEN),
       env: ENV,
     });
     return null;
@@ -97,9 +103,13 @@ function makeClient(env?: CfEnv) {
 
   async function cfFetch(path: string) {
     const url = `${BASE}${path}`;
-    const res = await fetch(url, { headers: { Authorization: `Bearer ${TOKEN}` } });
+    const res = await fetch(url, {
+      headers: { Authorization: `Bearer ${TOKEN}` },
+    });
     const text = await res.text();
-    if (!res.ok) throw new Error(`Contentful error ${res.status}\nURL: ${url}\nBody: ${text}`);
+    if (!res.ok) {
+      throw new Error(`Contentful error ${res.status}\nURL: ${url}\nBody: ${text}`);
+    }
     return JSON.parse(text);
   }
 
@@ -108,10 +118,10 @@ function makeClient(env?: CfEnv) {
 
 /* ------------------ APIs ------------------ */
 
-// ✅ 兼容旧调用：getRealEstatePosts(9) 也能跑
-export async function getRealEstatePosts(arg1?: CfEnv | number, arg2?: number): Promise<RealEstatePost[]> {
-  const env = typeof arg1 === "object" ? arg1 : undefined;
-  const limit = typeof arg1 === "number" ? arg1 : (arg2 ?? 20);
+/** ✅ 兼容旧调用：getRealEstatePosts(9) 也能用 */
+export async function getRealEstatePosts(arg1: any = 20, arg2?: number): Promise<RealEstatePost[]> {
+  const env: CfEnv | undefined = typeof arg1 === "object" ? arg1 : undefined;
+  const limit: number = typeof arg1 === "number" ? arg1 : (arg2 ?? 20);
 
   const client = makeClient(env);
   if (!client) return [];
@@ -146,13 +156,15 @@ export async function getRealEstatePosts(arg1?: CfEnv | number, arg2?: number): 
   }
 }
 
-// ✅ 兼容旧调用：getRealEstatePostBySlug(slug)
-export async function getRealEstatePostBySlug(arg1: CfEnv | string, arg2?: string): Promise<RealEstatePostDetail | null> {
-  const env = typeof arg1 === "object" ? arg1 : undefined;
-  const slug = typeof arg1 === "string" ? arg1 : (arg2 ?? "");
+/** ✅ 兼容旧调用：getRealEstatePostBySlug(slug) 也能用 */
+export async function getRealEstatePostBySlug(arg1: any, arg2?: string): Promise<RealEstatePostDetail | null> {
+  const env: CfEnv | undefined = typeof arg1 === "object" ? arg1 : undefined;
+  const slug: string = typeof arg1 === "string" ? arg1 : (arg2 ?? "");
+
+  if (!slug) return null;
 
   const client = makeClient(env);
-  if (!client || !slug) return null;
+  if (!client) return null;
 
   try {
     const data = await client.cfFetch(
@@ -183,13 +195,16 @@ export async function getRealEstatePostBySlug(arg1: CfEnv | string, arg2?: strin
   }
 }
 
-// ✅ 兼容旧调用：getAllRealEstateSlugs()
+/** ✅ 兼容旧调用：getAllRealEstateSlugs() 也能用 */
 export async function getAllRealEstateSlugs(env?: CfEnv): Promise<string[]> {
   const client = makeClient(env);
   if (!client) return [];
 
   try {
-    const data = await client.cfFetch(`/entries?content_type=${CONTENT_TYPE}&select=fields.slug&limit=1000`);
+    const data = await client.cfFetch(
+      `/entries?content_type=${CONTENT_TYPE}&select=fields.slug&limit=1000`
+    );
+
     const items = Array.isArray(data?.items) ? data.items : [];
     return items.map((it: any) => it?.fields?.slug).filter(Boolean);
   } catch (err) {
@@ -198,5 +213,5 @@ export async function getAllRealEstateSlugs(env?: CfEnv): Promise<string[]> {
   }
 }
 
-// ✅ 防旧引用
+/** ✅ 旧别名（如果你哪里用过） */
 export const getAllSlugs = getAllRealEstateSlugs;
