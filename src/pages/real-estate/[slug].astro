@@ -1,19 +1,37 @@
 ---
 import TemplateLayout from "../../layouts/TemplateLayout.astro";
-import { getAllRealEstateSlugs, getRealEstatePostBySlug } from "../../lib/contentful";
+import { getRealEstatePostBySlug } from "../../lib/contentful";
 
-export const prerender = true;
+// ✅ 用 SSR 最稳：避免构建期拿不到 env 导致 500
+export const prerender = false;
 
-export async function getStaticPaths() {
-  const slugs = await getAllRealEstateSlugs();
-  return (slugs ?? []).map((slug) => ({ params: { slug } }));
+// ✅ Cloudflare Pages / Workers runtime env
+function getCfEnv() {
+  const env = (Astro.locals as any)?.runtime?.env ?? {};
+  return {
+    CONTENTFUL_SPACE_ID: env.CONTENTFUL_SPACE_ID,
+    CONTENTFUL_DELIVERY_TOKEN: env.CONTENTFUL_DELIVERY_TOKEN,
+    CONTENTFUL_ENVIRONMENT: env.CONTENTFUL_ENVIRONMENT ?? "master",
+  };
 }
 
-const { slug } = Astro.params as { slug: string };
-const post = await getRealEstatePostBySlug(slug);
+const { slug } = Astro.params as { slug?: string };
+const cfEnv = getCfEnv();
 
+let post = null;
+
+if (slug) {
+  try {
+    post = await getRealEstatePostBySlug(cfEnv, slug);
+  } catch (e) {
+    console.error("[real-estate/[slug]] fetch failed:", e);
+    post = null;
+  }
+}
+
+// ✅ 页面内 404：不要 return new Response（那是 endpoint 风格）
 if (!post) {
-  return new Response("Not found", { status: 404 });
+  Astro.response.status = 404;
 }
 
 // 把 Contentful RichText 简单转成纯文本（不依赖额外 npm 包）
@@ -32,96 +50,99 @@ function normalizeUrl(u?: string) {
   return u.startsWith("//") ? `https:${u}` : u;
 }
 
-// 你现在 lib 里可能给的是 imageUrls（多图）+ image（单图兜底）
-const imageUrlsRaw: string[] = Array.isArray((post as any).imageUrls) ? (post as any).imageUrls : [];
+const imageUrlsRaw: string[] =
+  post && Array.isArray((post as any).imageUrls) ? (post as any).imageUrls : [];
 const imageUrls = imageUrlsRaw.map(normalizeUrl).filter(Boolean);
 
-// 单图兜底（老逻辑）
-const legacyCover = normalizeUrl((post as any).image ?? "");
+const legacyCover = post ? normalizeUrl((post as any).image ?? "") : "";
 
-// 最终用于页面展示的图片数组
 const images = imageUrls.length ? imageUrls : (legacyCover ? [legacyCover] : []);
-
-// 默认大图 = 第一张
 const heroImage = images[0] ?? "";
 
-// ✅ 你是否希望“缩略图列表里包含第一张图”？
-// - true  = 缩略图包含第一张（默认选中，不会重复显示的问题，因为大图本来就应该等于选中项）
-// - false = 缩略图从第二张开始（避免你觉得第一张“重复”）
+// 是否让缩略图包含第一张
 const SHOW_FIRST_THUMB = true;
-
 const thumbs = SHOW_FIRST_THUMB ? images : images.slice(1);
 
-// 文本
-const bodyText = richTextToPlainText((post as any).body);
+const bodyText = post ? richTextToPlainText((post as any).body) : "";
 ---
 
-<TemplateLayout title={post.title}>
+<TemplateLayout title={post ? post.title : "Not found"}>
   <section class="tpl-page">
     <div class="tpl-card">
-      <div class="meta">
-        <span class="tag">{post.category ?? "资讯"}</span>
-        <span class="date">
-          {post.publishDate ? new Date(post.publishDate).toLocaleDateString("zh-CN") : ""}
-        </span>
-      </div>
+      {post ? (
+        <>
+          <div class="meta">
+            <span class="tag">{post.category ?? "资讯"}</span>
+            <span class="date">
+              {post.publishDate ? new Date(post.publishDate).toLocaleDateString("zh-CN") : ""}
+            </span>
+          </div>
 
-      <h1 class="h1">{post.title}</h1>
+          <h1 class="h1">{post.title}</h1>
 
-      {/* ======= 大图（可切换） ======= */}
-      {heroImage ? (
-        <div class="hero-wrap" data-gallery>
-          <img
-            class="hero"
-            src={heroImage}
-            alt={post.title}
-            loading="eager"
-            decoding="async"
-            data-hero
-          />
+          {heroImage ? (
+            <div class="hero-wrap" data-gallery>
+              <img
+                class="hero"
+                src={heroImage}
+                alt={post.title}
+                loading="eager"
+                decoding="async"
+                data-hero
+              />
 
-          {/* ======= 缩略图（点击切换大图） ======= */}
-          {thumbs.length > 1 ? (
-            <div class="thumbs" data-thumbs>
-              {thumbs.map((url, idx) => (
-                <button
-                  type="button"
-                  class={`thumb ${idx === 0 ? "is-active" : ""}`}
-                  data-thumb
-                  data-src={url}
-                  aria-label={`查看图片 ${idx + 1}`}
-                >
-                  <img src={url} alt={`${post.title} - ${idx + 1}`} loading="lazy" decoding="async" />
-                </button>
-              ))}
+              {thumbs.length > 1 ? (
+                <div class="thumbs" data-thumbs>
+                  {thumbs.map((url, idx) => (
+                    <button
+                      type="button"
+                      class={`thumb ${idx === 0 ? "is-active" : ""}`}
+                      data-thumb
+                      data-src={url}
+                      aria-label={`查看图片 ${idx + 1}`}
+                    >
+                      <img src={url} alt={`${post.title} - ${idx + 1}`} loading="lazy" decoding="async" />
+                    </button>
+                  ))}
+                </div>
+              ) : null}
             </div>
           ) : null}
-        </div>
-      ) : null}
 
-      <div class="body">
-        {post.summary ? <p class="summary">{post.summary}</p> : null}
+          <div class="body">
+            {post.summary ? <p class="summary">{post.summary}</p> : null}
 
-        {bodyText ? (
-          <p class="richtext" style="white-space:pre-wrap">{bodyText}</p>
-        ) : (
-          <p class="richtext" style="opacity:.7">（暂无详细内容）</p>
-        )}
-      </div>
+            {bodyText ? (
+              <p class="richtext" style="white-space:pre-wrap">{bodyText}</p>
+            ) : (
+              <p class="richtext" style="opacity:.7">（暂无详细内容）</p>
+            )}
+          </div>
 
-      <div class="back">
-        <a href="/real-estate">← 返回地产资讯</a>
-      </div>
+          <div class="back">
+            <a href="/real-estate">← 返回地产资讯</a>
+          </div>
+        </>
+      ) : (
+        <>
+          <h1 class="h1">404：找不到该文章</h1>
+          <p style="opacity:.75; line-height:1.8">
+            可能该链接不存在，或 Contentful 环境变量未配置成功（CONTENTFUL_SPACE_ID / CONTENTFUL_DELIVERY_TOKEN）。
+          </p>
+          <div class="back">
+            <a href="/real-estate">← 返回地产资讯</a>
+          </div>
+        </>
+      )}
     </div>
   </section>
 
-  {/* ======= 点击缩略图切换大图（原生 JS） ======= */}
   <script type="module">
     const gallery = document.querySelector("[data-gallery]");
-    if (!gallery) {}
+    if (!gallery) return;
 
-    const hero = gallery?.querySelector("[data-hero]");
-    const thumbWrap = gallery?.querySelector("[data-thumbs]");
+    const hero = gallery.querySelector("[data-hero]");
+    const thumbWrap = gallery.querySelector("[data-thumbs]");
 
     if (hero && thumbWrap) {
       thumbWrap.addEventListener("click", (e) => {
@@ -131,10 +152,8 @@ const bodyText = richTextToPlainText((post as any).body);
         const src = btn.getAttribute("data-src");
         if (!src) return;
 
-        // 切换大图
         hero.setAttribute("src", src);
 
-        // 高亮当前缩略图
         thumbWrap.querySelectorAll("[data-thumb]").forEach((el) => el.classList.remove("is-active"));
         btn.classList.add("is-active");
       });
@@ -151,7 +170,6 @@ const bodyText = richTextToPlainText((post as any).body);
 
     .h1 { margin:10px 0 16px; font-size:28px; line-height:1.25; }
 
-    /* ======= 大图 ======= */
     .hero-wrap { margin: 10px 0 18px; }
     .hero {
       width: 100%;
@@ -163,7 +181,6 @@ const bodyText = richTextToPlainText((post as any).body);
       background: #f2f3f5;
     }
 
-    /* ======= 缩略图 ======= */
     .thumbs{
       margin-top: 14px;
       display: grid;
@@ -186,9 +203,7 @@ const bodyText = richTextToPlainText((post as any).body);
       display: block;
       background: #f2f3f5;
     }
-    .thumb:hover{
-      transform: translateY(-2px);
-    }
+    .thumb:hover{ transform: translateY(-2px); }
     .thumb.is-active{
       border-color: rgba(11, 27, 84, .55);
       box-shadow: 0 10px 26px rgba(0,0,0,.08);
