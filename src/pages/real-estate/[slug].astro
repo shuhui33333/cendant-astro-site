@@ -6,11 +6,21 @@ export const prerender = false;
 
 /**
  * ✅ Cloudflare Pages runtime env + 本地 dev 兜底
+ * 兼容多种适配器注入路径：
+ * - Astro.locals.runtime.env
+ * - Astro.locals.cloudflare.env
+ * - Astro.locals.env
  */
 function getCfEnv() {
-  const runtimeEnv = (Astro.locals as any)?.runtime?.env ?? {};
+  const runtimeEnv =
+    (Astro.locals as any)?.runtime?.env ??
+    (Astro.locals as any)?.cloudflare?.env ??
+    (Astro.locals as any)?.env ??
+    {};
+
   const buildEnv = (import.meta as any)?.env ?? {};
 
+  // SSR 以 runtime 为准（覆盖 build）
   const merged = { ...buildEnv, ...runtimeEnv };
 
   return {
@@ -64,13 +74,13 @@ const categoryMap: Record<string, string> = {
   farm: "农场",
   hotel: "酒店",
 };
+
 function displayCategory(v: any) {
   const s = String(v ?? "").trim();
   return categoryMap[s] ?? (s || "资讯");
 }
 
-const imageUrlsRaw: string[] =
-  post && Array.isArray(post.imageUrls) ? post.imageUrls : [];
+const imageUrlsRaw: string[] = post && Array.isArray(post.imageUrls) ? post.imageUrls : [];
 const imageUrls = imageUrlsRaw.map(normalizeUrl).filter(Boolean);
 
 const legacyCover = post ? normalizeUrl(post.image ?? "") : "";
@@ -119,7 +129,12 @@ const pageTitle = post?.title ? String(post.title) : "404：找不到该文章";
                       data-src={url}
                       aria-label={`查看图片 ${idx + 1}`}
                     >
-                      <img src={url} alt={`${post.title} - ${idx + 1}`} loading="lazy" decoding="async" />
+                      <img
+                        src={url}
+                        alt={`${post.title} - ${idx + 1}`}
+                        loading="lazy"
+                        decoding="async"
+                      />
                     </button>
                   ))}
                 </div>
@@ -154,10 +169,10 @@ const pageTitle = post?.title ? String(post.title) : "404：找不到该文章";
 
   <script type="module">
     const gallery = document.querySelector("[data-gallery]");
-    if (!gallery) {}
+    if (!gallery) return;
 
-    const hero = gallery?.querySelector("[data-hero]");
-    const thumbWrap = gallery?.querySelector("[data-thumbs]");
+    const hero = gallery.querySelector("[data-hero]");
+    const thumbWrap = gallery.querySelector("[data-thumbs]");
 
     if (hero && thumbWrap) {
       thumbWrap.addEventListener("click", (e) => {
@@ -169,7 +184,10 @@ const pageTitle = post?.title ? String(post.title) : "404：找不到该文章";
 
         hero.setAttribute("src", src);
 
-        thumbWrap.querySelectorAll("[data-thumb]").forEach((el) => el.classList.remove("is-active"));
+        thumbWrap
+          .querySelectorAll("[data-thumb]")
+          .forEach((el) => el.classList.remove("is-active"));
+
         btn.classList.add("is-active");
       });
     }
