@@ -126,9 +126,7 @@ const bodyText = post ? richTextToPlainText((post as any).body) : "";
       ) : (
         <>
           <h1 class="h1">404：找不到该文章</h1>
-          <p style="opacity:.75; line-height:1.8">
-            可能该链接不存在，或 Contentful 环境变量未配置成功（CONTENTFUL_SPACE_ID / CONTENTFUL_DELIVERY_TOKEN）。
-          </p>
+          
           <div class="back">
             <a href="/real-estate">← 返回地产资讯</a>
           </div>

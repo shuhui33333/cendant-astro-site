@@ -26,8 +26,26 @@ type CfEnv = {
 
 const CONTENT_TYPE = "realEstatePost";
 
-/* ------------------ utils ------------------ */
+/* ------------------ env helper ------------------ */
+// 兼容：
+// - build-time: import.meta.env
+// - runtime (Cloudflare Pages SSR): 你可以传 locals.runtime.env
+function readEnv(runtimeEnv?: CfEnv): Required<Pick<CfEnv, "CONTENTFUL_SPACE_ID" | "CONTENTFUL_DELIVERY_TOKEN">> &
+  Pick<CfEnv, "CONTENTFUL_ENVIRONMENT"> {
+  const buildEnv = import.meta.env as any;
 
+  const SPACE = runtimeEnv?.CONTENTFUL_SPACE_ID ?? buildEnv.CONTENTFUL_SPACE_ID;
+  const TOKEN = runtimeEnv?.CONTENTFUL_DELIVERY_TOKEN ?? buildEnv.CONTENTFUL_DELIVERY_TOKEN;
+  const ENV = runtimeEnv?.CONTENTFUL_ENVIRONMENT ?? buildEnv.CONTENTFUL_ENVIRONMENT ?? "master";
+
+  return {
+    CONTENTFUL_SPACE_ID: SPACE,
+    CONTENTFUL_DELIVERY_TOKEN: TOKEN,
+    CONTENTFUL_ENVIRONMENT: ENV,
+  } as any;
+}
+
+/* ------------------ utils ------------------ */
 function toAssetUrl(u?: string) {
   if (!u) return "";
   return u.startsWith("//") ? `https:${u}` : u;
@@ -48,9 +66,7 @@ function resolveImageUrls(entry: any, includes: any): string[] {
 
   // 已展开
   if (Array.isArray(field) && field?.[0]?.fields?.file?.url) {
-    return field
-      .map((a: any) => toAssetUrl(a?.fields?.file?.url))
-      .filter(Boolean);
+    return field.map((a: any) => toAssetUrl(a?.fields?.file?.url)).filter(Boolean);
   }
 
   // Link → includes.Asset
@@ -65,36 +81,26 @@ function resolveImageUrls(entry: any, includes: any): string[] {
     if (id && url) idToUrl.set(id, url);
   }
 
-  return links
-    .map((l: any) => idToUrl.get(l?.sys?.id))
-    .filter(Boolean) as string[];
+  return links.map((l: any) => idToUrl.get(l?.sys?.id)).filter(Boolean) as string[];
 }
 
 /* ------------------ client ------------------ */
+function makeClient(runtimeEnv?: CfEnv) {
+  const { CONTENTFUL_SPACE_ID: SPACE, CONTENTFUL_DELIVERY_TOKEN: TOKEN, CONTENTFUL_ENVIRONMENT: ENV } =
+    readEnv(runtimeEnv);
 
-function makeClient(env: CfEnv) {
-  const SPACE = env.CONTENTFUL_SPACE_ID;
-  const TOKEN = env.CONTENTFUL_DELIVERY_TOKEN;
-  const ENV = env.CONTENTFUL_ENVIRONMENT ?? "master";
-
-  // ❗ 不 throw，避免整站 500
   if (!SPACE || !TOKEN) return null;
 
   const BASE = `https://cdn.contentful.com/spaces/${SPACE}/environments/${ENV}`;
 
   async function cfFetch(path: string) {
     const url = `${BASE}${path}`;
-    const res = await fetch(url, {
-      headers: { Authorization: `Bearer ${TOKEN}` },
-    });
-
+    const res = await fetch(url, { headers: { Authorization: `Bearer ${TOKEN}` } });
     const text = await res.text();
-    if (!res.ok) {
-      throw new Error(
-        `Contentful error ${res.status}\nURL: ${url}\nBody: ${text}`
-      );
-    }
 
+    if (!res.ok) {
+      throw new Error(`Contentful error ${res.status}\nURL: ${url}\nBody: ${text}`);
+    }
     return JSON.parse(text);
   }
 
@@ -103,13 +109,11 @@ function makeClient(env: CfEnv) {
 
 /* ------------------ APIs ------------------ */
 
-export async function getRealEstatePosts(
-  env: CfEnv,
-  limit = 20
-): Promise<RealEstatePost[]> {
-  const client = makeClient(env);
+// ✅ env 可选：不传也能用（兼容旧代码）
+export async function getRealEstatePosts(runtimeEnv?: CfEnv, limit = 20): Promise<RealEstatePost[]> {
+  const client = makeClient(runtimeEnv);
   if (!client) {
-    console.error("[Contentful] Missing env vars");
+    console.error("[Contentful] Missing env vars: CONTENTFUL_SPACE_ID / CONTENTFUL_DELIVERY_TOKEN");
     return [];
   }
 
@@ -144,17 +148,15 @@ export async function getRealEstatePosts(
 }
 
 export async function getRealEstatePostBySlug(
-  env: CfEnv,
-  slug: string
+  slug: string,
+  runtimeEnv?: CfEnv
 ): Promise<RealEstatePostDetail | null> {
-  const client = makeClient(env);
+  const client = makeClient(runtimeEnv);
   if (!client) return null;
 
   try {
     const data = await client.cfFetch(
-      `/entries?content_type=${CONTENT_TYPE}&fields.slug=${encodeURIComponent(
-        slug
-      )}&limit=1&include=2`
+      `/entries?content_type=${CONTENT_TYPE}&fields.slug=${encodeURIComponent(slug)}&limit=1&include=2`
     );
 
     const it = data?.items?.[0];
@@ -181,24 +183,19 @@ export async function getRealEstatePostBySlug(
   }
 }
 
-export async function getAllRealEstateSlugs(env: CfEnv): Promise<string[]> {
-  const client = makeClient(env);
+export async function getAllRealEstateSlugs(runtimeEnv?: CfEnv): Promise<string[]> {
+  const client = makeClient(runtimeEnv);
   if (!client) return [];
 
   try {
-    const data = await client.cfFetch(
-      `/entries?content_type=${CONTENT_TYPE}&select=fields.slug&limit=1000`
-    );
-
+    const data = await client.cfFetch(`/entries?content_type=${CONTENT_TYPE}&select=fields.slug&limit=1000`);
     const items = Array.isArray(data?.items) ? data.items : [];
-    return items
-      .map((it: any) => it?.fields?.slug)
-      .filter(Boolean);
+    return items.map((it: any) => it?.fields?.slug).filter(Boolean);
   } catch (err) {
     console.error("[Contentful] getAllRealEstateSlugs failed:", err);
     return [];
   }
 }
 
-/* ✅ 兼容旧代码（防止 build 报错） */
+// ✅ 兼容旧引用名
 export const getAllSlugs = getAllRealEstateSlugs;
