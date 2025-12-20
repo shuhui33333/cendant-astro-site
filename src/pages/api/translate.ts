@@ -13,7 +13,7 @@ function json(data: any, status = 200, extraHeaders: Record<string, string> = {}
 }
 
 function corsHeaders(origin?: string) {
-  // 你是同域调用（same-origin），这里放宽也没问题
+  // 同域调用（same-origin），这里放宽也没问题
   return {
     "Access-Control-Allow-Origin": origin || "*",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
@@ -65,7 +65,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     // 3) 限制一下单次大小，避免太大触发 Google/Worker 限制
-    //    （你前端 chunk size=40，很合理，这里只做兜底）
+    //    （前端 chunk size=40，这里只做兜底）
     const safeTexts = texts
       .map((t: any) => (typeof t === "string" ? t : String(t ?? "")))
       .filter((t: string) => t.trim().length > 0)

@@ -14,7 +14,7 @@ function json(data: any, status = 200) {
     status,
     headers: {
       "Content-Type": "application/json",
-      // 同域一般不需要，但留着更稳（你表单是站内请求）
+      // 同域一般不需要，但留着更稳
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "POST, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type",
@@ -39,7 +39,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const RESEND_API_KEY = getEnv(locals, "RESEND_API_KEY");
     const MAIL_TO = getEnv(locals, "MAIL_TO") || "info@cendantpgau.com";
 
-    // ⚠️ 必须是你在 Resend 已验证域名下的邮箱
+    // ⚠️ 必须是在 Resend 已验证域名下的邮箱
     // 例如：noreply@cendantproperty.com.au
     const MAIL_FROM =
       getEnv(locals, "MAIL_FROM") || "Cendant Website <noreply@cendantproperty.com.au>";
@@ -77,7 +77,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       to: [MAIL_TO],
       subject: `📩 ${subject}`,
       html,
-      // 你说“不需要发给客户”，这里不发送给客户，只是方便你点“回复”：
+      // 不需要发给客户
       reply_to: email,
     };
 

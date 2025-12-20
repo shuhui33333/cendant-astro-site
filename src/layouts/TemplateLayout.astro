@@ -197,8 +197,7 @@ function isRealEstateActive() {
           <!-- ✅ 手机端：语言按钮在三条线旁边 -->
           <div class="tpl-lang-mobile visible-xs">
             <button type="button" class="btn btn-default btn-xs" data-lang-btn="zh-CN">简</button>
-            <button type="button" class="btn btn-default btn-xs" data-lang-btn="zh-TW">繁台</button>
-            <button type="button" class="btn btn-default btn-xs" data-lang-btn="zh-HK">繁港</button>
+            <button type="button" class="btn btn-default btn-xs" data-lang-btn="zh-TW">繁</button>
             <button type="button" class="btn btn-default btn-xs" data-lang-btn="en">EN</button>
           </div>
 
@@ -502,7 +501,7 @@ function isRealEstateActive() {
             return;
           }
 
-          // zh-TW / zh-HK / en：走 API
+          // zh-TW / en：走 API
           translatePageTo(next);
         }
 
@@ -523,7 +522,7 @@ function isRealEstateActive() {
         paintButtons();
 
         // 如果用户之前选过繁体/英文，自动翻译
-        if (lang === "en" || lang === "zh-TW" || lang === "zh-HK") {
+        if (lang === "en" || lang === "zh-TW") {
           translatePageTo(lang);
         }
       })();

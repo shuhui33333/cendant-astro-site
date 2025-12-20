@@ -1,6 +1,6 @@
 // src/lib/realEstateTaxonomy.ts
 
-/** 你网站要显示的“分类页”清单（即使暂时没有房源也要生成页面） */
+/** 网站要显示的“分类页”清单（即使暂时没有房源也要生成页面） */
 export const SALE_CATEGORY_SLUGS = [
   "apartment",
   "second-hand",

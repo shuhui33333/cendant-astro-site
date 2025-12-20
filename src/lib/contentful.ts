@@ -213,7 +213,7 @@ export async function getAllRealEstateSlugs(env?: CfEnv): Promise<string[]> {
   }
 }
 
-/** ✅ 旧别名（如果你哪里用过） */
+/** ✅ 旧别名（如果哪里用过） */
 export const getAllSlugs = getAllRealEstateSlugs;
 
 export async function getRealEstatePostsByFilter(
@@ -228,8 +228,7 @@ export async function getRealEstatePostsByFilter(
 
   const limit = opts.limit ?? 50;
 
-  // 这里假设你的字段是 fields.dealType / fields.category
-  // 如果你 Contentful 里实际上用的是别的字段名（例如 type / deal / listingType），告诉我我帮你对上。
+  // 这里假设字段是 fields.dealType / fields.category
   const params = new URLSearchParams();
   params.set("content_type", CONTENT_TYPE);
   params.set("order", "-fields.publishDate");

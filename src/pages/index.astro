@@ -16,7 +16,7 @@ const env = {
   ...runtimeEnv,
 };
 
-// ✅ 传 env 进去（你现在的 contentful.ts 需要 env 参数）
+// ✅ 传 env 进去
 const posts = await getRealEstatePosts(env, 9);
 
 /** ✅ 统一获取封面（优先 p.image，其次 p.imageUrls[0]，都没有就用占位图） */
