@@ -215,3 +215,53 @@ export async function getAllRealEstateSlugs(env?: CfEnv): Promise<string[]> {
 
 /** ✅ 旧别名（如果你哪里用过） */
 export const getAllSlugs = getAllRealEstateSlugs;
+
+export async function getRealEstatePostsByFilter(
+  env: CfEnv,
+  opts: { dealType?: string; category?: string; limit?: number }
+): Promise<RealEstatePost[]> {
+  const client = makeClient(env);
+  if (!client) {
+    console.error("[Contentful] Missing env vars");
+    return [];
+  }
+
+  const limit = opts.limit ?? 50;
+
+  // 这里假设你的字段是 fields.dealType / fields.category
+  // 如果你 Contentful 里实际上用的是别的字段名（例如 type / deal / listingType），告诉我我帮你对上。
+  const params = new URLSearchParams();
+  params.set("content_type", CONTENT_TYPE);
+  params.set("order", "-fields.publishDate");
+  params.set("limit", String(limit));
+  params.set("include", "2");
+
+  if (opts.dealType) params.set("fields.dealType", opts.dealType);
+  if (opts.category) params.set("fields.category", opts.category);
+
+  try {
+    const data = await client.cfFetch(`/entries?${params.toString()}`);
+    const items = Array.isArray(data?.items) ? data.items : [];
+    const includes = data?.includes;
+
+    return items.map((it: any) => {
+      const fields = it?.fields ?? {};
+      const imageUrls = resolveImageUrls(it, includes);
+
+      return {
+        id: it?.sys?.id ?? "",
+        title: fields?.title ?? "",
+        slug: fields?.slug ?? "",
+        publishDate: fields?.publishDate ?? "",
+        summary: fields?.summary ?? "",
+        dealType: fields?.dealType ?? "",
+        category: pickCategory(fields) ?? "",
+        imageUrls,
+        image: imageUrls[0] ?? null,
+      };
+    });
+  } catch (err) {
+    console.error("[Contentful] getRealEstatePostsByFilter failed:", err);
+    return [];
+  }
+}
