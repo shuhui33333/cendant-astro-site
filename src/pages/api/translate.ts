@@ -1,75 +1,79 @@
 // src/pages/api/translate.ts
-import type { APIRoute } from "astro";
+export const prerender = false;
 
-type ReqBody = {
-  target?: string;      // "en"
-  texts?: string[];     // 批量文本
+type TranslateReq = {
+  target: string;           // "en" | "zh-TW" | "zh-HK" | ...
+  texts: string[];          // 批量文本
 };
 
-export const POST: APIRoute = async ({ request, locals }) => {
+function json(data: any, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: {
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Control": "no-store",
+    },
+  });
+}
+
+export async function POST({ request, locals }: any) {
   try {
-    const body = (await request.json()) as ReqBody;
-    const target = (body.target || "en").toString();
-    const texts = Array.isArray(body.texts) ? body.texts : [];
+    const body = (await request.json()) as TranslateReq;
 
-    if (!texts.length) {
-      return new Response(JSON.stringify({ data: [] }), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      });
+    if (!body || !Array.isArray(body.texts) || !body.texts.length) {
+      return json({ error: "Missing texts[]" }, 400);
+    }
+    if (!body.target) return json({ error: "Missing target" }, 400);
+
+    // ✅ 从 Cloudflare 环境变量读取 Google 翻译 Key
+    // 你在 Cloudflare 里设置的变量名如果不是 GOOGLE_TRANSLATE_API_KEY，请把这里改成你的
+    const env = locals?.runtime?.env;
+    const apiKey =
+      env?.GOOGLE_TRANSLATE_API_KEY ||
+      env?.GOOGLE_API_KEY ||
+      env?.TRANSLATE_API_KEY;
+
+    if (!apiKey) {
+      return json({ error: "Missing GOOGLE_TRANSLATE_API_KEY in environment" }, 500);
     }
 
-    // ✅ 读取 Cloudflare Pages 环境变量
-    // Astro + Cloudflare adapter 下：locals.runtime.env
-    const env = (locals as any)?.runtime?.env || {};
-    const key = env.GOOGLE_TRANSLATE_API_KEY as string | undefined;
+    // Google Translate v2
+    const url = `https://translation.googleapis.com/language/translate/v2?key=${encodeURIComponent(apiKey)}`;
 
-    if (!key) {
-      return new Response(
-        JSON.stringify({ error: "Missing GOOGLE_TRANSLATE_API_KEY" }),
-        { status: 500, headers: { "Content-Type": "application/json" } }
-      );
-    }
-
-    // Google Translate v2 批量接口
-    const url = `https://translation.googleapis.com/language/translate/v2?key=${encodeURIComponent(
-      key
-    )}`;
-
-    const res = await fetch(url, {
+    // ✅ q 支持数组，一次请求翻译多句
+    const googleRes = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        q: texts,
-        target,
+        q: body.texts,
+        target: body.target,
         format: "text",
       }),
     });
 
-    const json = await res.json();
+    const gJson: any = await googleRes.json().catch(() => ({}));
 
-    if (!res.ok) {
-      return new Response(
-        JSON.stringify({
+    if (!googleRes.ok) {
+      return json(
+        {
           error: "Google translate failed",
-          status: res.status,
-          detail: json,
-        }),
-        { status: 500, headers: { "Content-Type": "application/json" } }
+          status: googleRes.status,
+          details: gJson,
+        },
+        502
       );
     }
 
-    const out: string[] =
-      json?.data?.translations?.map((x: any) => x?.translatedText ?? "") ?? [];
+    const translated: string[] =
+      gJson?.data?.translations?.map((t: any) => t.translatedText) ?? [];
 
-    return new Response(JSON.stringify({ data: out }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    return json({ data: translated });
   } catch (e: any) {
-    return new Response(
-      JSON.stringify({ error: e?.message || "translate error" }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
+    return json({ error: e?.message || "Server error" }, 500);
   }
-};
+}
+
+// （可选）如果有人 GET 访问，明确返回 405，方便你排查
+export async function GET() {
+  return json({ error: "Method Not Allowed. Use POST /api/translate" }, 405);
+}
