@@ -2,13 +2,11 @@
 import TemplateLayout from "../../../layouts/TemplateLayout.astro";
 import { getRealEstatePosts } from "../../../lib/contentful";
 import {
-  SALE_CATEGORY_SLUGS,
-  RENT_CATEGORY_SLUGS,
   CATEGORY_ZH_MAP,
   normalizeKey,
 } from "../../../lib/realEstateTaxonomy";
 
-export const prerender = true;
+export const prerender = false; // ✅ 改成 SSR，避免构建期拿不到 env
 
 function labelDealType(d: string) {
   return d === "sale" ? "房产售卖资讯" : "房产出租资讯";
@@ -19,36 +17,31 @@ function toHttps(url?: string | null) {
   return url.startsWith("//") ? `https:${url}` : url;
 }
 
-/** ✅ 这个函数决定“哪些分类页会被生成” */
-export async function getStaticPaths() {
-  // 1) 先生成你“预设的全部分类页”（保证没内容也有页面）
-  const basePaths = [
-    ...SALE_CATEGORY_SLUGS.map((c) => ({ dealType: "sale", category: c })),
-    ...RENT_CATEGORY_SLUGS.map((c) => ({ dealType: "rent", category: c })),
-  ];
+/**
+ * ✅ Cloudflare Pages runtime env + 本地 dev 兜底
+ * 兼容多种注入路径：
+ * - Astro.locals.runtime.env
+ * - Astro.locals.cloudflare.env
+ * - Astro.locals.env
+ */
+function getCfEnv() {
+  const runtimeEnv =
+    (Astro.locals as any)?.runtime?.env ??
+    (Astro.locals as any)?.cloudflare?.env ??
+    (Astro.locals as any)?.env ??
+    {};
 
-  // 2) 再从 Contentful 真实数据中补充“实际出现过的组合”（更稳）
-  const posts = await getRealEstatePosts(500);
-  const fromContentful = (posts ?? [])
-    .map((p: any) => ({
-      dealType: normalizeKey(p.dealType),
-      category: normalizeKey(p.category),
-    }))
-    .filter((x: any) => x.dealType && x.category);
+  const buildEnv = (import.meta as any)?.env ?? {};
+  const merged = { ...buildEnv, ...runtimeEnv }; // SSR 以 runtime 为准
 
-  // 3) 去重
-  const keySet = new Set<string>();
-  const merged = [...basePaths, ...fromContentful].filter((x) => {
-    const k = `${x.dealType}/${x.category}`;
-    if (keySet.has(k)) return false;
-    keySet.add(k);
-    return true;
-  });
-
-  return merged.map((x) => ({ params: { dealType: x.dealType, category: x.category } }));
+  return {
+    CONTENTFUL_SPACE_ID: merged.CONTENTFUL_SPACE_ID,
+    CONTENTFUL_DELIVERY_TOKEN: merged.CONTENTFUL_DELIVERY_TOKEN,
+    CONTENTFUL_ENVIRONMENT: merged.CONTENTFUL_ENVIRONMENT ?? "master",
+  };
 }
 
-const { dealType, category } = Astro.params as { dealType: string; category: string };
+const { dealType, category } = Astro.params as { dealType?: string; category?: string };
 
 const dealTypeKey = normalizeKey(dealType);   // sale/rent
 const categoryKey = normalizeKey(category);   // apartment/...
@@ -56,27 +49,47 @@ const categoryKey = normalizeKey(category);   // apartment/...
 const dealZh = labelDealType(dealTypeKey);
 const categoryZh = CATEGORY_ZH_MAP[categoryKey] ?? categoryKey;
 
-const allPosts = await getRealEstatePosts(500);
+const cfEnv = getCfEnv();
 
-/** ✅ 核心：过滤时也全部归一化（中文/英文/SELL/出售都能匹配） */
-const posts =
-  (allPosts ?? []).filter((p: any) => {
-    const pDeal = normalizeKey(p.dealType);
-    const pCat = normalizeKey(p.category);
-    return pDeal === dealTypeKey && pCat === categoryKey;
+// ✅ 防止非法 URL
+const isValidDeal = dealTypeKey === "sale" || dealTypeKey === "rent";
+if (!isValidDeal) Astro.response.status = 404;
+
+// ✅ 拉取数据（SSR 时 runtime env 可用）
+let allPosts: any[] = [];
+if (isValidDeal && cfEnv.CONTENTFUL_SPACE_ID && cfEnv.CONTENTFUL_DELIVERY_TOKEN) {
+  allPosts = await getRealEstatePosts(cfEnv, 500);
+} else {
+  console.error("[real-estate/[dealType]/[category]] Missing Contentful env", {
+    hasSpace: !!cfEnv.CONTENTFUL_SPACE_ID,
+    hasToken: !!cfEnv.CONTENTFUL_DELIVERY_TOKEN,
+    env: cfEnv.CONTENTFUL_ENVIRONMENT,
+    dealType,
+    category,
   });
+}
+
+// ✅ 核心：过滤时也全部归一化（中文/英文/SELL/出售都能匹配）
+// 注意：这里用 normalizeKey(p.dealType / p.category) 以你 taxonomy 的逻辑为准
+const posts = (allPosts ?? []).filter((p: any) => {
+  const pDeal = normalizeKey(p?.dealType);
+  const pCat = normalizeKey(p?.category ?? (p as any)?.catagory);
+  return pDeal === dealTypeKey && pCat === categoryKey;
+});
+
+// ✅ 标题
+const pageTitle = `${dealZh} - ${categoryZh}`;
 ---
 
-<TemplateLayout title={`${dealZh} - ${categoryZh}`} subtitle="REAL ESTATE">
+<TemplateLayout title={pageTitle} subtitle="REAL ESTATE">
   <section class="section-padding re-wrap listing-section">
     <div class="container">
-
-      <!-- 你现有的中文标题风格 -->
+      <!-- 中文标题 -->
       <div class="section-title re-title">
         <h2>{dealZh} · {categoryZh}</h2>
       </div>
 
-      <!-- 模板风格标题：黑色 -->
+      <!-- 黑色大标题 -->
       <div class="re-list-head">
         <h2 class="re-list-title">
           {dealTypeKey === "sale" ? "Properties For Sale" : "Properties For Rent"}
@@ -86,7 +99,7 @@ const posts =
       {posts.length ? (
         <div class="re-prop-grid">
           {posts.map((p: any) => {
-            const cover = toHttps(p.image); // ✅ contentful.ts 已返回 image
+            const cover = toHttps(p?.image) || toHttps(p?.imageUrls?.[0]) || "";
             return (
               <a class="re-prop" href={`/real-estate/${p.slug}`}>
                 <div class="re-prop-img">
@@ -99,8 +112,6 @@ const posts =
                 </div>
 
                 <div class="re-prop-content">
-                  
-
                   <div class="re-prop-title">
                     {(p.title ?? "").toString().toUpperCase()}
                   </div>
@@ -113,7 +124,7 @@ const posts =
                     </span>
                   </div>
 
-                  {(p.summary) ? (
+                  {p.summary ? (
                     <div class="re-prop-desc">
                       {String(p.summary).slice(0, 70)}…
                     </div>
@@ -126,15 +137,18 @@ const posts =
       ) : (
         <div class="empty">
           <p><strong>当前分类暂无内容</strong></p>
+          {!cfEnv.CONTENTFUL_SPACE_ID || !cfEnv.CONTENTFUL_DELIVERY_TOKEN ? (
+            <p style="opacity:.7;margin:8px 0 0;">
+              （提示：本页未读取到 Contentful 环境变量，请检查 Cloudflare Pages 的环境变量是否已配置到 Production）
+            </p>
+          ) : null}
         </div>
       )}
-
     </div>
   </section>
 </TemplateLayout>
 
 <style>
-/* 顶部“房产售卖资讯 · 公寓”标题 */
 .section-title.re-title { margin: 0 0 18px; }
 .section-title.re-title h2 {
   font-size: 22px !important;
@@ -154,7 +168,6 @@ const posts =
   margin-top:10px;
 }
 
-/* Properties For Sale/Rent：黑色 */
 .re-list-head{
   text-align:center;
   margin: 12px 0 28px;
@@ -191,7 +204,6 @@ const posts =
   background:#fff;
 }
 
-/* 一行 3 个 */
 .re-prop-grid{
   display:grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -206,7 +218,6 @@ const posts =
   .re-list-title{ font-size: 30px; }
 }
 
-/* 卡片 */
 .re-prop{
   position: relative;
   display:block;
@@ -215,6 +226,7 @@ const posts =
   background:#111;
   min-height: 420px;
   border-radius: 2px;
+  transition: transform .25s ease;
 }
 .re-prop-img{ position:absolute; inset:0; background:#222; }
 .re-prop-img img{
@@ -271,9 +283,8 @@ const posts =
   max-width: 92%;
 }
 .re-prop:hover .re-prop-overlay{ background: rgba(0,0,0,.50); }
-.re-prop:hover{ transform: translateY(-3px); transition: transform .25s ease; }
+.re-prop:hover{ transform: translateY(-3px); }
 
-/* 空状态 */
 .empty {
   padding: 34px;
   text-align: center;
@@ -282,8 +293,5 @@ const posts =
   border: 1px dashed rgba(11,27,84,.25);
 }
 
-/* ✅ 和底部黑色 footer 拉开距离 */
-.listing-section{
-  padding-bottom: 80px;
-}
+.listing-section{ padding-bottom: 80px; }
 </style>
