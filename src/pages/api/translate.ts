@@ -1,157 +1,102 @@
 // src/pages/api/translate.ts
 import type { APIRoute } from "astro";
 
-type ReqBody = {
-  target?: string;      // e.g. "en", "zh-CN", "zh-TW", "zh-HK"
-  texts?: string[];     // text array
-  source?: string;      // optional, e.g. "zh-CN"
-};
+export const prerender = false;
 
-function json(body: any, status = 200, headers: Record<string, string> = {}) {
-  return new Response(JSON.stringify(body), {
+// 允许的 target（你前端要：简体/繁体台/繁体港/英文）
+const ALLOWED_TARGETS = new Set(["en", "zh-CN", "zh-TW", "zh-HK"]);
+
+function json(data: any, status = 200) {
+  return new Response(JSON.stringify(data), {
     status,
     headers: {
       "Content-Type": "application/json; charset=utf-8",
       "Cache-Control": "no-store",
-      ...headers,
     },
   });
 }
 
-function getApiKey(locals: any) {
-  // ✅ Cloudflare Pages runtime env (most important)
-  const fromRuntime = locals?.runtime?.env?.GOOGLE_TRANSLATE_API_KEY;
-  if (fromRuntime) return String(fromRuntime);
-
-  // ✅ local dev (.env) in Astro
-  const fromImportMeta = (import.meta as any)?.env?.GOOGLE_TRANSLATE_API_KEY;
-  if (fromImportMeta) return String(fromImportMeta);
-
-  // ✅ node fallback (rare on CF)
-  const fromProcess = (globalThis as any)?.process?.env?.GOOGLE_TRANSLATE_API_KEY;
-  if (fromProcess) return String(fromProcess);
-
-  return "";
-}
-
-export const POST: APIRoute = async ({ request, locals }) => {
-  // ✅ CORS（如果你未来从别的域名调用，可保留；同域也不影响）
-  const corsHeaders = {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type",
-  };
-
+export const POST: APIRoute = async (ctx) => {
   try {
-    const body = (await request.json()) as ReqBody;
+    // 1) 读取并解析 body（用 text + try/catch，避免 JSON 解析崩掉）
+    const raw = await ctx.request.text();
+    let body: any = {};
+    try {
+      body = raw ? JSON.parse(raw) : {};
+    } catch {
+      return json({ error: "Bad JSON", raw }, 400);
+    }
 
-    const target = (body?.target || "").trim();
-    const textsRaw = Array.isArray(body?.texts) ? body.texts : [];
-    const source = (body?.source || "").trim();
+    const target = String(body?.target || "");
+    const texts = body?.texts;
 
-    // 清理：只保留非空字符串
-    const texts = textsRaw
-      .map((t) => (typeof t === "string" ? t.trim() : ""))
-      .filter(Boolean);
-
-    if (!target || texts.length === 0) {
+    if (!ALLOWED_TARGETS.has(target)) {
       return json(
-        { error: "Bad request", hint: "Require { target: string, texts: string[] }" },
-        400,
-        corsHeaders
+        { error: "Invalid target", allowed: Array.from(ALLOWED_TARGETS) },
+        400
       );
     }
 
-    const apiKey = getApiKey(locals);
+    if (!Array.isArray(texts) || texts.length === 0) {
+      return json({ error: "Bad request: texts must be non-empty array" }, 400);
+    }
+
+    // 2) 读取 API KEY（Cloudflare Pages 线上用 locals.runtime.env；本地用 process.env）
+    const apiKey =
+      (ctx.locals as any)?.runtime?.env?.GOOGLE_TRANSLATE_API_KEY ||
+      (globalThis as any)?.process?.env?.GOOGLE_TRANSLATE_API_KEY;
+
     if (!apiKey) {
       return json(
         {
-          error: "Missing GOOGLE_TRANSLATE_API_KEY in runtime environment variables.",
+          error: "Missing GOOGLE_TRANSLATE_API_KEY",
           hint:
-            "Cloudflare Pages → Settings → Variables and secrets → add GOOGLE_TRANSLATE_API_KEY (Secret) and REDEPLOY.",
+            "本地请在项目根目录创建 .env 并写入 GOOGLE_TRANSLATE_API_KEY=xxx，然后重启 npm run dev；线上请在 Cloudflare Pages 变量/机密里设置并重新部署",
         },
-        500,
-        corsHeaders
+        500
       );
     }
 
-    // ✅ Google Translate API v2 endpoint
+    // 3) 调 Google Translate（建议用 key 放 query 的 v2 方式，你现在就是）
     const endpoint = `https://translation.googleapis.com/language/translate/v2?key=${encodeURIComponent(
       apiKey
     )}`;
 
-    const payload: any = {
-      q: texts,
-      target,
-      format: "text",
-    };
-    if (source) payload.source = source;
-
     const res = await fetch(endpoint, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json; charset=utf-8",
-      },
-      body: JSON.stringify(payload),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        q: texts,
+        target,
+        format: "text",
+      }),
     });
 
-    const rawText = await res.text();
-    let data: any = null;
-    try {
-      data = rawText ? JSON.parse(rawText) : null;
-    } catch {
-      data = rawText;
-    }
+    const data = await res.json().catch(() => null);
 
     if (!res.ok) {
-      // ✅ 把 Google 返回的错误带回去，排错最快
+      // 把 Google 的错误原样吐回去，方便你在 Network 里直接看原因
       return json(
         {
-          error: "Google Translate API failed",
+          error: "Google Translate API error",
           status: res.status,
-          statusText: res.statusText,
-          detail: data,
+          details: data,
         },
-        502,
-        corsHeaders
+        502
       );
     }
 
-    const translations = data?.data?.translations;
-    if (!Array.isArray(translations)) {
-      return json(
-        {
-          error: "Unexpected Google response shape",
-          detail: data,
-        },
-        502,
-        corsHeaders
-      );
-    }
-
-    const out = translations.map((t: any) => String(t?.translatedText ?? ""));
-    return json({ data: out }, 200, corsHeaders);
+    const out = (data?.data?.translations || []).map((t: any) => t.translatedText);
+    return json({ data: out }, 200);
   } catch (e: any) {
     return json(
-      {
-        error: "Internal error",
-        message: String(e?.message || e),
-      },
-      500,
-      corsHeaders
+      { error: "Internal error", message: String(e?.message || e) },
+      500
     );
   }
 };
 
-// ✅ 让浏览器预检 OPTIONS 通过（有些情况下会触发）
-export const OPTIONS: APIRoute = async () => {
-  return new Response(null, {
-    status: 204,
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
-      "Access-Control-Max-Age": "86400",
-    },
-  });
+// （可选）给 GET 一个提示，避免你误访问看到 405
+export const GET: APIRoute = async () => {
+  return json({ ok: true, method: "GET not supported, use POST" }, 200);
 };
