@@ -2,11 +2,36 @@
 import TemplateLayout from "../../layouts/TemplateLayout.astro";
 import { getRealEstatePosts } from "../../lib/contentful";
 import SubpageIntroBanner from "../../components/SubpageIntroBanner.astro";
+
 /**
- * 这里是房产资讯首页
+ * ✅ 这里是房产资讯首页
  * 只展示分类入口 + 最新发布
+ *
+ * 关键修复：
+ * 1) Cloudflare Pages runtime env 读取
+ * 2) getRealEstatePosts 必须传 env：getRealEstatePosts(env, limit)
+ * 3) 用 SSR：避免构建期 env/运行期 env 不一致
  */
-const posts = await getRealEstatePosts(6);
+export const prerender = false;
+
+/** ✅ Cloudflare Pages runtime env + 本地 dev 兜底 */
+function getCfEnv() {
+  const runtimeEnv = (Astro.locals as any)?.runtime?.env ?? {};
+  const buildEnv = (import.meta as any)?.env ?? {};
+  const merged = { ...buildEnv, ...runtimeEnv };
+
+  return {
+    CONTENTFUL_SPACE_ID: merged.CONTENTFUL_SPACE_ID,
+    CONTENTFUL_DELIVERY_TOKEN: merged.CONTENTFUL_DELIVERY_TOKEN,
+    CONTENTFUL_ENVIRONMENT: merged.CONTENTFUL_ENVIRONMENT ?? "master",
+  };
+}
+
+const cfEnv = getCfEnv();
+
+/** ✅ 注意：必须传 env */
+const posts = await getRealEstatePosts(cfEnv, 6);
+
 const introItems = [
   { title: "覆盖类别", desc: "售卖/出租/土地开发/商业办公等分类入口。" },
   { title: "选房要点", desc: "整理交易流程、议价策略、回报与风险提示。" }
@@ -141,16 +166,14 @@ const rentCats = [
 }
 
 /* ========== 让“房产售卖资讯”标题离 TopBanner 更远一点 ========== */
-/* 你的分类入口区块：第一个 section */
 .service-area.section-padding{
-  padding-top: 64px !important;   /* 原来可能很小/被覆盖 */
+  padding-top: 64px !important;
   padding-bottom: 0px !important;
 }
 
 /* ========== 让“最新发布”整个区块与上一块拉开 ========== */
-/* 你的最新发布区块：第二个 section 最新发布*/
 .blog-area.section-padding{
-  padding-top: 0px !important;   /* 关键：拉开“最新发布”上方距离 */
+  padding-top: 0px !important;
   padding-bottom: 64px !important;
 }
 
@@ -162,7 +185,7 @@ const rentCats = [
 /* ========== 每个标题本身：统一上下间距 ========== */
 .section-title{
   margin-top: 0 !important;
-  margin-bottom: 22px !important; /* 标题与下面卡片的距离更舒服 */
+  margin-bottom: 22px !important;
 }
 
 /* 第二段标题（你用了 mt-40）：更明显的分隔 */
