@@ -1,61 +1,75 @@
-export const prerender = false;
+// src/pages/api/translate.ts
+import type { APIRoute } from "astro";
 
-type TranslateReq = {
-  text: string | string[];
-  target: string; // 'en' | 'zh-CN' ...
-  source?: string; // 可选
+type ReqBody = {
+  target?: string;      // "en"
+  texts?: string[];     // 批量文本
 };
 
-function json(data: unknown, init?: ResponseInit) {
-  return new Response(JSON.stringify(data), {
-    headers: { "Content-Type": "application/json; charset=utf-8" },
-    ...init,
-  });
-}
-
-export async function POST({ request }: { request: Request }) {
+export const POST: APIRoute = async ({ request, locals }) => {
   try {
-    const body = (await request.json()) as TranslateReq;
+    const body = (await request.json()) as ReqBody;
+    const target = (body.target || "en").toString();
+    const texts = Array.isArray(body.texts) ? body.texts : [];
 
-    const apiKey = (import.meta as any).env.GOOGLE_TRANSLATE_API_KEY as string | undefined;
-    if (!apiKey) return json({ error: "Missing GOOGLE_TRANSLATE_API_KEY" }, { status: 500 });
-
-    const texts = Array.isArray(body.text) ? body.text : [body.text];
-    const target = body.target || "en";
-    const source = body.source;
-
-    if (!texts.length || !target) {
-      return json({ error: "text/target required" }, { status: 400 });
+    if (!texts.length) {
+      return new Response(JSON.stringify({ data: [] }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
-    const url = `https://translation.googleapis.com/language/translate/v2?key=${encodeURIComponent(apiKey)}`;
+    // ✅ 读取 Cloudflare Pages 环境变量
+    // Astro + Cloudflare adapter 下：locals.runtime.env
+    const env = (locals as any)?.runtime?.env || {};
+    const key = env.GOOGLE_TRANSLATE_API_KEY as string | undefined;
 
-    const payload: any = {
-      q: texts,
-      target,
-      format: "text",
-    };
-    if (source) payload.source = source;
+    if (!key) {
+      return new Response(
+        JSON.stringify({ error: "Missing GOOGLE_TRANSLATE_API_KEY" }),
+        { status: 500, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    // Google Translate v2 批量接口
+    const url = `https://translation.googleapis.com/language/translate/v2?key=${encodeURIComponent(
+      key
+    )}`;
 
     const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({
+        q: texts,
+        target,
+        format: "text",
+      }),
     });
 
-    const data = await res.json();
+    const json = await res.json();
+
     if (!res.ok) {
-      return json({ error: "Google API error", details: data }, { status: 500 });
+      return new Response(
+        JSON.stringify({
+          error: "Google translate failed",
+          status: res.status,
+          detail: json,
+        }),
+        { status: 500, headers: { "Content-Type": "application/json" } }
+      );
     }
 
-    const translated = (data?.data?.translations ?? []).map((t: any) => t.translatedText);
+    const out: string[] =
+      json?.data?.translations?.map((x: any) => x?.translatedText ?? "") ?? [];
 
-    return json({
-      target,
-      source: data?.data?.translations?.[0]?.detectedSourceLanguage,
-      translated,
+    return new Response(JSON.stringify({ data: out }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
     });
   } catch (e: any) {
-    return json({ error: "Bad request", details: String(e?.message ?? e) }, { status: 400 });
+    return new Response(
+      JSON.stringify({ error: e?.message || "translate error" }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
   }
-}
+};

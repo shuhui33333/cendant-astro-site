@@ -79,7 +79,6 @@ function isRealEstateActive() {
     <link rel="stylesheet" href="/template15/css/mainStyles.css" />
 
     <style is:global>
-
       html, body { margin: 0; padding: 0; }
       html, body { visibility: visible !important; }
       body { display: block !important; }
@@ -172,126 +171,37 @@ function isRealEstateActive() {
         cursor:pointer; border-radius:6px; line-height:34px; text-align:center; opacity:.85;
       }
       .submenu-row button.submenu-toggle-btn:hover{ background:rgba(0,0,0,.06); opacity:1; }
+
+      /* ✅ 语言按钮样式（TopBar 里更紧凑） */
+      .tpl-lang-li { padding: 10px 0 0 10px; }
+      .tpl-lang-btns { display:flex; gap:6px; align-items:center; }
+      .tpl-lang-btns .btn { padding: 4px 8px; }
+
+      /* ✅ 手机端语言按钮：放在三条线旁边 */
+      .tpl-lang-mobile {
+        display:flex;
+        gap:6px;
+        align-items:center;
+        margin-right: 10px;
+        float: right;
+        padding-top: 8px;
+      }
     </style>
   </head>
 
   <body class:list={["tpl-body", hasHero ? "tpl-has-hero" : ""]}>
-
-    <!-- ✅ 语言切换按钮：必须放在 body 里 -->
-    <div id="lang-switch" style="position:fixed;right:14px;bottom:14px;z-index:99999;">
-      <button id="btn-zh" class="btn btn-default btn-sm" type="button">中文</button>
-      <button id="btn-en" class="btn btn-primary btn-sm" type="button">EN</button>
-    </div>
-
-    <!-- ✅ 语言切换脚本：放在按钮后面最稳 -->
-    <script is:inline>
-      (function () {
-        var LANG_KEY = "site_lang";
-        var lang = localStorage.getItem(LANG_KEY) || "zh";
-
-        var btnZh = document.getElementById("btn-zh");
-        var btnEn = document.getElementById("btn-en");
-
-        function paint() {
-          if (!btnZh || !btnEn) return;
-          if (lang === "en") {
-            btnEn.className = "btn btn-primary btn-sm";
-            btnZh.className = "btn btn-default btn-sm";
-          } else {
-            btnZh.className = "btn btn-primary btn-sm";
-            btnEn.className = "btn btn-default btn-sm";
-          }
-        }
-
-        function setLang(next) {
-          lang = next;
-          localStorage.setItem(LANG_KEY, next);
-          paint();
-          if (next === "zh") { location.reload(); return; }
-          translatePageToEnglish();
-        }
-
-        btnZh && btnZh.addEventListener("click", function(){ setLang("zh"); });
-        btnEn && btnEn.addEventListener("click", function(){ setLang("en"); });
-
-        paint();
-        if (lang === "en") translatePageToEnglish();
-
-        async function translatePageToEnglish() {
-          // 1) 收集文本节点
-          var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null);
-          var nodes = [];
-          var texts = [];
-          var seen = new Map();
-
-          while (walker.nextNode()) {
-            var n = walker.currentNode;
-            if (!n || !n.nodeValue) continue;
-
-            var t = n.nodeValue.trim();
-            if (!t) continue;
-
-            var p = n.parentElement;
-            if (!p) continue;
-
-            var tag = p.tagName;
-            if (tag === "SCRIPT" || tag === "STYLE" || tag === "NOSCRIPT") continue;
-            if (p.closest("script,style,noscript,textarea,input,select,option,code,pre")) continue;
-
-            if (/^[\x00-\x7F\s0-9.,:;!?'"()\-\+\/]+$/.test(t)) continue;
-
-            if (!seen.has(t)) {
-              seen.set(t, { trans: "" });
-              texts.push(t);
-            }
-            nodes.push({ node: n, key: t });
-          }
-
-          if (!texts.length) return;
-
-          async function batchTranslate(batch) {
-            // ✅ 改成 /api/translate（更符合你前面本地调试的路由）
-            var res = await fetch("/api/translate", {
-              method: "POST",
-              headers: {"Content-Type":"application/json"},
-              body: JSON.stringify({ target: "en", texts: batch })
-            });
-            var json = await res.json();
-            if (!res.ok) throw new Error(json && json.error ? json.error : "translate failed");
-            return json.data || [];
-          }
-
-          var BATCH = 60;
-          for (var i = 0; i < texts.length; i += BATCH) {
-            var part = texts.slice(i, i + BATCH);
-            var out = await batchTranslate(part);
-            for (var j = 0; j < part.length; j++) {
-              var original = part[j];
-              var translated = out[j] || "";
-              if (seen.has(original)) seen.get(original).trans = translated;
-            }
-          }
-
-          for (var k = 0; k < nodes.length; k++) {
-            var item = nodes[k];
-            var info = seen.get(item.key);
-            if (info && info.trans) {
-              item.node.nodeValue = item.node.nodeValue.replace(item.key, decodeHtml(info.trans));
-            }
-          }
-        }
-
-        function decodeHtml(s) {
-          var d = document.createElement("textarea");
-          d.innerHTML = s;
-          return d.value;
-        }
-      })();
-    </script>
-
     <div class="banner" id="home">
       <nav class="navbar navbar-default" id="site-navbar">
         <div class="navbar-header navbar-left">
+
+          <!-- ✅ 手机端：语言按钮在三条线旁边 -->
+          <div class="tpl-lang-mobile visible-xs">
+            <button type="button" class="btn btn-default btn-xs" data-lang-btn="zh-CN">简</button>
+            <button type="button" class="btn btn-default btn-xs" data-lang-btn="zh-TW">繁台</button>
+            <button type="button" class="btn btn-default btn-xs" data-lang-btn="zh-HK">繁港</button>
+            <button type="button" class="btn btn-default btn-xs" data-lang-btn="en">EN</button>
+          </div>
+
           <button
             type="button"
             class="navbar-toggle collapsed"
@@ -368,6 +278,16 @@ function isRealEstateActive() {
                   </li>
                 );
               })}
+
+              {/* ✅ 桌面端语言按钮：放在“联系我们”右侧（在 nav.map 后面追加） */}
+              <li class="tpl-lang-li hidden-xs">
+                <div class="tpl-lang-btns">
+                  <button type="button" class="btn btn-default btn-xs" data-lang-btn="zh-CN">简体</button>
+                  <button type="button" class="btn btn-default btn-xs" data-lang-btn="zh-TW">繁體(台)</button>
+                  <button type="button" class="btn btn-default btn-xs" data-lang-btn="zh-HK">繁體(港)</button>
+                  <button type="button" class="btn btn-default btn-xs" data-lang-btn="en">EN</button>
+                </div>
+              </li>
             </ul>
           </nav>
         </div>
@@ -399,6 +319,7 @@ function isRealEstateActive() {
       </div>
     )}
 
+    <!-- ✅ 子页不被遮挡：动态测量 navbar 高度 -->
     <script is:inline>
       (function () {
         function setNavHeight() {
@@ -413,7 +334,7 @@ function isRealEstateActive() {
       })();
     </script>
 
-    <!-- ✅ submenu 防关闭（保持你之前的逻辑，不动） -->
+    <!-- ✅ submenu 防关闭（保持你之前的逻辑） -->
     <script is:inline>
       (function () {
         function qs(sel, root) { return (root || document).querySelector(sel); }
@@ -471,133 +392,143 @@ function isRealEstateActive() {
         }, true);
       })();
     </script>
-    <!-- ✅ Language Switch (place it just before </body>) -->
-    <div id="lang-switch" class="lang-switch">
-      <button id="btn-zh" type="button" class="btn btn-default btn-sm">中文</button>
-      <button id="btn-en" type="button" class="btn btn-primary btn-sm">EN</button>
-    </div>
 
-    <style is:global>
-      /* 强制显示 + 防止被模板盖住 */
-      #lang-switch.lang-switch{
-        position: fixed !important;
-        right: 14px !important;
-        bottom: 14px !important;
-        z-index: 2147483647 !important; /* 超大，基本不可能被盖 */
-        display: flex !important;
-        gap: 8px !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-        pointer-events: auto !important;
-      }
-      #lang-switch button{
-        display: inline-block !important;
-      }
-    </style>
-
+    <!-- ✅ 三/四语言切换：文本节点翻译（走 /api/translate） -->
     <script is:inline>
-    (function () {
-      var LANG_KEY = "site_lang";
-      var lang = localStorage.getItem(LANG_KEY) || "zh";
+      (function () {
+        var LANG_KEY = "site_lang";
+        var lang = localStorage.getItem(LANG_KEY) || "zh-CN"; // 默认简体
 
-      var btnZh = document.getElementById("btn-zh");
-      var btnEn = document.getElementById("btn-en");
-
-      function paint() {
-        if (!btnZh || !btnEn) return;
-        if (lang === "en") {
-          btnEn.className = "btn btn-primary btn-sm";
-          btnZh.className = "btn btn-default btn-sm";
-        } else {
-          btnZh.className = "btn btn-primary btn-sm";
-          btnEn.className = "btn btn-default btn-sm";
-        }
-      }
-
-      function setLang(next) {
-        lang = next;
-        localStorage.setItem(LANG_KEY, next);
-        paint();
-        if (next === "zh") { location.reload(); return; }
-        translatePageToEnglish();
-      }
-
-      btnZh && btnZh.addEventListener("click", function(){ setLang("zh"); });
-      btnEn && btnEn.addEventListener("click", function(){ setLang("en"); });
-
-      paint();
-      if (lang === "en") translatePageToEnglish();
-
-      async function translatePageToEnglish() {
-        var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null);
-        var nodes = [];
-        var texts = [];
-        var seen = new Map();
-
-        while (walker.nextNode()) {
-          var n = walker.currentNode;
-          if (!n || !n.nodeValue) continue;
-
-          var t = n.nodeValue.trim();
-          if (!t) continue;
-
-          var p = n.parentElement;
-          if (!p) continue;
-
-          var tag = p.tagName;
-          if (tag === "SCRIPT" || tag === "STYLE" || tag === "NOSCRIPT") continue;
-          if (p.closest("script,style,noscript,textarea,input,select,option,code,pre")) continue;
-
-          // 已经是英文/数字为主就跳过，省钱
-          if (/^[\x00-\x7F\s0-9.,:;!?'"()\-\+\/]+$/.test(t)) continue;
-
-          if (!seen.has(t)) {
-            seen.set(t, { trans: "" });
-            texts.push(t);
-          }
-          nodes.push({ node: n, key: t });
-        }
-
-        if (!texts.length) return;
-
-        async function batchTranslate(batch) {
-          var res = await fetch("/api/translate", {
-            method: "POST",
-            headers: {"Content-Type":"application/json"},
-            body: JSON.stringify({ target: "en", texts: batch })
+        function paintButtons() {
+          ["zh-CN","zh-TW","zh-HK","en"].forEach(function (k) {
+            document.querySelectorAll('[data-lang-btn="' + k + '"]').forEach(function (b) {
+              b.className = "btn btn-" + (lang === k ? "primary" : "default") + " btn-xs";
+            });
           });
-          var json = await res.json();
-          if (!res.ok) throw new Error(json && json.error ? json.error : "translate failed");
-          return json.data || [];
         }
 
-        var BATCH = 60;
-        for (var i = 0; i < texts.length; i += BATCH) {
-          var part = texts.slice(i, i + BATCH);
-          var out = await batchTranslate(part);
-          for (var j = 0; j < part.length; j++) {
-            var original = part[j];
-            var translated = out[j] || "";
-            if (seen.has(original)) seen.get(original).trans = translated;
+        function isEnglishLike(t){
+          return /^[\x00-\x7F\s0-9.,:;!?'"()\-\+\/]+$/.test(t);
+        }
+
+        function decodeHtml(s) {
+          var d = document.createElement("textarea");
+          d.innerHTML = s;
+          return d.value;
+        }
+
+        async function translatePageTo(target) {
+          console.log("[i18n] translate to:", target);
+          paintButtons();
+
+          var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null);
+          var nodes = [];
+          var texts = [];
+          var map = new Map();
+
+          while (walker.nextNode()) {
+            var n = walker.currentNode;
+            if (!n || !n.nodeValue) continue;
+
+            var raw = n.nodeValue;
+            var t = raw.trim();
+            if (!t) continue;
+
+            var p = n.parentElement;
+            if (!p) continue;
+
+            var tag = p.tagName;
+            if (tag === "SCRIPT" || tag === "STYLE" || tag === "NOSCRIPT") continue;
+            if (p.closest("script,style,noscript,textarea,input,select,option,code,pre")) continue;
+
+            // 纯英文/数字就不翻
+            if (isEnglishLike(t)) continue;
+
+            if (!map.has(t)) {
+              map.set(t, { trans: "" });
+              texts.push(t);
+            }
+            nodes.push({ node: n, key: t });
           }
-        }
 
-        for (var k = 0; k < nodes.length; k++) {
-          var item = nodes[k];
-          var info = seen.get(item.key);
-          if (info && info.trans) {
-            item.node.nodeValue = item.node.nodeValue.replace(item.key, decodeHtml(info.trans));
+          if (!texts.length) {
+            console.log("[i18n] no text to translate");
+            return;
           }
-        }
-      }
 
-      function decodeHtml(s) {
-        var d = document.createElement("textarea");
-        d.innerHTML = s;
-        return d.value;
-      }
-    })();
+          async function batchTranslate(batch) {
+            console.log("[i18n] call /api/translate target=", target, "size=", batch.length);
+            var res = await fetch("/api/translate", {
+              method: "POST",
+              headers: {"Content-Type":"application/json"},
+              body: JSON.stringify({ target: target, texts: batch })
+            });
+
+            var json = await res.json().catch(function(){ return {}; });
+
+            if (!res.ok) {
+              console.error("[i18n] API failed:", res.status, json);
+              alert("翻译接口失败: " + res.status + "\\n请打开F12看 Network/Console");
+              throw new Error("translate failed");
+            }
+            return json.data || [];
+          }
+
+          var BATCH = 40;
+          for (var i = 0; i < texts.length; i += BATCH) {
+            var part = texts.slice(i, i + BATCH);
+            var out = await batchTranslate(part);
+            for (var j = 0; j < part.length; j++) {
+              map.get(part[j]).trans = out[j] || "";
+            }
+          }
+
+          nodes.forEach(function (it) {
+            var tr = map.get(it.key) && map.get(it.key).trans;
+            if (tr) it.node.nodeValue = it.node.nodeValue.replace(it.key, decodeHtml(tr));
+          });
+
+          console.log("[i18n] translate done:", target);
+        }
+
+        function setLang(next) {
+          lang = next;
+          localStorage.setItem(LANG_KEY, next);
+          paintButtons();
+
+          // 简体：恢复原文（刷新）
+          if (next === "zh-CN") {
+            location.reload();
+            return;
+          }
+
+          // zh-TW / zh-HK / en：走 API
+          translatePageTo(next);
+        }
+
+        // ✅ 事件委托：按钮永远可点；且不会触发菜单关闭/跳转
+        document.addEventListener("click", function (e) {
+          var btn = e.target && e.target.closest && e.target.closest("[data-lang-btn]");
+          if (!btn) return;
+
+          e.preventDefault();
+          e.stopPropagation();
+
+          var next = btn.getAttribute("data-lang-btn");
+          console.log("[i18n] click:", next);
+          setLang(next);
+        }, true);
+
+        // 初始化
+        paintButtons();
+
+        // 如果用户之前选过繁体/英文，自动翻译
+        if (lang === "en" || lang === "zh-TW" || lang === "zh-HK") {
+          translatePageTo(lang);
+        }
+      })();
     </script>
+
     <!-- ===== template15 JS ===== -->
     <script is:inline src="/template15/js/jquery-2.1.4.min.js"></script>
     <script is:inline src="/template15/js/bootstrap.js"></script>
