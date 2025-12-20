@@ -2,7 +2,22 @@
 import TemplateLayout from "../layouts/TemplateLayout.astro";
 import { getRealEstatePosts } from "../lib/contentful";
 
-const posts = await getRealEstatePosts(9);
+/**
+ * ✅ Cloudflare Pages (Astro SSR) 正确读取环境变量：
+ * - 运行时：Astro.locals.runtime.env
+ * - 本地 dev：import.meta.env（兜底）
+ */
+const runtimeEnv = (Astro.locals as any)?.runtime?.env ?? {};
+const buildEnv = (import.meta as any)?.env ?? {};
+
+// 合并：运行时优先，其次本地 dev 兜底
+const env = {
+  ...buildEnv,
+  ...runtimeEnv,
+};
+
+// ✅ 传 env 进去（你现在的 contentful.ts 需要 env 参数）
+const posts = await getRealEstatePosts(env, 9);
 
 /** ✅ 统一获取封面（优先 p.image，其次 p.imageUrls[0]，都没有就用占位图） */
 function pickImage(p: any) {
@@ -11,7 +26,7 @@ function pickImage(p: any) {
     (Array.isArray(p?.imageUrls) ? p.imageUrls[0] : "") ||
     "";
 
-  if (!u) return "/template15/images/banner.jpg"; // ✅ 兜底占位（你也可换成自己的一张）
+  if (!u) return "/template15/images/banner.jpg"; // ✅ 兜底占位
   return String(u).startsWith("//") ? `https:${u}` : String(u);
 }
 
@@ -28,7 +43,7 @@ const categoryMap: Record<string, string> = {
 };
 function displayCategory(v: any) {
   const s = String(v ?? "").trim();
-  return categoryMap[s] ?? s ?? "资讯";
+  return categoryMap[s] ?? (s || "资讯");
 }
 ---
 
