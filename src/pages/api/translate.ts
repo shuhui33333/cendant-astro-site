@@ -1,26 +1,27 @@
 // src/pages/api/translate.ts
 import type { APIRoute } from "astro";
-import { getRuntime } from "@astrojs/cloudflare/runtime";
 
 type ReqBody = {
   target: "en" | "zh-CN" | "zh-TW" | "zh-HK";
   texts: string[];
-  source?: "zh-CN" | "zh-TW" | "zh-HK" | "en";
 };
+
+function getEnvKey(context: any) {
+  // Cloudflare Pages + Astro adapter 通常会把 env 放在 locals.runtime.env
+  const fromRuntime = context?.locals?.runtime?.env?.GOOGLE_TRANSLATE_API_KEY;
+  const fromProcess = (globalThis as any)?.process?.env?.GOOGLE_TRANSLATE_API_KEY;
+  return fromRuntime || fromProcess || "";
+}
 
 export const POST: APIRoute = async (context) => {
   try {
-    const runtime = getRuntime(context);
-    const envKey =
-      runtime?.env?.GOOGLE_TRANSLATE_API_KEY ||
-      (import.meta as any).env?.GOOGLE_TRANSLATE_API_KEY ||
-      (process as any)?.env?.GOOGLE_TRANSLATE_API_KEY;
+    const apiKey = getEnvKey(context);
 
-    if (!envKey) {
+    if (!apiKey) {
       return new Response(
         JSON.stringify({
           error:
-            "Missing GOOGLE_TRANSLATE_API_KEY in environment variables. (Cloudflare Pages 需要重新部署后才生效，并确认 Production 环境已配置)",
+            "Missing GOOGLE_TRANSLATE_API_KEY in environment variables.（你需要确保 Cloudflare Pages -> Production 环境变量已设置，并且部署成功）",
         }),
         { status: 500, headers: { "Content-Type": "application/json" } }
       );
@@ -30,16 +31,15 @@ export const POST: APIRoute = async (context) => {
     const target = body?.target;
     const texts = Array.isArray(body?.texts) ? body.texts : [];
 
-    if (!target || !Array.isArray(texts) || texts.length === 0) {
-      return new Response(
-        JSON.stringify({ error: "Bad request: target/texts required." }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
-      );
+    if (!target || texts.length === 0) {
+      return new Response(JSON.stringify({ error: "Bad request" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
-    // Google v2 Translate: 一次可以传多条 q
     const url = `https://translation.googleapis.com/language/translate/v2?key=${encodeURIComponent(
-      envKey
+      apiKey
     )}`;
 
     const res = await fetch(url, {
@@ -49,7 +49,6 @@ export const POST: APIRoute = async (context) => {
         q: texts,
         target,
         format: "text",
-        // source: body.source || "zh-CN", // 如果你想固定源语言可打开
       }),
     });
 
@@ -57,11 +56,7 @@ export const POST: APIRoute = async (context) => {
 
     if (!res.ok) {
       return new Response(
-        JSON.stringify({
-          error: "Google Translate API error",
-          status: res.status,
-          detail: json,
-        }),
+        JSON.stringify({ error: "Google API error", status: res.status, detail: json }),
         { status: 502, headers: { "Content-Type": "application/json" } }
       );
     }
