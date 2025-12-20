@@ -1,5 +1,4 @@
 // src/lib/contentful.ts
-
 type CfLink = { sys: { type: "Link"; linkType: "Asset"; id: string } };
 
 export type RealEstatePost = {
@@ -18,7 +17,7 @@ export type RealEstatePostDetail = RealEstatePost & {
   body?: any;
 };
 
-type CfEnv = {
+export type CfEnv = {
   CONTENTFUL_SPACE_ID?: string;
   CONTENTFUL_DELIVERY_TOKEN?: string;
   CONTENTFUL_ENVIRONMENT?: string;
@@ -26,26 +25,8 @@ type CfEnv = {
 
 const CONTENT_TYPE = "realEstatePost";
 
-/* ------------------ env helper ------------------ */
-// 兼容：
-// - build-time: import.meta.env
-// - runtime (Cloudflare Pages SSR): 你可以传 locals.runtime.env
-function readEnv(runtimeEnv?: CfEnv): Required<Pick<CfEnv, "CONTENTFUL_SPACE_ID" | "CONTENTFUL_DELIVERY_TOKEN">> &
-  Pick<CfEnv, "CONTENTFUL_ENVIRONMENT"> {
-  const buildEnv = import.meta.env as any;
+/* ------------------ helpers ------------------ */
 
-  const SPACE = runtimeEnv?.CONTENTFUL_SPACE_ID ?? buildEnv.CONTENTFUL_SPACE_ID;
-  const TOKEN = runtimeEnv?.CONTENTFUL_DELIVERY_TOKEN ?? buildEnv.CONTENTFUL_DELIVERY_TOKEN;
-  const ENV = runtimeEnv?.CONTENTFUL_ENVIRONMENT ?? buildEnv.CONTENTFUL_ENVIRONMENT ?? "master";
-
-  return {
-    CONTENTFUL_SPACE_ID: SPACE,
-    CONTENTFUL_DELIVERY_TOKEN: TOKEN,
-    CONTENTFUL_ENVIRONMENT: ENV,
-  } as any;
-}
-
-/* ------------------ utils ------------------ */
 function toAssetUrl(u?: string) {
   if (!u) return "";
   return u.startsWith("//") ? `https:${u}` : u;
@@ -57,19 +38,19 @@ function pickCategory(fields: any): string | undefined {
 
 /**
  * 支持：
- * 1) fields.image = [Asset]
+ * 1) fields.image = [Asset] 已展开
  * 2) fields.image = [Link] + includes.Asset
  */
 function resolveImageUrls(entry: any, includes: any): string[] {
   const field = entry?.fields?.image;
   if (!field) return [];
 
-  // 已展开
+  // 已展开 asset
   if (Array.isArray(field) && field?.[0]?.fields?.file?.url) {
     return field.map((a: any) => toAssetUrl(a?.fields?.file?.url)).filter(Boolean);
   }
 
-  // Link → includes.Asset
+  // Link -> includes.Asset
   const links: CfLink[] = Array.isArray(field) ? field : [field];
   const assets = includes?.Asset ?? [];
   if (!Array.isArray(assets) || assets.length === 0) return [];
@@ -84,12 +65,33 @@ function resolveImageUrls(entry: any, includes: any): string[] {
   return links.map((l: any) => idToUrl.get(l?.sys?.id)).filter(Boolean) as string[];
 }
 
-/* ------------------ client ------------------ */
-function makeClient(runtimeEnv?: CfEnv) {
-  const { CONTENTFUL_SPACE_ID: SPACE, CONTENTFUL_DELIVERY_TOKEN: TOKEN, CONTENTFUL_ENVIRONMENT: ENV } =
-    readEnv(runtimeEnv);
+/**
+ * ✅ 兼容：如果你不传 env，就尝试从 import.meta.env 读取（本地/构建期）
+ */
+function normalizeEnv(env?: CfEnv): CfEnv {
+  if (env) return env;
+  const b = (import.meta as any)?.env ?? {};
+  return {
+    CONTENTFUL_SPACE_ID: b.CONTENTFUL_SPACE_ID,
+    CONTENTFUL_DELIVERY_TOKEN: b.CONTENTFUL_DELIVERY_TOKEN,
+    CONTENTFUL_ENVIRONMENT: b.CONTENTFUL_ENVIRONMENT,
+  };
+}
 
-  if (!SPACE || !TOKEN) return null;
+function makeClient(env?: CfEnv) {
+  const e = normalizeEnv(env);
+  const SPACE = e.CONTENTFUL_SPACE_ID;
+  const TOKEN = e.CONTENTFUL_DELIVERY_TOKEN;
+  const ENV = e.CONTENTFUL_ENVIRONMENT ?? "master";
+
+  if (!SPACE || !TOKEN) {
+    console.error("[Contentful] Missing env:", {
+      hasSpace: !!SPACE,
+      hasToken: !!TOKEN,
+      env: ENV,
+    });
+    return null;
+  }
 
   const BASE = `https://cdn.contentful.com/spaces/${SPACE}/environments/${ENV}`;
 
@@ -97,10 +99,7 @@ function makeClient(runtimeEnv?: CfEnv) {
     const url = `${BASE}${path}`;
     const res = await fetch(url, { headers: { Authorization: `Bearer ${TOKEN}` } });
     const text = await res.text();
-
-    if (!res.ok) {
-      throw new Error(`Contentful error ${res.status}\nURL: ${url}\nBody: ${text}`);
-    }
+    if (!res.ok) throw new Error(`Contentful error ${res.status}\nURL: ${url}\nBody: ${text}`);
     return JSON.parse(text);
   }
 
@@ -109,13 +108,13 @@ function makeClient(runtimeEnv?: CfEnv) {
 
 /* ------------------ APIs ------------------ */
 
-// ✅ env 可选：不传也能用（兼容旧代码）
-export async function getRealEstatePosts(runtimeEnv?: CfEnv, limit = 20): Promise<RealEstatePost[]> {
-  const client = makeClient(runtimeEnv);
-  if (!client) {
-    console.error("[Contentful] Missing env vars: CONTENTFUL_SPACE_ID / CONTENTFUL_DELIVERY_TOKEN");
-    return [];
-  }
+// ✅ 兼容旧调用：getRealEstatePosts(9) 也能跑
+export async function getRealEstatePosts(arg1?: CfEnv | number, arg2?: number): Promise<RealEstatePost[]> {
+  const env = typeof arg1 === "object" ? arg1 : undefined;
+  const limit = typeof arg1 === "number" ? arg1 : (arg2 ?? 20);
+
+  const client = makeClient(env);
+  if (!client) return [];
 
   try {
     const data = await client.cfFetch(
@@ -147,12 +146,13 @@ export async function getRealEstatePosts(runtimeEnv?: CfEnv, limit = 20): Promis
   }
 }
 
-export async function getRealEstatePostBySlug(
-  slug: string,
-  runtimeEnv?: CfEnv
-): Promise<RealEstatePostDetail | null> {
-  const client = makeClient(runtimeEnv);
-  if (!client) return null;
+// ✅ 兼容旧调用：getRealEstatePostBySlug(slug)
+export async function getRealEstatePostBySlug(arg1: CfEnv | string, arg2?: string): Promise<RealEstatePostDetail | null> {
+  const env = typeof arg1 === "object" ? arg1 : undefined;
+  const slug = typeof arg1 === "string" ? arg1 : (arg2 ?? "");
+
+  const client = makeClient(env);
+  if (!client || !slug) return null;
 
   try {
     const data = await client.cfFetch(
@@ -183,8 +183,9 @@ export async function getRealEstatePostBySlug(
   }
 }
 
-export async function getAllRealEstateSlugs(runtimeEnv?: CfEnv): Promise<string[]> {
-  const client = makeClient(runtimeEnv);
+// ✅ 兼容旧调用：getAllRealEstateSlugs()
+export async function getAllRealEstateSlugs(env?: CfEnv): Promise<string[]> {
+  const client = makeClient(env);
   if (!client) return [];
 
   try {
@@ -197,5 +198,5 @@ export async function getAllRealEstateSlugs(runtimeEnv?: CfEnv): Promise<string[
   }
 }
 
-// ✅ 兼容旧引用名
+// ✅ 防旧引用
 export const getAllSlugs = getAllRealEstateSlugs;
