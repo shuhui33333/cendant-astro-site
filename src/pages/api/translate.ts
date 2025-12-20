@@ -1,116 +1,82 @@
-export const prerender = false;
+// src/pages/api/translate.ts
+import type { APIRoute } from "astro";
+import { getRuntime } from "@astrojs/cloudflare/runtime";
 
-type Body = {
+type ReqBody = {
   target: "en" | "zh-CN" | "zh-TW" | "zh-HK";
   texts: string[];
-  source?: string; // 可选
+  source?: "zh-CN" | "zh-TW" | "zh-HK" | "en";
 };
 
-function json(data: any, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: {
-      "Content-Type": "application/json; charset=utf-8",
-      "Cache-Control": "no-store",
-    },
-  });
-}
-
-export async function POST({ request }: { request: Request }) {
+export const POST: APIRoute = async (context) => {
   try {
-    const key =
-      // Astro/Cloudflare 通常是 import.meta.env
-      (import.meta as any).env?.GOOGLE_TRANSLATE_API_KEY ??
-      // 兜底
-      (globalThis as any)?.process?.env?.GOOGLE_TRANSLATE_API_KEY;
+    const runtime = getRuntime(context);
+    const envKey =
+      runtime?.env?.GOOGLE_TRANSLATE_API_KEY ||
+      (import.meta as any).env?.GOOGLE_TRANSLATE_API_KEY ||
+      (process as any)?.env?.GOOGLE_TRANSLATE_API_KEY;
 
-    if (!key) {
-      return json(
-        {
-          error: "Missing GOOGLE_TRANSLATE_API_KEY in environment variables.",
-        },
-        500
+    if (!envKey) {
+      return new Response(
+        JSON.stringify({
+          error:
+            "Missing GOOGLE_TRANSLATE_API_KEY in environment variables. (Cloudflare Pages 需要重新部署后才生效，并确认 Production 环境已配置)",
+        }),
+        { status: 500, headers: { "Content-Type": "application/json" } }
       );
     }
 
-    const ct = request.headers.get("content-type") || "";
-    if (!ct.includes("application/json")) {
-      return json(
-        { error: "Content-Type must be application/json" },
-        415
+    const body = (await context.request.json()) as ReqBody;
+    const target = body?.target;
+    const texts = Array.isArray(body?.texts) ? body.texts : [];
+
+    if (!target || !Array.isArray(texts) || texts.length === 0) {
+      return new Response(
+        JSON.stringify({ error: "Bad request: target/texts required." }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
 
-    const body = (await request.json()) as Body;
+    // Google v2 Translate: 一次可以传多条 q
+    const url = `https://translation.googleapis.com/language/translate/v2?key=${encodeURIComponent(
+      envKey
+    )}`;
 
-    if (!body?.target || !Array.isArray(body.texts)) {
-      return json(
-        { error: "Bad request: need { target, texts[] }" },
-        400
-      );
-    }
-
-    // 过滤空字符串，避免 Google 报错/浪费
-    const texts = body.texts
-      .map((s) => (typeof s === "string" ? s : ""))
-      .map((s) => s.trim())
-      .filter(Boolean);
-
-    if (texts.length === 0) return json({ data: [] });
-
-    // Google Translate v2 REST
-    const url = new URL("https://translation.googleapis.com/language/translate/v2");
-    url.searchParams.set("key", key);
-
-    const payload: any = {
-      q: texts,              // 注意：这里是数组
-      target: body.target,   // en / zh-CN / zh-TW / zh-HK
-      format: "text",
-    };
-    if (body.source) payload.source = body.source;
-
-    const resp = await fetch(url.toString(), {
+    const res = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json; charset=utf-8" },
-      body: JSON.stringify(payload),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        q: texts,
+        target,
+        format: "text",
+        // source: body.source || "zh-CN", // 如果你想固定源语言可打开
+      }),
     });
 
-    const raw = await resp.text();
-    let parsed: any = null;
-    try {
-      parsed = JSON.parse(raw);
-    } catch {
-      parsed = { raw };
-    }
+    const json = await res.json();
 
-    if (!resp.ok) {
-      return json(
-        {
-          error: "Google translate failed",
-          status: resp.status,
-          details: parsed,
-        },
-        502
+    if (!res.ok) {
+      return new Response(
+        JSON.stringify({
+          error: "Google Translate API error",
+          status: res.status,
+          detail: json,
+        }),
+        { status: 502, headers: { "Content-Type": "application/json" } }
       );
     }
 
     const out: string[] =
-      parsed?.data?.translations?.map((x: any) => x?.translatedText ?? "") ?? [];
+      json?.data?.translations?.map((t: any) => t.translatedText) || [];
 
-    return json({ data: out });
-  } catch (err: any) {
-    // 关键：永远返回 JSON（避免你现在看到的 502 空对象）
-    return json(
-      {
-        error: "Worker crashed in /api/translate",
-        message: String(err?.message ?? err),
-        stack: err?.stack ?? null,
-      },
-      500
+    return new Response(JSON.stringify({ data: out }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (e: any) {
+    return new Response(
+      JSON.stringify({ error: "Server error", detail: String(e?.message || e) }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }
-}
-
-export async function GET() {
-  return json({ error: "Method Not Allowed" }, 405);
-}
+};
