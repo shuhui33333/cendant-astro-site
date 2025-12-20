@@ -6,7 +6,7 @@ export const prerender = false;
 
 /**
  * ✅ Cloudflare Pages runtime env + 本地 dev 兜底
- * 兼容多种适配器注入路径：
+ * 尽可能兼容不同 adapter/版本的注入路径：
  * - Astro.locals.runtime.env
  * - Astro.locals.cloudflare.env
  * - Astro.locals.env
@@ -18,9 +18,10 @@ function getCfEnv() {
     (Astro.locals as any)?.env ??
     {};
 
+  // 本地开发/构建时可能存在 import.meta.env（但注意：真正的 secret 还是要走 runtime env）
   const buildEnv = (import.meta as any)?.env ?? {};
 
-  // SSR 以 runtime 为准（覆盖 build）
+  // SSR：runtime 覆盖 build
   const merged = { ...buildEnv, ...runtimeEnv };
 
   return {
@@ -33,15 +34,25 @@ function getCfEnv() {
 const { slug } = Astro.params as { slug?: string };
 const cfEnv = getCfEnv();
 
+// ✅ 关键：打印 env + slug，去 Cloudflare Log Explorer 看就知道为什么 404
+console.log("[real-estate/[slug]] env check", {
+  slug,
+  hasSpace: !!cfEnv.CONTENTFUL_SPACE_ID,
+  hasToken: !!cfEnv.CONTENTFUL_DELIVERY_TOKEN,
+  env: cfEnv.CONTENTFUL_ENVIRONMENT,
+});
+
 let post: any = null;
 
-if (slug) {
+if (slug && cfEnv.CONTENTFUL_SPACE_ID && cfEnv.CONTENTFUL_DELIVERY_TOKEN) {
   try {
     post = await getRealEstatePostBySlug(cfEnv, slug);
   } catch (e) {
     console.error("[real-estate/[slug]] fetch failed:", e);
     post = null;
   }
+} else {
+  console.error("[real-estate/[slug]] missing env, skip fetch");
 }
 
 if (!post) {
@@ -80,6 +91,7 @@ function displayCategory(v: any) {
   return categoryMap[s] ?? (s || "资讯");
 }
 
+// 图片数组
 const imageUrlsRaw: string[] = post && Array.isArray(post.imageUrls) ? post.imageUrls : [];
 const imageUrls = imageUrlsRaw.map(normalizeUrl).filter(Boolean);
 
@@ -90,6 +102,7 @@ const heroImage = images[0] ?? "";
 const SHOW_FIRST_THUMB = true;
 const thumbs = SHOW_FIRST_THUMB ? images : images.slice(1);
 
+// 文本
 const bodyText = post ? richTextToPlainText(post.body) : "";
 const pageTitle = post?.title ? String(post.title) : "404：找不到该文章";
 ---
@@ -129,12 +142,7 @@ const pageTitle = post?.title ? String(post.title) : "404：找不到该文章";
                       data-src={url}
                       aria-label={`查看图片 ${idx + 1}`}
                     >
-                      <img
-                        src={url}
-                        alt={`${post.title} - ${idx + 1}`}
-                        loading="lazy"
-                        decoding="async"
-                      />
+                      <img src={url} alt={`${post.title} - ${idx + 1}`} loading="lazy" decoding="async" />
                     </button>
                   ))}
                 </div>
@@ -159,6 +167,9 @@ const pageTitle = post?.title ? String(post.title) : "404：找不到该文章";
       ) : (
         <>
           <h1 class="h1">404：找不到该文章</h1>
+          <p style="opacity:.75;margin:0 0 10px;">
+            可能原因：环境变量未注入 / Contentful 没有这个 slug / 文章未发布。
+          </p>
           <div class="back">
             <a href="/real-estate">← 返回地产资讯</a>
           </div>
@@ -167,29 +178,32 @@ const pageTitle = post?.title ? String(post.title) : "404：找不到该文章";
     </div>
   </section>
 
+  {/* ✅ 点击缩略图切换大图（修复了无效 return / gallery 空判断） */}
   <script type="module">
     const gallery = document.querySelector("[data-gallery]");
-    if (!gallery) return;
+    if (!gallery) {
+      // 没有图片就不绑定事件
+    } else {
+      const hero = gallery.querySelector("[data-hero]");
+      const thumbWrap = gallery.querySelector("[data-thumbs]");
 
-    const hero = gallery.querySelector("[data-hero]");
-    const thumbWrap = gallery.querySelector("[data-thumbs]");
+      if (hero && thumbWrap) {
+        thumbWrap.addEventListener("click", (e) => {
+          const btn = e.target?.closest?.("[data-thumb]");
+          if (!btn) return;
 
-    if (hero && thumbWrap) {
-      thumbWrap.addEventListener("click", (e) => {
-        const btn = e.target?.closest?.("[data-thumb]");
-        if (!btn) return;
+          const src = btn.getAttribute("data-src");
+          if (!src) return;
 
-        const src = btn.getAttribute("data-src");
-        if (!src) return;
+          hero.setAttribute("src", src);
 
-        hero.setAttribute("src", src);
+          thumbWrap
+            .querySelectorAll("[data-thumb]")
+            .forEach((el) => el.classList.remove("is-active"));
 
-        thumbWrap
-          .querySelectorAll("[data-thumb]")
-          .forEach((el) => el.classList.remove("is-active"));
-
-        btn.classList.add("is-active");
-      });
+          btn.classList.add("is-active");
+        });
+      }
     }
   </script>
 
