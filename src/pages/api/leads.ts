@@ -37,7 +37,7 @@ export const OPTIONS: APIRoute = async () => {
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
     const RESEND_API_KEY = getEnv(locals, "RESEND_API_KEY");
-    const MAIL_TO = getEnv(locals, "MAIL_TO") || "info@cendantpgau.com";
+    const MAIL_TO = getEnv(locals, "MAIL_TO") || "info@p-jysl.com";
 
     // ⚠️ 必须是在 Resend 已验证域名下的邮箱
     // 例如：noreply@cendantproperty.com.au
